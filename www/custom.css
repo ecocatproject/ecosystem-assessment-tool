@@ -1,0 +1,10 @@
+/* Highlight active tab text */
+.navbar-nav > .nav-item > .nav-link.active {
+  color: #275D38 !important; /* Pantone 125 */
+  font-weight: bold;
+}
+
+/* Optional: hover effect */
+.navbar-nav > .nav-item > .nav-link:hover {
+  color: #275D38;
+}
