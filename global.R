@@ -1,6 +1,12 @@
 # global.R
 
 
+# renv::snapshot() # creates lockfile
+# # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
+# rsconnect::writeManifest() #captures dependencies from lockfile
+# manifest <- jsonlite::fromJSON("manifest.json")
+# names(manifest$packages)
+
 library(shiny)
 library(shinythemes)
 library(data.table)
@@ -12,7 +18,7 @@ library(sf)
 library(leaflet)
 library(rnaturalearth) # ne_countries
 library(stringr) # str_extract
-library(tidyterra)
+#library(tidyterra)
 library(dplyr) # rename
 library(leaflet.extras)
 library(DT)
@@ -29,6 +35,7 @@ library(mgcv) # gams
 library(plotly)
 library(base64enc)
 library(leafem) # updatelayerscontrol
+library(shinycssloaders)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
