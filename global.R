@@ -1,7 +1,7 @@
 # global.R
 
 
-renv::snapshot() # creates lockfile
+# renv::snapshot() # creates lockfile
 # # # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
 # rsconnect::writeManifest() #captures dependencies from lockfile
 # manifest <- jsonlite::fromJSON("manifest.json")
