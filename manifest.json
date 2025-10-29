@@ -3,11 +3,11 @@
   "locale": "en_GB",
   "platform": "4.4.2",
   "metadata": {
-    "appmode": "rmd-static",
-    "primary_rmd": "report.Rmd",
+    "appmode": "shiny",
+    "primary_rmd": null,
     "primary_html": null,
     "content_category": null,
-    "has_parameters": true
+    "has_parameters": false
   },
   "environment": {
     "r": {
@@ -15,6 +15,34 @@
     }
   },
   "packages": {
+    "CFtime": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "CFtime",
+        "Title": "Using CF-Compliant Calendars with Climate Projection Data",
+        "Version": "1.7.0",
+        "Authors@R": "\n    person(\"Patrick\", \"Van Laake\", , \"patrick@vanlaake.net\", role = c(\"aut\", \"cre\", \"cph\"))",
+        "Description": "Support for all calendars as specified in the Climate and Forecast \n    (CF) Metadata Conventions for climate and forecasting data. The CF Metadata \n    Conventions is widely used for distributing files with climate observations \n    or projections, including the Coupled Model Intercomparison Project (CMIP) \n    data used by climate change scientists and the Intergovernmental Panel on\n    Climate Change (IPCC). This package specifically allows the user to work \n    with any of the CF-compliant calendars (many of which are not compliant with \n    POSIXt). The CF time coordinate is formally defined in the CF Metadata \n    Conventions document available at <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#time-coordinate>.",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "Imports": "R6",
+        "Suggests": "knitr, rmarkdown, ncdfCF (<= 0.6.1), testthat (>= 3.0.0),\nstringr",
+        "URL": "https://github.com/R-CF/CFtime",
+        "BugReports": "https://github.com/R-CF/CFtime/issues",
+        "VignetteBuilder": "knitr",
+        "Config/testthat/edition": "3",
+        "Collate": "'api.R' 'CFCalendar.R' 'CFCalendar360.R' 'CFCalendar365.R'\n'CFCalendar366.R' 'CFCalendarJulian.R' 'CFCalendarNone.R'\n'CFCalendarProleptic.R' 'CFCalendarStandard.R'\n'CFCalendarTAI.R' 'CFCalendarUTC.R' 'CFClimatology.R'\n'CFtime-package.R' 'CFtime.R' 'deprecated.R' 'helpers.R'\n'zzz.R'",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-08-23 20:22:24 UTC; patrickvanlaake",
+        "Author": "Patrick Van Laake [aut, cre, cph]",
+        "Maintainer": "Patrick Van Laake <patrick@vanlaake.net>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-08-23 21:50:07 UTC",
+        "Built": "R 4.4.3; ; 2025-09-05 00:54:28 UTC; windows"
+      }
+    },
     "DBI": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -45,6 +73,40 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-06-02 21:50:02 UTC",
         "Built": "R 4.4.3; ; 2025-08-04 00:21:53 UTC; windows"
+      }
+    },
+    "DT": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "DT",
+        "Title": "A Wrapper of the JavaScript Library 'DataTables'",
+        "Version": "0.34.0",
+        "Authors@R": "c(\n    person(\"Yihui\", \"Xie\", role = \"aut\"),\n    person(\"Joe\", \"Cheng\", , \"joe@posit.co\", role = \"aut\"),\n    person(\"Xianying\", \"Tan\", role = \"aut\"),\n    person(\"Garrick\", \"Aden-Buie\", , \"garrick@posit.co\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-7111-0077\")),\n    person(\"JJ\", \"Allaire\", role = \"ctb\"),\n    person(\"Maximilian\", \"Girlich\", role = \"ctb\"),\n    person(\"Greg\", \"Freedman Ellis\", role = \"ctb\"),\n    person(\"Johannes\", \"Rauh\", role = \"ctb\"),\n    person(\"SpryMedia Limited\", role = c(\"ctb\", \"cph\"),\n           comment = \"DataTables in htmlwidgets/lib\"),\n    person(\"Brian\", \"Reavis\", role = c(\"ctb\", \"cph\"),\n           comment = \"selectize.js in htmlwidgets/lib\"),\n    person(\"Leon\", \"Gersen\", role = c(\"ctb\", \"cph\"),\n           comment = \"noUiSlider in htmlwidgets/lib\"),\n    person(\"Bartek\", \"Szopka\", role = c(\"ctb\", \"cph\"),\n           comment = \"jquery.highlight.js in htmlwidgets/lib\"),\n    person(\"Alex\", \"Pickering\", role = \"ctb\"),\n    person(\"William\", \"Holmes\", role = \"ctb\"),\n    person(\"Mikko\", \"Marttila\", role = \"ctb\"),\n    person(\"Andres\", \"Quintero\", role = \"ctb\"),\n    person(\"Stéphane\", \"Laurent\", role = \"ctb\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Data objects in R can be rendered as HTML tables using the\n    JavaScript library 'DataTables' (typically via R Markdown or Shiny).\n    The 'DataTables' library has been included in this R package. The\n    package name 'DT' is an abbreviation of 'DataTables'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/rstudio/DT",
+        "BugReports": "https://github.com/rstudio/DT/issues",
+        "Imports": "crosstalk, htmltools (>= 0.3.6), htmlwidgets (>= 1.3),\njquerylib, jsonlite (>= 0.9.16), magrittr, promises",
+        "Suggests": "bslib, future, httpuv, knitr (>= 1.8), rmarkdown, shiny (>=\n1.6), testit, tibble",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-02 13:12:27 UTC; garrick",
+        "Author": "Yihui Xie [aut],\n  Joe Cheng [aut],\n  Xianying Tan [aut],\n  Garrick Aden-Buie [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-7111-0077>),\n  JJ Allaire [ctb],\n  Maximilian Girlich [ctb],\n  Greg Freedman Ellis [ctb],\n  Johannes Rauh [ctb],\n  SpryMedia Limited [ctb, cph] (DataTables in htmlwidgets/lib),\n  Brian Reavis [ctb, cph] (selectize.js in htmlwidgets/lib),\n  Leon Gersen [ctb, cph] (noUiSlider in htmlwidgets/lib),\n  Bartek Szopka [ctb, cph] (jquery.highlight.js in htmlwidgets/lib),\n  Alex Pickering [ctb],\n  William Holmes [ctb],\n  Mikko Marttila [ctb],\n  Andres Quintero [ctb],\n  Stéphane Laurent [ctb],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Garrick Aden-Buie <garrick@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-09-02 22:00:06 UTC",
+        "Built": "R 4.4.3; ; 2025-10-21 13:58:45 UTC; windows",
+        "RemoteType": "standard",
+        "RemoteRef": "DT",
+        "RemotePkgRef": "DT",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "0.34.0"
       }
     },
     "KernSmooth": {
@@ -137,6 +199,30 @@
         "Archs": "x64"
       }
     },
+    "PKI": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "PKI",
+        "Version": "0.1-15",
+        "Title": "Public Key Infrastucture for R Based on the X.509 Standard",
+        "Authors@R": "person(\"Simon\", \"Urbanek\", role=c(\"aut\",\"cre\",\"cph\"), email=\"Simon.Urbanek@r-project.org\", comment=c(\"https://urbanek.nz\", ORCID=\"0000-0003-2297-1732\"))",
+        "Maintainer": "Simon Urbanek <Simon.Urbanek@r-project.org>",
+        "Depends": "R (>= 2.9.0), base64enc",
+        "Enhances": "gmp",
+        "Description": "Public Key Infrastucture functions such as verifying certificates, RSA encription and signing which can be used to build PKI infrastructure and perform cryptographic tasks.",
+        "License": "GPL-2 | GPL-3 | file LICENSE",
+        "URL": "http://www.rforge.net/PKI",
+        "SystemRequirements": "OpenSSL library and headers (openssl-dev or\nsimilar)",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-08-19 06:20:08 UTC; rforge",
+        "Author": "Simon Urbanek [aut, cre, cph] (https://urbanek.nz, ORCID:\n    <https://orcid.org/0000-0003-2297-1732>)",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-08-19 08:30:19 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-19 23:51:50 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "R6": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -185,6 +271,33 @@
         "Built": "R 4.4.0; ; 2024-04-23 00:23:59 UTC; windows"
       }
     },
+    "RNetCDF": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "RNetCDF",
+        "Version": "2.11-1",
+        "Date": "2025-04-30",
+        "Title": "Interface to 'NetCDF' Datasets",
+        "Authors@R": "c(person(\"Pavel\", \"Michna\", role = \"aut\",\n                    email = \"rnetcdf-devel@bluewin.ch\"),\n             person(\"Milton\", \"Woods\", role = c(\"aut\", \"cre\"),\n                    email = \"miltonjwoods@gmail.com\"))",
+        "Depends": "R (>= 3.0.0)",
+        "SystemRequirements": "netcdf (>=4.1.3), udunits-2 (>=2.0.4)",
+        "Suggests": "bit64, tools",
+        "Enhances": "pbdMPI, Rmpi",
+        "Description": "An interface to the 'NetCDF' file formats designed by Unidata\n  for efficient storage of array-oriented scientific data and descriptions.\n  Most capabilities of 'NetCDF' version 4 are supported. Optional conversions\n  of time units are enabled by 'UDUNITS' version 2, also from Unidata.",
+        "License": "GPL (>= 2) | file LICENSE",
+        "URL": "https://github.com/mjwoods/RNetCDF\nhttps://www.unidata.ucar.edu/software/netcdf/\nhttps://www.unidata.ucar.edu/software/udunits/",
+        "BugReports": "https://github.com/mjwoods/RNetCDF/issues",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-04-29 12:04:54 UTC; mwoods",
+        "Author": "Pavel Michna [aut],\n  Milton Woods [aut, cre]",
+        "Maintainer": "Milton Woods <miltonjwoods@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-04-30 05:30:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-09-05 00:52:56 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "Rcpp": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -210,6 +323,69 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-07-02 16:40:02 UTC",
         "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 00:21:53 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "RcppTOML": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "RcppTOML",
+        "Type": "Package",
+        "Title": "'Rcpp' Bindings to Parser for \"Tom's Obvious Markup Language\"",
+        "Version": "0.2.3",
+        "Date": "2025-03-08",
+        "Authors@R": "c(person(\"Dirk\", \"Eddelbuettel\", role = c(\"aut\", \"cre\"), email = \"edd@debian.org\",\n                    comment = c(ORCID = \"0000-0001-6419-907X\")),\n             person(\"Mark\", \"Gillard\", role = \"aut\",\n                    comment = \"Author of 'toml++' header library\"))",
+        "Description": "The configuration format defined by 'TOML' (which expands to\n \"Tom's Obvious Markup Language\") specifies an excellent format\n (described at <https://toml.io/en/>) suitable for both human editing\n as well as the common uses of a machine-readable format. This package\n uses 'Rcpp' to connect to the 'toml++' parser written by Mark Gillard\n to R.",
+        "SystemRequirements": "A C++17 compiler",
+        "BugReports": "https://github.com/eddelbuettel/rcpptoml/issues",
+        "URL": "http://dirk.eddelbuettel.com/code/rcpp.toml.html",
+        "Imports": "Rcpp (>= 1.0.8)",
+        "Depends": "R (>= 3.3.0)",
+        "LinkingTo": "Rcpp",
+        "Suggests": "tinytest",
+        "License": "GPL (>= 2)",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-03-08 13:54:57 UTC; edd",
+        "Author": "Dirk Eddelbuettel [aut, cre] (<https://orcid.org/0000-0001-6419-907X>),\n  Mark Gillard [aut] (Author of 'toml++' header library)",
+        "Maintainer": "Dirk Eddelbuettel <edd@debian.org>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-08 14:30:06 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 00:23:23 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "arrow": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "arrow",
+        "Title": "Integration to 'Apache' 'Arrow'",
+        "Version": "21.0.0.1",
+        "Authors@R": "c(\n    person(\"Neal\", \"Richardson\", email = \"neal.p.richardson@gmail.com\", role = c(\"aut\")),\n    person(\"Ian\", \"Cook\", email = \"ianmcook@gmail.com\", role = c(\"aut\")),\n    person(\"Nic\", \"Crane\", email = \"thisisnic@gmail.com\", role = c(\"aut\")),\n    person(\"Dewey\", \"Dunnington\", role = c(\"aut\"), email = \"dewey@fishandwhistle.net\", comment = c(ORCID = \"0000-0002-9415-4582\")),\n    person(\"Romain\", \"Fran\\u00e7ois\", role = c(\"aut\"), comment = c(ORCID = \"0000-0002-2444-4226\")),\n    person(\"Jonathan\", \"Keane\", email = \"jkeane@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Drago\\u0219\", \"Moldovan-Gr\\u00fcnfeld\", email = \"dragos.mold@gmail.com\", role = c(\"aut\")),\n    person(\"Jeroen\", \"Ooms\", email = \"jeroen@berkeley.edu\", role = c(\"aut\")),\n    person(\"Jacob\", \"Wujciak-Jens\", email = \"jacob@wujciak.de\", role = c(\"aut\")),\n    person(\"Javier\", \"Luraschi\", email = \"javier@rstudio.com\", role = c(\"ctb\")),\n    person(\"Karl\", \"Dunkle Werner\", email = \"karldw@users.noreply.github.com\", role = c(\"ctb\"), comment = c(ORCID = \"0000-0003-0523-7309\")),\n    person(\"Jeffrey\", \"Wong\", email = \"jeffreyw@netflix.com\", role = c(\"ctb\")),\n    person(\"Apache Arrow\", email = \"dev@arrow.apache.org\", role = c(\"aut\", \"cph\"))\n  )",
+        "Description": "'Apache' 'Arrow' <https://arrow.apache.org/> is a cross-language\n    development platform for in-memory data. It specifies a standardized\n    language-independent columnar memory format for flat and hierarchical data,\n    organized for efficient analytic operations on modern hardware. This\n    package provides an interface to the 'Arrow C++' library.",
+        "Depends": "R (>= 4.0)",
+        "License": "Apache License (>= 2.0)",
+        "URL": "https://github.com/apache/arrow/, https://arrow.apache.org/docs/r/",
+        "BugReports": "https://github.com/apache/arrow/issues",
+        "Encoding": "UTF-8",
+        "Language": "en-US",
+        "SystemRequirements": "C++17; for AWS S3 support on Linux, libcurl and\nopenssl (optional); cmake >= 3.25 (build-time only, and only\nfor full source build)",
+        "Biarch": "true",
+        "Imports": "assertthat, bit64 (>= 0.9-7), glue, methods, purrr, R6, rlang\n(>= 1.0.0), stats, tidyselect (>= 1.0.0), utils, vctrs",
+        "RoxygenNote": "7.3.2",
+        "Config/testthat/edition": "3",
+        "Config/build/bootstrap": "TRUE",
+        "Suggests": "blob, curl, cli, DBI, dbplyr, decor, distro, dplyr, duckdb\n(>= 0.2.8), hms, jsonlite, knitr, lubridate, pillar, pkgload,\nreticulate, rmarkdown, stringi, stringr, sys, testthat (>=\n3.1.0), tibble, tzdb, withr",
+        "LinkingTo": "cpp11 (>= 0.4.2)",
+        "Collate": "'arrowExports.R' 'enums.R' 'arrow-object.R' 'type.R'\n'array-data.R' 'arrow-datum.R' 'array.R' 'arrow-info.R'\n'arrow-package.R' 'arrow-tabular.R' 'buffer.R'\n'chunked-array.R' 'io.R' 'compression.R' 'scalar.R' 'compute.R'\n'config.R' 'csv.R' 'dataset.R' 'dataset-factory.R'\n'dataset-format.R' 'dataset-partition.R' 'dataset-scan.R'\n'dataset-write.R' 'dictionary.R' 'dplyr-across.R'\n'dplyr-arrange.R' 'dplyr-by.R' 'dplyr-collect.R'\n'dplyr-count.R' 'dplyr-datetime-helpers.R' 'dplyr-distinct.R'\n'dplyr-eval.R' 'dplyr-filter.R' 'dplyr-funcs-agg.R'\n'dplyr-funcs-augmented.R' 'dplyr-funcs-conditional.R'\n'dplyr-funcs-datetime.R' 'dplyr-funcs-doc.R'\n'dplyr-funcs-math.R' 'dplyr-funcs-simple.R'\n'dplyr-funcs-string.R' 'dplyr-funcs-type.R' 'expression.R'\n'dplyr-funcs.R' 'dplyr-glimpse.R' 'dplyr-group-by.R'\n'dplyr-join.R' 'dplyr-mutate.R' 'dplyr-select.R'\n'dplyr-slice.R' 'dplyr-summarize.R' 'dplyr-union.R'\n'record-batch.R' 'table.R' 'dplyr.R' 'duckdb.R' 'extension.R'\n'feather.R' 'field.R' 'filesystem.R' 'flight.R'\n'install-arrow.R' 'ipc-stream.R' 'json.R' 'memory-pool.R'\n'message.R' 'metadata.R' 'parquet.R' 'python.R'\n'query-engine.R' 'record-batch-reader.R'\n'record-batch-writer.R' 'reexports-bit64.R'\n'reexports-tidyselect.R' 'schema.R' 'udf.R' 'util.R'",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-08-15 14:57:00 UTC; nic",
+        "Author": "Neal Richardson [aut],\n  Ian Cook [aut],\n  Nic Crane [aut],\n  Dewey Dunnington [aut] (ORCID: <https://orcid.org/0000-0002-9415-4582>),\n  Romain François [aut] (ORCID: <https://orcid.org/0000-0002-2444-4226>),\n  Jonathan Keane [aut, cre],\n  Dragoș Moldovan-Grünfeld [aut],\n  Jeroen Ooms [aut],\n  Jacob Wujciak-Jens [aut],\n  Javier Luraschi [ctb],\n  Karl Dunkle Werner [ctb] (ORCID:\n    <https://orcid.org/0000-0003-0523-7309>),\n  Jeffrey Wong [ctb],\n  Apache Arrow [aut, cph]",
+        "Maintainer": "Jonathan Keane <jkeane@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-08-18 17:50:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-09-05 02:28:42 UTC; windows",
         "Archs": "x64"
       }
     },
@@ -241,6 +417,29 @@
         "Archs": "x64"
       }
     },
+    "assertthat": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "assertthat",
+        "Title": "Easy Pre and Post Assertions",
+        "Version": "0.2.1",
+        "Authors@R": "\n  person(\"Hadley\", \"Wickham\", , \"hadley@rstudio.com\", c(\"aut\", \"cre\"))",
+        "Description": "An extension to stopifnot() that makes it easy to declare \n    the pre and post conditions that you code should satisfy, while also \n    producing friendly error messages so that your users know what's gone\n    wrong.",
+        "License": "GPL-3",
+        "Imports": "tools",
+        "Suggests": "testthat, covr",
+        "RoxygenNote": "6.0.1",
+        "Collate": "'assert-that.r' 'on-failure.r' 'assertions-file.r'\n'assertions-scalar.R' 'assertions.r' 'base.r'\n'base-comparison.r' 'base-is.r' 'base-logical.r' 'base-misc.r'\n'utils.r' 'validate-that.R'",
+        "NeedsCompilation": "no",
+        "Packaged": "2019-03-21 13:11:01 UTC; hadley",
+        "Author": "Hadley Wickham [aut, cre]",
+        "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2019-03-21 14:53:46 UTC",
+        "Built": "R 4.4.3; ; 2025-09-01 00:45:52 UTC; windows"
+      }
+    },
     "base64enc": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -261,6 +460,92 @@
         "Date/Publication": "2015-07-28 08:03:37",
         "Built": "R 4.4.0; x86_64-w64-mingw32; 2024-04-23 00:24:00 UTC; windows",
         "Archs": "x64"
+      }
+    },
+    "bit": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "bit",
+        "Title": "Classes and Methods for Fast Memory-Efficient Boolean Selections",
+        "Version": "4.6.0",
+        "Authors@R": "c(\n    person(\"Michael\", \"Chirico\", email = \"MichaelChirico4@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Jens\", \"Oehlschlägel\", role = \"aut\"),\n    person(\"Brian\", \"Ripley\", role = \"ctb\")\n  )",
+        "Depends": "R (>= 3.4.0)",
+        "Suggests": "testthat (>= 3.0.0), roxygen2, knitr, markdown, rmarkdown,\nmicrobenchmark, bit64 (>= 4.0.0), ff (>= 4.0.0)",
+        "Description": "Provided are classes for boolean and skewed boolean vectors,\n    fast boolean methods, fast unique and non-unique integer sorting,\n    fast set operations on sorted and unsorted sets of integers, and\n    foundations for ff (range index, compression, chunked processing).",
+        "License": "GPL-2 | GPL-3",
+        "LazyLoad": "yes",
+        "ByteCompile": "yes",
+        "Encoding": "UTF-8",
+        "URL": "https://github.com/r-lib/bit",
+        "VignetteBuilder": "knitr, rmarkdown",
+        "RoxygenNote": "7.3.2",
+        "Config/testthat/edition": "3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-03-05 07:18:45 UTC; michael",
+        "Author": "Michael Chirico [aut, cre],\n  Jens Oehlschlägel [aut],\n  Brian Ripley [ctb]",
+        "Maintainer": "Michael Chirico <MichaelChirico4@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-06 10:50:01 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 00:22:08 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "bit64": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "bit64",
+        "Title": "A S3 Class for Vectors of 64bit Integers",
+        "Version": "4.6.0-1",
+        "Authors@R": "c(\n    person(\"Michael\", \"Chirico\", email = \"michaelchirico4@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Jens\", \"Oehlschlägel\", role = \"aut\"),\n    person(\"Leonardo\", \"Silvestri\", role = \"ctb\"),\n    person(\"Ofek\", \"Shilon\", role = \"ctb\")\n  )",
+        "Depends": "R (>= 3.4.0), bit (>= 4.0.0)",
+        "Description": "\n  Package 'bit64' provides serializable S3 atomic 64bit (signed) integers.\n  These are useful for handling database keys and exact counting in +-2^63.\n  WARNING: do not use them as replacement for 32bit integers, integer64 are not\n  supported for subscripting by R-core and they have different semantics when\n  combined with double, e.g. integer64 + double => integer64.\n  Class integer64 can be used in vectors, matrices, arrays and data.frames.\n  Methods are available for coercion from and to logicals, integers, doubles,\n  characters and factors as well as many elementwise and summary functions.\n  Many fast algorithmic operations such as 'match' and 'order' support inter-\n  active data exploration and manipulation and optionally leverage caching.",
+        "License": "GPL-2 | GPL-3",
+        "LazyLoad": "yes",
+        "ByteCompile": "yes",
+        "URL": "https://github.com/r-lib/bit64",
+        "Encoding": "UTF-8",
+        "Imports": "graphics, methods, stats, utils",
+        "Suggests": "testthat (>= 3.0.3), withr",
+        "Config/testthat/edition": "3",
+        "Config/needs/development": "testthat",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-01-16 14:04:20 UTC; michael",
+        "Author": "Michael Chirico [aut, cre],\n  Jens Oehlschlägel [aut],\n  Leonardo Silvestri [ctb],\n  Ofek Shilon [ctb]",
+        "Maintainer": "Michael Chirico <michaelchirico4@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-01-16 16:00:07 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 01:04:15 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "bsicons": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "bsicons",
+        "Title": "Easily Work with 'Bootstrap' Icons",
+        "Version": "0.1.2",
+        "Authors@R": "c(\n    person(\"Carson\", \"Sievert\", , \"carson@posit.co\", role = c(\"cre\", \"aut\"),\n           comment = c(ORCID = \"0000-0002-4958-2844\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")),\n    person(\"Mark\", \"Otto\", role = \"cph\",\n           comment = \"Bootstrap icons maintainer\")\n  )",
+        "Description": "Easily use 'Bootstrap' icons inside 'Shiny' apps and 'R\n    Markdown' documents. More generally, icons can be inserted in any\n    'htmltools' document through inline 'SVG'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/rstudio/bsicons",
+        "BugReports": "https://github.com/rstudio/bsicons/issues",
+        "Depends": "R (>= 2.10)",
+        "Imports": "cli, htmltools, rlang, utils",
+        "Suggests": "bslib, processx, testthat, webshot2, withr",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.2.3",
+        "NeedsCompilation": "no",
+        "Packaged": "2023-11-03 23:29:00 UTC; cpsievert",
+        "Author": "Carson Sievert [cre, aut] (<https://orcid.org/0000-0002-4958-2844>),\n  Posit Software, PBC [cph, fnd],\n  Mark Otto [cph] (Bootstrap icons maintainer)",
+        "Maintainer": "Carson Sievert <carson@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-11-04 00:30:05 UTC",
+        "Built": "R 4.4.3; ; 2025-09-15 01:23:39 UTC; windows"
       }
     },
     "bslib": {
@@ -408,6 +693,45 @@
         "Archs": "x64"
       }
     },
+    "climateR": {
+      "Source": "github",
+      "Repository": null,
+      "description": {
+        "Package": "climateR",
+        "Type": "Package",
+        "Title": "climateR",
+        "Description": "Find, subset, and retrive geospatial data by AOI.",
+        "Version": "0.3.7",
+        "Authors@R": "c(person(\"Mike\", \"Johnson\", \n             role = c(\"aut\", \"cre\"), \n             email = \"mike.johnson@noaa.gov\"),\n             person(\"Justin\", \"Singh\",  role = \"ctb\"),\n             person(\"ESIP\", role = \"fnd\"),\n             person(\"NOAA OWP\", role = \"fnd\"))",
+        "Maintainer": "Mike Johnson <mike.johnson@noaa.gov>",
+        "BugReports": "https://github.com/mikejohnson51/climateR/issues",
+        "URL": "https://github.com/mikejohnson51/climateR",
+        "Depends": "R(>= 3.5.0)",
+        "Imports": "arrow, dplyr, future.apply, glue, gifski, ncmeta, RNetCDF,\nrnz, terra, utils, methods, stats, grDevices",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "RoxygenNote": "7.3.2",
+        "Suggests": "httr, AOI, covr, testthat (>= 3.0.0), rmarkdown, knitr,\nkableExtra, distill, ggplot2, patchwork, sf, tidyr, tidyterra,\nreticulate",
+        "Remotes": "mikejohnson51/AOI, dblodgett-usgs/ncmeta, DOI-USGS/rnz",
+        "Config/testthat/edition": "3",
+        "VignetteBuilder": "knitr",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteRepo": "climateR",
+        "RemoteUsername": "mikejohnson51",
+        "RemoteRef": "HEAD",
+        "RemoteSha": "718a8d0357e9249894fb4f6e922911042db47e79",
+        "GithubRepo": "climateR",
+        "GithubUsername": "mikejohnson51",
+        "GithubRef": "HEAD",
+        "GithubSHA1": "718a8d0357e9249894fb4f6e922911042db47e79",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-08 15:23:54 UTC; rcr11kg",
+        "Author": "Mike Johnson [aut, cre],\n  Justin Singh [ctb],\n  ESIP [fnd],\n  NOAA OWP [fnd]",
+        "Built": "R 4.4.2; ; 2025-09-08 15:23:56 UTC; windows"
+      }
+    },
     "codetools": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -454,6 +778,35 @@
         "Date/Publication": "2025-07-07 13:40:02 UTC",
         "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 00:21:53 UTC; windows",
         "Archs": "x64"
+      }
+    },
+    "cpp11": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "cpp11",
+        "Title": "A C++11 Interface for R's C Interface",
+        "Version": "0.5.2",
+        "Authors@R": "\n    c(\n      person(\"Davis\", \"Vaughan\", email = \"davis@posit.co\", role = c(\"aut\", \"cre\"), comment = c(ORCID = \"0000-0003-4777-038X\")),\n      person(\"Jim\",\"Hester\", role = \"aut\", comment = c(ORCID = \"0000-0002-2739-7082\")),\n      person(\"Romain\", \"François\", role = \"aut\", comment = c(ORCID = \"0000-0002-2444-4226\")),\n      person(\"Benjamin\", \"Kietzman\", role = \"ctb\"),\n      person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n    )",
+        "Description": "Provides a header only, C++11 interface to R's C\n    interface.  Compared to other approaches 'cpp11' strives to be safe\n    against long jumps from the C API as well as C++ exceptions, conform\n    to normal R function semantics and supports interaction with 'ALTREP'\n    vectors.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://cpp11.r-lib.org, https://github.com/r-lib/cpp11",
+        "BugReports": "https://github.com/r-lib/cpp11/issues",
+        "Depends": "R (>= 4.0.0)",
+        "Suggests": "bench, brio, callr, cli, covr, decor, desc, ggplot2, glue,\nknitr, lobstr, mockery, progress, rmarkdown, scales, Rcpp,\ntestthat (>= 3.2.0), tibble, utils, vctrs, withr",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/Needs/cpp11/cpp_register": "brio, cli, decor, desc, glue, tibble,\nvctrs",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-03-03 22:24:28 UTC; davis",
+        "Author": "Davis Vaughan [aut, cre] (<https://orcid.org/0000-0003-4777-038X>),\n  Jim Hester [aut] (<https://orcid.org/0000-0002-2739-7082>),\n  Romain François [aut] (<https://orcid.org/0000-0002-2444-4226>),\n  Benjamin Kietzman [ctb],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Davis Vaughan <davis@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-03 23:20:02 UTC",
+        "Built": "R 4.4.3; ; 2025-08-04 00:21:52 UTC; windows"
       }
     },
     "crosstalk": {
@@ -680,6 +1033,36 @@
         "Built": "R 4.4.3; ; 2025-09-01 00:45:11 UTC; windows"
       }
     },
+    "exactextractr": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "exactextractr",
+        "Title": "Fast Extraction from Raster Datasets using Polygons",
+        "Version": "0.10.0",
+        "Authors@R": "c(\n        person(\"Daniel Baston\", email = \"dbaston@isciences.com\", role = c(\"aut\", \"cre\")),\n        person(\"ISciences, LLC\", role=\"cph\"))",
+        "Description": "Quickly and accurately summarizes raster values over polygonal areas (\"zonal statistics\").",
+        "Depends": "R (>= 3.4.0)",
+        "License": "Apache License (== 2.0)",
+        "SystemRequirements": "GEOS (>= 3.5.0)",
+        "Imports": "Rcpp (>= 0.12.12), methods, raster, sf (>= 0.9.0),",
+        "URL": "https://isciences.gitlab.io/exactextractr/,\nhttps://github.com/isciences/exactextractr",
+        "BugReports": "https://github.com/isciences/exactextractr/issues",
+        "LinkingTo": "Rcpp",
+        "Suggests": "dplyr, foreign, knitr, ncdf4, rmarkdown, testthat, terra (>=\n1.5.17)",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.1.2",
+        "VignetteBuilder": "knitr",
+        "NeedsCompilation": "yes",
+        "Packaged": "2023-09-12 15:54:24 UTC; dan",
+        "Author": "Daniel Baston [aut, cre],\n  ISciences, LLC [cph]",
+        "Maintainer": "Daniel Baston <dbaston@isciences.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-09-20 08:20:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-09-17 02:39:27 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "farver": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -854,6 +1237,35 @@
         "Built": "R 4.4.3; ; 2025-09-05 01:26:09 UTC; windows"
       }
     },
+    "future.apply": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "future.apply",
+        "Version": "1.20.0",
+        "Title": "Apply Function to Elements in Parallel using Futures",
+        "Depends": "R (>= 3.2.0), future (>= 1.49.0)",
+        "Imports": "globals, parallel, utils",
+        "Suggests": "datasets, stats, tools, listenv, R.rsp, markdown",
+        "VignetteBuilder": "R.rsp",
+        "Authors@R": "c(person(\"Henrik\", \"Bengtsson\",\n                    role = c(\"aut\", \"cre\", \"cph\"),\n                    email = \"henrikb@braju.com\",\n                    comment = c(ORCID = \"0000-0002-7579-5165\")),\n             person(\"R Core Team\", role = c(\"cph\", \"ctb\")))",
+        "Description": "Implementations of apply(), by(), eapply(), lapply(), Map(), .mapply(), mapply(), replicate(), sapply(), tapply(), and vapply() that can be resolved using any future-supported backend, e.g. parallel on the local machine or distributed on a compute cluster. These future_*apply() functions come with the same pros and cons as the corresponding base-R *apply() functions but with the additional feature of being able to be processed via the future framework <doi:10.32614/RJ-2021-048>.",
+        "License": "GPL (>= 2)",
+        "LazyLoad": "TRUE",
+        "URL": "https://future.apply.futureverse.org,\nhttps://github.com/futureverse/future.apply",
+        "BugReports": "https://github.com/futureverse/future.apply/issues",
+        "Language": "en-US",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-06-06 06:39:06 UTC; henrik",
+        "Author": "Henrik Bengtsson [aut, cre, cph] (ORCID:\n    <https://orcid.org/0000-0002-7579-5165>),\n  R Core Team [cph, ctb]",
+        "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-06-06 08:00:02 UTC",
+        "Built": "R 4.4.3; ; 2025-09-05 01:49:20 UTC; windows"
+      }
+    },
     "generics": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -975,6 +1387,34 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-04-09 09:40:10 UTC",
         "Built": "R 4.4.3; ; 2025-08-04 02:16:56 UTC; windows"
+      }
+    },
+    "gifski": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "gifski",
+        "Type": "Package",
+        "Title": "Highest Quality GIF Encoder",
+        "Version": "1.32.0-2",
+        "Authors@R": "c(\n    person(\"Jeroen\", \"Ooms\", ,\"jeroenooms@gmail.com\", role = c(\"aut\", \"cre\"),\n      comment = c(ORCID = \"0000-0002-4035-0289\")),\n    person(\"Kornel Lesiński\", role = \"aut\", comment = \"Gifski Rust library\"),\n    person(\"Authors of the dependency Rust crates\", role = \"aut\", \n      comment = \"see AUTHORS file\"))",
+        "Description": "Multi-threaded GIF encoder written in Rust: <https://gif.ski/>. \n    Converts images to GIF animations using pngquant's efficient cross-frame \n    palettes and temporal dithering with thousands of colors per frame.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://r-rust.r-universe.dev/gifski",
+        "BugReports": "https://github.com/r-rust/gifski/issues",
+        "SystemRequirements": "Cargo (Rust's package manager), rustc",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.1.1",
+        "Suggests": "ggplot2, gapminder",
+        "Language": "en-US",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-03-17 21:13:42 UTC; jeroen",
+        "Author": "Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>),\n  Kornel Lesiński [aut] (Gifski Rust library),\n  Authors of the dependency Rust crates [aut] (see AUTHORS file)",
+        "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-18 11:10:01 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-09-05 00:53:35 UTC; windows",
+        "Archs": "x64"
       }
     },
     "globals": {
@@ -1243,6 +1683,35 @@
         "Archs": "x64"
       }
     },
+    "jose": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "jose",
+        "Type": "Package",
+        "Title": "JavaScript Object Signing and Encryption",
+        "Version": "1.2.1",
+        "Authors@R": "person(\"Jeroen\", \"Ooms\", role = c(\"aut\", \"cre\"), \n    email = \"jeroenooms@gmail.com\", comment = c(ORCID = \"0000-0002-4035-0289\"))",
+        "Description": "Read and write JSON Web Keys (JWK, rfc7517), generate and verify JSON\n    Web Signatures (JWS, rfc7515) and encode/decode JSON Web Tokens (JWT, rfc7519)\n    <https://datatracker.ietf.org/wg/jose/documents/>. These standards provide \n    modern signing and encryption formats that are natively supported by browsers\n    via the JavaScript WebCryptoAPI <https://www.w3.org/TR/WebCryptoAPI/#jose>, \n    and used by services like OAuth 2.0, LetsEncrypt, and Github Apps.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://r-lib.r-universe.dev/jose",
+        "BugReports": "https://github.com/r-lib/jose/issues",
+        "Depends": "openssl (>= 1.2.1)",
+        "Imports": "jsonlite",
+        "RoxygenNote": "7.1.2",
+        "VignetteBuilder": "knitr",
+        "Suggests": "spelling, testthat, knitr, rmarkdown",
+        "Encoding": "UTF-8",
+        "Language": "en-US",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-10-03 14:12:53 UTC; jeroen",
+        "Author": "Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>)",
+        "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-10-04 12:20:01 UTC",
+        "Built": "R 4.4.3; ; 2025-10-21 12:58:09 UTC; windows"
+      }
+    },
     "jquerylib": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1460,6 +1929,32 @@
         "Archs": "x64"
       }
     },
+    "leafem": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "leafem",
+        "Title": "'leaflet' Extensions for 'mapview'",
+        "Version": "0.2.5",
+        "Authors@R": "\n    c(person(given = \"Tim\",\n             family = \"Appelhans\",\n             role = c(\"cre\", \"aut\"),\n             email = \"tim.appelhans@gmail.com\"),\n      person(given = \"Christoph\",\n             family = \"Reudenbach\",\n             role = \"ctb\",\n             email = \"reudenbach@geo.uni-marburg.de\"),\n      person(given = \"Kenton\",\n             family = \"Russell\",\n             role = \"ctb\"),\n      person(given = \"Jochen\",\n             family = \"Darley\",\n             role = \"ctb\",\n             email = \"Debugger@jedimasters.de\"),\n      person(given = \"Daniel\",\n             family = \"Montague\",\n             role = c(\"ctb\", \"cph\"), \n             comment = \"Leaflet.EasyButton plugin\"),\n      person(given = \"Lorenzo\",\n             family = \"Busetto\",\n             role = c(\"ctb\"), \n             email = \"lbusett@gmail.com\"),\n      person(given = \"Luigi\",\n             family = \"Ranghetti\",\n             role = c(\"ctb\")),\n      person(given = \"Miles\",\n             family = \"McBain\",\n             role = c(\"ctb\")),\n      person(given = \"Sebastian\",\n             family = \"Gatscha\",\n             role = \"ctb\",\n             email = \"sebastian_gatscha@gmx.at\"),\n      person(given = \"Björn\",\n             family = \"Harrtell\",\n             role = c(\"ctb\", \"cph\"),\n             comment = \"FlatGeobuf plugin\"),\n      person(given = \"Daniel\",\n             family = \"Dufour\",\n             role = c(\"ctb\", \"cph\"),\n             comment = \"georaster-layer-for-leaflet\"),\n      person(given = \"Yeedle\",\n             family = \"Neuwirth\",\n             role = \"ctb\"),\n      person(given = \"Derek\",\n             family = \"Friend\",\n             role = \"ctb\",\n             email = \"dafriend.r@gmail.com\"),\n      person(given = \"Kevin\",  \n             family = \"Cazelles\", \n             role = \"ctb\",\n             email = \"kevin.cazelles@gmail.com\", \n             comment = c(ORCID = \"0000-0001-6619-9874\")))",
+        "Maintainer": "Tim Appelhans <tim.appelhans@gmail.com>",
+        "Description": "Provides extensions for packages 'leaflet' & 'mapdeck', \n    many of which are used by package 'mapview'. \n    Focus is on functionality readily available in \n    Geographic Information Systems such as 'Quantum GIS'. Includes functions\n    to display coordinates of mouse pointer position, query image values via \n    mouse pointer and zoom-to-layer buttons. Additionally, provides a feature \n    type agnostic function to add points, lines, polygons to a map.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/r-spatial/leafem,\nhttps://r-spatial.github.io/leafem/",
+        "BugReports": "https://github.com/r-spatial/leafem/issues",
+        "Depends": "R (>= 3.1.0)",
+        "Imports": "base64enc, geojsonsf, htmltools (>= 0.3), htmlwidgets,\njsonlite, leaflet (>= 2.0.1), methods, raster, sf, png",
+        "Suggests": "clipr, fontawesome, leafgl, lwgeom, mapdeck, plainview,\nstars, terra, tools",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-08-28 09:00:52 UTC; tim",
+        "Author": "Tim Appelhans [cre, aut],\n  Christoph Reudenbach [ctb],\n  Kenton Russell [ctb],\n  Jochen Darley [ctb],\n  Daniel Montague [ctb, cph] (Leaflet.EasyButton plugin),\n  Lorenzo Busetto [ctb],\n  Luigi Ranghetti [ctb],\n  Miles McBain [ctb],\n  Sebastian Gatscha [ctb],\n  Björn Harrtell [ctb, cph] (FlatGeobuf plugin),\n  Daniel Dufour [ctb, cph] (georaster-layer-for-leaflet),\n  Yeedle Neuwirth [ctb],\n  Derek Friend [ctb],\n  Kevin Cazelles [ctb] (ORCID: <https://orcid.org/0000-0001-6619-9874>)",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-08-28 12:30:02 UTC",
+        "Built": "R 4.4.3; ; 2025-09-01 03:11:16 UTC; windows"
+      }
+    },
     "leaflet": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1516,6 +2011,34 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-08-19 22:40:03 UTC",
         "Built": "R 4.4.3; ; 2025-08-04 02:47:52 UTC; windows"
+      }
+    },
+    "leaflet.extras2": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "leaflet.extras2",
+        "Type": "Package",
+        "Title": "Extra Functionality for 'leaflet' Package",
+        "Version": "1.3.1",
+        "Authors@R": "c(\n      person(\"Gatscha\", \"Sebastian\", email = \"sebastian_gatscha@gmx.at\", role = c(\"aut\", \"cre\")),\n      person(\"Ricardo Rodrigo\", \"Basa\", email = \"radbasa@gmail.com\", role = c(\"ctb\")),\n      person(c(\"Jeffrey\", \"O\"), \"Hanson\", email = \"jeffrey.hanson@uqconnect.edu.au\", role = c(\"ctb\"), comment = c(ORCID = \"0000-0002-4716-6134\"))\n    )",
+        "Description": "Several 'leaflet' plugins are integrated, which are available as extension to the 'leaflet' package.",
+        "License": "GPL-3 | file LICENSE",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "Depends": "R (>= 3.5.0), leaflet (>= 2.0.0)",
+        "Imports": "htmltools, magrittr, utils",
+        "Suggests": "jsonlite, shiny, sf, yyjsonr, sp, testthat (>= 2.1.0),\nfontawesome, htmlwidgets, grDevices, xfun, covr, curl",
+        "URL": "https://trafficonese.github.io/leaflet.extras2/,\nhttps://github.com/trafficonese/leaflet.extras2",
+        "BugReports": "https://github.com/trafficonese/leaflet.extras2/issues",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-03-05 09:33:03 UTC; kona1",
+        "Author": "Gatscha Sebastian [aut, cre],\n  Ricardo Rodrigo Basa [ctb],\n  Jeffrey O Hanson [ctb] (<https://orcid.org/0000-0002-4716-6134>)",
+        "Maintainer": "Gatscha Sebastian <sebastian_gatscha@gmx.at>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-05 13:40:06 UTC",
+        "Built": "R 4.4.3; ; 2025-08-04 02:27:34 UTC; windows"
       }
     },
     "leaflet.providers": {
@@ -1602,6 +2125,41 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-01-29 13:10:06 UTC",
         "Built": "R 4.4.3; ; 2025-09-05 00:43:20 UTC; windows"
+      }
+    },
+    "lubridate": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "lubridate",
+        "Title": "Make Dealing with Dates a Little Easier",
+        "Version": "1.9.4",
+        "Authors@R": "c(\n    person(\"Vitalie\", \"Spinu\", , \"spinuvit@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Garrett\", \"Grolemund\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Davis\", \"Vaughan\", role = \"ctb\"),\n    person(\"Ian\", \"Lyttle\", role = \"ctb\"),\n    person(\"Imanuel\", \"Costigan\", role = \"ctb\"),\n    person(\"Jason\", \"Law\", role = \"ctb\"),\n    person(\"Doug\", \"Mitarotonda\", role = \"ctb\"),\n    person(\"Joseph\", \"Larmarange\", role = \"ctb\"),\n    person(\"Jonathan\", \"Boiser\", role = \"ctb\"),\n    person(\"Chel Hee\", \"Lee\", role = \"ctb\")\n  )",
+        "Maintainer": "Vitalie Spinu <spinuvit@gmail.com>",
+        "Description": "Functions to work with date-times and time-spans: fast and\n    user friendly parsing of date-time data, extraction and updating of\n    components of a date-time (years, months, days, hours, minutes, and\n    seconds), algebraic manipulation on date-time and time-span objects.\n    The 'lubridate' package has a consistent and memorable syntax that\n    makes working with dates easy and fun.",
+        "License": "GPL (>= 2)",
+        "URL": "https://lubridate.tidyverse.org,\nhttps://github.com/tidyverse/lubridate",
+        "BugReports": "https://github.com/tidyverse/lubridate/issues",
+        "Depends": "methods, R (>= 3.2)",
+        "Imports": "generics, timechange (>= 0.3.0)",
+        "Suggests": "covr, knitr, rmarkdown, testthat (>= 2.1.0), vctrs (>= 0.6.5)",
+        "Enhances": "chron, data.table, timeDate, tis, zoo",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "RoxygenNote": "7.2.3",
+        "SystemRequirements": "C++11, A system with zoneinfo data (e.g.\n/usr/share/zoneinfo). On Windows the zoneinfo included with R\nis used.",
+        "Collate": "'Dates.r' 'POSIXt.r' 'util.r' 'parse.r' 'timespans.r'\n'intervals.r' 'difftimes.r' 'durations.r' 'periods.r'\n'accessors-date.R' 'accessors-day.r' 'accessors-dst.r'\n'accessors-hour.r' 'accessors-minute.r' 'accessors-month.r'\n'accessors-quarter.r' 'accessors-second.r' 'accessors-tz.r'\n'accessors-week.r' 'accessors-year.r' 'am-pm.r' 'time-zones.r'\n'numeric.r' 'coercion.r' 'constants.r' 'cyclic_encoding.r'\n'data.r' 'decimal-dates.r' 'deprecated.r' 'format_ISO8601.r'\n'guess.r' 'hidden.r' 'instants.r' 'leap-years.r'\n'ops-addition.r' 'ops-compare.r' 'ops-division.r'\n'ops-integer-division.r' 'ops-m+.r' 'ops-modulo.r'\n'ops-multiplication.r' 'ops-subtraction.r' 'package.r'\n'pretty.r' 'round.r' 'stamp.r' 'tzdir.R' 'update.r' 'vctrs.R'\n'zzz.R'",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-12-07 23:41:45 UTC; vitalie",
+        "Author": "Vitalie Spinu [aut, cre],\n  Garrett Grolemund [aut],\n  Hadley Wickham [aut],\n  Davis Vaughan [ctb],\n  Ian Lyttle [ctb],\n  Imanuel Costigan [ctb],\n  Jason Law [ctb],\n  Doug Mitarotonda [ctb],\n  Joseph Larmarange [ctb],\n  Jonathan Boiser [ctb],\n  Chel Hee Lee [ctb]",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-12-08 12:10:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 01:04:13 UTC; windows",
+        "Archs": "x64"
       }
     },
     "magrittr": {
@@ -1710,6 +2268,43 @@
         "Archs": "x64"
       }
     },
+    "ncmeta": {
+      "Source": "github",
+      "Repository": null,
+      "description": {
+        "Package": "ncmeta",
+        "Title": "Straightforward 'NetCDF' Metadata",
+        "Version": "0.4.0.9002",
+        "Authors@R": "c(person(\"Michael\", \"Sumner\", email = \"mdsumner@gmail.com\", role = c(\"aut\", \"cre\")), \n             person(\"Tomas\", \"Remenyi\", role = \"ctb\"), \n             person(\"Ben\", \"Raymond\", role = \"ctb\"), \n             person(\"David\", \"Blodgett\", role = \"ctb\"), \n             person(\"Milton\", \"Woods\", role = \"ctb\"), \n             person(\"Patrick\", \"Van Laake\", role = \"ctb\"))",
+        "Description": "Extract metadata from 'NetCDF' data sources, these can be files, file handles or\n servers. This package leverages and extends the lower level functions of the 'RNetCDF' package \n providing a consistent set of functions that all return data frames. We introduce named concepts \n of 'grid', 'axis' and 'source' which are all meaningful entities without formal definition in the \n 'NetCDF' library <https://www.unidata.ucar.edu/software/netcdf/>. 'RNetCDF' matches the library \n itself with only the named concepts of 'variables', 'dimensions' and 'attributes'. ",
+        "Depends": "R (>= 3.3.0)",
+        "License": "GPL-3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "Imports": "dplyr, rlang, RNetCDF, tibble, stats, tidyr, CFtime, rnz",
+        "Remotes": "doi-usgs/rnz",
+        "Suggests": "testthat, covr",
+        "Roxygen": "list(markdown = TRUE)",
+        "URL": "https://github.com/hypertidy/ncmeta,\nhttps://hypertidy.github.io/ncmeta/",
+        "BugReports": "https://github.com/hypertidy/ncmeta/issues",
+        "ByteCompile": "TRUE",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteRepo": "ncmeta",
+        "RemoteUsername": "dblodgett-usgs",
+        "RemoteRef": "HEAD",
+        "RemoteSha": "7f9d4370a587302fbaf246e3fcb35a3ba0d62018",
+        "GithubRepo": "ncmeta",
+        "GithubUsername": "dblodgett-usgs",
+        "GithubRef": "HEAD",
+        "GithubSHA1": "7f9d4370a587302fbaf246e3fcb35a3ba0d62018",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-08 15:23:29 UTC; rcr11kg",
+        "Author": "Michael Sumner [aut, cre],\n  Tomas Remenyi [ctb],\n  Ben Raymond [ctb],\n  David Blodgett [ctb],\n  Milton Woods [ctb],\n  Patrick Van Laake [ctb]",
+        "Maintainer": "Michael Sumner <mdsumner@gmail.com>",
+        "Built": "R 4.4.2; ; 2025-09-08 15:23:30 UTC; windows"
+      }
+    },
     "nlme": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1768,6 +2363,34 @@
         "Date/Publication": "2025-05-26 13:00:02 UTC",
         "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-09-01 01:51:58 UTC; windows",
         "Archs": "x64"
+      }
+    },
+    "packrat": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "packrat",
+        "Title": "A Dependency Management System for Projects and their R Package\nDependencies",
+        "Version": "0.9.3",
+        "Authors@R": "c(\n    person(\"Aron\", \"Atkins\", , \"aron@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Toph\", \"Allen\", role = \"aut\"),\n    person(\"Kevin\", \"Ushey\", role = \"aut\"),\n    person(\"Jonathan\", \"McPherson\", role = \"aut\"),\n    person(\"Joe\", \"Cheng\", role = \"aut\"),\n    person(\"JJ\", \"Allaire\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Manage the R packages your project depends on in an isolated,\n    portable, and reproducible way.",
+        "License": "GPL-2",
+        "URL": "https://github.com/rstudio/packrat",
+        "BugReports": "https://github.com/rstudio/packrat/issues",
+        "Depends": "R (>= 3.0.0)",
+        "Imports": "tools, utils",
+        "Suggests": "devtools, httr, knitr, mockery, rmarkdown, testthat (>=\n3.0.0), webfakes, withr",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-06-16 19:37:19 UTC; aron",
+        "Author": "Aron Atkins [aut, cre],\n  Toph Allen [aut],\n  Kevin Ushey [aut],\n  Jonathan McPherson [aut],\n  Joe Cheng [aut],\n  JJ Allaire [aut],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Aron Atkins <aron@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-06-16 20:00:02 UTC",
+        "Built": "R 4.4.3; ; 2025-10-21 11:54:16 UTC; windows"
       }
     },
     "parallelly": {
@@ -1855,6 +2478,34 @@
         "Repository": "CRAN",
         "Date/Publication": "2019-09-22 09:20:02 UTC",
         "Built": "R 4.4.3; ; 2025-08-04 00:21:51 UTC; windows"
+      }
+    },
+    "plotly": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "plotly",
+        "Title": "Create Interactive Web Graphics via 'plotly.js'",
+        "Version": "4.11.0",
+        "Authors@R": "c(person(\"Carson\", \"Sievert\", role = c(\"aut\", \"cre\"),\n    email = \"cpsievert1@gmail.com\", comment = c(ORCID = \"0000-0002-4958-2844\")),\n    person(\"Chris\", \"Parmer\", role = \"aut\",\n    email = \"chris@plot.ly\"),\n    person(\"Toby\", \"Hocking\", role = \"aut\",\n    email = \"tdhock5@gmail.com\"),\n    person(\"Scott\", \"Chamberlain\", role = \"aut\",\n    email = \"myrmecocystus@gmail.com\"),\n    person(\"Karthik\", \"Ram\", role = \"aut\",\n    email = \"karthik.ram@gmail.com\"),\n    person(\"Marianne\", \"Corvellec\", role = \"aut\",\n    email = \"marianne.corvellec@igdore.org\", comment = c(ORCID = \"0000-0002-1994-3581\")),\n    person(\"Pedro\", \"Despouy\", role = \"aut\",\n    email = \"pedro@plot.ly\"),\n    person(\"Salim\", \"Brüggemann\", role = \"ctb\",\n    email = \"salim-b@pm.me\", comment = c(ORCID = \"0000-0002-5329-5987\")),\n    person(\"Plotly Technologies Inc.\", role = \"cph\"))",
+        "License": "MIT + file LICENSE",
+        "Description": "Create interactive web graphics from 'ggplot2' graphs and/or a custom interface to the (MIT-licensed) JavaScript library 'plotly.js' inspired by the grammar of graphics.",
+        "URL": "https://plotly-r.com, https://github.com/plotly/plotly.R,\nhttps://plotly.com/r/",
+        "BugReports": "https://github.com/plotly/plotly.R/issues",
+        "Depends": "R (>= 3.2.0), ggplot2 (>= 3.0.0)",
+        "Imports": "tools, scales, httr (>= 1.3.0), jsonlite (>= 1.6), magrittr,\ndigest, viridisLite, base64enc, htmltools (>= 0.3.6),\nhtmlwidgets (>= 1.5.2.9001), tidyr (>= 1.0.0), RColorBrewer,\ndplyr, vctrs, tibble, lazyeval (>= 0.2.0), rlang (>= 1.0.0),\ncrosstalk, purrr, data.table, promises",
+        "Suggests": "MASS, maps, hexbin, ggthemes, GGally, ggalluvial, testthat,\nknitr, shiny (>= 1.1.0), shinytest2, curl, rmarkdown, Cairo,\nbroom, webshot, listviewer, dendextend, sf, png, IRdisplay,\nprocessx, plotlyGeoAssets, forcats, withr, palmerpenguins,\nrversions, reticulate, rsvg, ggridges",
+        "LazyData": "true",
+        "RoxygenNote": "7.3.2",
+        "Encoding": "UTF-8",
+        "Config/Needs/check": "tidyverse/ggplot2, ggobi/GGally, rcmdcheck,\ndevtools, reshape2, s2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-06-19 15:43:06 UTC; cpsievert",
+        "Author": "Carson Sievert [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-4958-2844>),\n  Chris Parmer [aut],\n  Toby Hocking [aut],\n  Scott Chamberlain [aut],\n  Karthik Ram [aut],\n  Marianne Corvellec [aut] (ORCID:\n    <https://orcid.org/0000-0002-1994-3581>),\n  Pedro Despouy [aut],\n  Salim Brüggemann [ctb] (ORCID: <https://orcid.org/0000-0002-5329-5987>),\n  Plotly Technologies Inc. [cph]",
+        "Maintainer": "Carson Sievert <cpsievert1@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-06-19 18:30:02 UTC",
+        "Built": "R 4.4.3; ; 2025-09-05 03:35:36 UTC; windows"
       }
     },
     "png": {
@@ -2205,6 +2856,100 @@
         "Built": "R 4.4.3; ; 2025-09-01 02:42:54 UTC; windows"
       }
     },
+    "rnz": {
+      "Source": "github",
+      "Repository": null,
+      "description": {
+        "Package": "rnz",
+        "Type": "Package",
+        "Title": "R NetCDF ZARR",
+        "Version": "0.2.0",
+        "Authors@R": "\n    person(given = \"David\", \n           family = \"Blodgett\", \n           role = c(\"aut\", \"cre\"), \n           email = \"dblodgett@usgs.gov\",\n           comment = c(ORCID = \"0000-0001-9489-1710\"))",
+        "Description": "Implements a RNetCDF-like set of functions for NetCDF and zarr data based on the pizzarr package.",
+        "Imports": "tools, utils, RNetCDF",
+        "Suggests": "pizzarr, knitr, rmarkdown, testthat (>= 3.0.0)",
+        "Remotes": "keller-mark/pizzarr",
+        "License": "CC0",
+        "Config/testthat/parallel": "true",
+        "Config/testthat/edition": "3",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "Language": "en-US",
+        "RoxygenNote": "7.3.2",
+        "URL": "https://github.com/DOI-USGS/rnz",
+        "RemoteType": "github",
+        "RemoteHost": "api.github.com",
+        "RemoteRepo": "rnz",
+        "RemoteUsername": "doi-usgs",
+        "RemoteRef": "HEAD",
+        "RemoteSha": "30a817a0f101e44a16478e2b14a02dd7bee976f7",
+        "GithubRepo": "rnz",
+        "GithubUsername": "doi-usgs",
+        "GithubRef": "HEAD",
+        "GithubSHA1": "30a817a0f101e44a16478e2b14a02dd7bee976f7",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-08 15:23:15 UTC; rcr11kg",
+        "Author": "David Blodgett [aut, cre] (<https://orcid.org/0000-0001-9489-1710>)",
+        "Maintainer": "David Blodgett <dblodgett@usgs.gov>",
+        "Built": "R 4.4.2; ; 2025-09-08 15:23:16 UTC; windows"
+      }
+    },
+    "rsconnect": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "rsconnect",
+        "Title": "Deploy Docs, Apps, and APIs to 'Posit Connect', 'shinyapps.io',\nand 'RPubs'",
+        "Version": "1.5.1",
+        "Authors@R": "c(\n    person(\"Aron\", \"Atkins\", , \"aron@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Toph\", \"Allen\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Jonathan\", \"McPherson\", role = \"aut\"),\n    person(\"JJ\", \"Allaire\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Programmatic deployment interface for 'RPubs',\n    'shinyapps.io', and 'Posit Connect'. Supported content types include R\n    Markdown documents, Shiny applications, Plumber APIs, plots, and\n    static web content.",
+        "License": "GPL-2",
+        "URL": "https://rstudio.github.io/rsconnect/,\nhttps://github.com/rstudio/rsconnect",
+        "BugReports": "https://github.com/rstudio/rsconnect/issues",
+        "Depends": "R (>= 3.5.0)",
+        "Imports": "cli, curl, digest, jsonlite, lifecycle, openssl (>= 2.0.0),\nPKI, packrat (>= 0.6), renv (>= 1.0.0), rlang (>= 1.0.0),\nrstudioapi (>= 0.5), snowflakeauth, tools, yaml (>= 2.1.5),\nutils",
+        "Suggests": "Biobase, BiocManager, foreign, knitr, MASS, plumber (>=\n0.3.2), quarto, RCurl, reticulate, rmarkdown (>= 1.1), shiny,\ntestthat (>= 3.1.9), webfakes, withr",
+        "VignetteBuilder": "knitr, rmarkdown",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/testthat/parallel": "true",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-08-28 13:16:18 UTC; aron",
+        "Author": "Aron Atkins [aut, cre],\n  Toph Allen [aut],\n  Hadley Wickham [aut],\n  Jonathan McPherson [aut],\n  JJ Allaire [aut],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Aron Atkins <aron@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-08-28 13:50:02 UTC",
+        "Built": "R 4.4.3; ; 2025-10-21 13:23:52 UTC; windows"
+      }
+    },
+    "rstudioapi": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "rstudioapi",
+        "Title": "Safely Access the RStudio API",
+        "Description": "Access the RStudio API (if available) and provide informative error\n    messages when it's not.",
+        "Version": "0.17.1",
+        "Authors@R": "c(\n    person(\"Kevin\", \"Ushey\", role = c(\"aut\", \"cre\"), email = \"kevin@rstudio.com\"),\n    person(\"JJ\", \"Allaire\", role = c(\"aut\"), email = \"jj@posit.co\"),\n    person(\"Hadley\", \"Wickham\", role = c(\"aut\"), email = \"hadley@posit.co\"),\n    person(\"Gary\", \"Ritchie\", role = c(\"aut\"), email = \"gary@posit.co\"),\n    person(family = \"RStudio\", role = \"cph\")\n    )",
+        "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
+        "License": "MIT + file LICENSE",
+        "URL": "https://rstudio.github.io/rstudioapi/,\nhttps://github.com/rstudio/rstudioapi",
+        "BugReports": "https://github.com/rstudio/rstudioapi/issues",
+        "RoxygenNote": "7.3.2",
+        "Suggests": "testthat, knitr, rmarkdown, clipr, covr",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-10-22 20:55:52 UTC; kevin",
+        "Author": "Kevin Ushey [aut, cre],\n  JJ Allaire [aut],\n  Hadley Wickham [aut],\n  Gary Ritchie [aut],\n  RStudio [cph]",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-10-22 22:40:02 UTC",
+        "Built": "R 4.4.3; ; 2025-08-04 00:22:20 UTC; windows"
+      }
+    },
     "s2": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2416,6 +3161,32 @@
         "Built": "R 4.4.3; ; 2025-09-03 02:53:12 UTC; windows"
       }
     },
+    "shinycssloaders": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "shinycssloaders",
+        "Title": "Add Loading Animations to a 'shiny' Output While It's\nRecalculating",
+        "Version": "1.1.0",
+        "Authors@R": "c(\n    person(\"Dean\",\"Attali\",email=\"daattali@gmail.com\",role=c(\"aut\",\"cre\"),\n        comment = c(\"Maintainer/developer of shinycssloaders since 2019\", ORCID=\"0000-0002-5645-3493\")),\n    person(\"Andras\",\"Sali\",email=\"andras.sali@alphacruncher.hu\",role=c(\"aut\"),comment=\"Original creator of shinycssloaders package\"),\n    person(\"Luke\",\"Hass\",role=c(\"ctb\",\"cph\"),comment=\"Author of included CSS loader code\")\n    )",
+        "Description": "When a 'Shiny' output (such as a plot, table, map, etc.) is recalculating, it remains \n    visible but gets greyed out. Using 'shinycssloaders', you can add a loading animation (\"spinner\")\n    to outputs instead. By wrapping a 'Shiny' output in 'withSpinner()', a spinner will automatically\n    appear while the output is recalculating. You can also manually show and hide the spinner, or add\n    a full-page spinner to cover the entire page.\n    See the demo online at <https://daattali.com/shiny/shinycssloaders-demo/>.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/daattali/shinycssloaders,\nhttps://daattali.com/shiny/shinycssloaders-demo/",
+        "BugReports": "https://github.com/daattali/shinycssloaders/issues",
+        "Depends": "R (>= 3.1)",
+        "Imports": "digest, glue, grDevices, htmltools (>= 0.3.5), shiny",
+        "Suggests": "knitr, shinydisconnect, shinyjs",
+        "RoxygenNote": "7.2.3",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-07-30 18:52:48 UTC; Dean",
+        "Author": "Dean Attali [aut, cre] (Maintainer/developer of shinycssloaders since\n    2019, <https://orcid.org/0000-0002-5645-3493>),\n  Andras Sali [aut] (Original creator of shinycssloaders package),\n  Luke Hass [ctb, cph] (Author of included CSS loader code)",
+        "Maintainer": "Dean Attali <daattali@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-07-30 22:30:02 UTC",
+        "Built": "R 4.4.3; ; 2025-09-12 03:28:02 UTC; windows"
+      }
+    },
     "shinythemes": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2465,6 +3236,32 @@
         "Repository": "CRAN",
         "Date/Publication": "2019-06-28 16:20:03 UTC",
         "Built": "R 4.4.3; ; 2025-09-03 02:27:11 UTC; windows"
+      }
+    },
+    "snowflakeauth": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "snowflakeauth",
+        "Title": "Authentication Helpers for 'Snowflake'",
+        "Version": "0.2.0",
+        "Authors@R": "c(\n    person(\"Aaron\", \"Jacobs\", , \"aaron.jacobs@posit.co\", role = c(\"aut\")),\n    person(\"E. David\", \"Aja\", , \"david@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Authentication helpers for 'Snowflake'.\n    It provides compatibility with authentication approaches supported\n    by the 'Snowflake Connector for Python' <https://pypi.org/project/snowflake-connector-python>\n    and the 'Snowflake CLI' <https://pypi.org/project/snowflake-cli>.",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "Imports": "cli, curl, jsonlite, RcppTOML, rlang, jose, openssl",
+        "Suggests": "testthat (>= 3.0.0), withr",
+        "RoxygenNote": "7.3.2",
+        "Config/testthat/edition": "3",
+        "URL": "https://posit-dev.github.io/snowflakeauth/,\nhttps://github.com/posit-dev/snowflakeauth",
+        "BugReports": "https://github.com/posit-dev/snowflakeauth/issues",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-02 11:32:38 UTC; edavidaja",
+        "Author": "Aaron Jacobs [aut],\n  E. David Aja [aut, cre],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "E. David Aja <david@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-09-02 12:00:02 UTC",
+        "Built": "R 4.4.3; ; 2025-10-21 13:01:01 UTC; windows"
       }
     },
     "sourcetools": {
@@ -2674,6 +3471,38 @@
         "Archs": "x64"
       }
     },
+    "tidyr": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "tidyr",
+        "Title": "Tidy Messy Data",
+        "Version": "1.3.1",
+        "Authors@R": "c(\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Davis\", \"Vaughan\", , \"davis@posit.co\", role = \"aut\"),\n    person(\"Maximilian\", \"Girlich\", role = \"aut\"),\n    person(\"Kevin\", \"Ushey\", , \"kevin@posit.co\", role = \"ctb\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Tools to help to create tidy data, where each column is a\n    variable, each row is an observation, and each cell contains a single\n    value.  'tidyr' contains tools for changing the shape (pivoting) and\n    hierarchy (nesting and 'unnesting') of a dataset, turning deeply\n    nested lists into rectangular data frames ('rectangling'), and\n    extracting values out of string columns. It also includes tools for\n    working with missing values (both implicit and explicit).",
+        "License": "MIT + file LICENSE",
+        "URL": "https://tidyr.tidyverse.org, https://github.com/tidyverse/tidyr",
+        "BugReports": "https://github.com/tidyverse/tidyr/issues",
+        "Depends": "R (>= 3.6)",
+        "Imports": "cli (>= 3.4.1), dplyr (>= 1.0.10), glue, lifecycle (>= 1.0.3),\nmagrittr, purrr (>= 1.0.1), rlang (>= 1.1.1), stringr (>=\n1.5.0), tibble (>= 2.1.1), tidyselect (>= 1.2.0), utils, vctrs\n(>= 0.5.2)",
+        "Suggests": "covr, data.table, knitr, readr, repurrrsive (>= 1.1.0),\nrmarkdown, testthat (>= 3.0.0)",
+        "LinkingTo": "cpp11 (>= 0.4.0)",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "RoxygenNote": "7.3.0",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-01-23 14:27:23 UTC; hadleywickham",
+        "Author": "Hadley Wickham [aut, cre],\n  Davis Vaughan [aut],\n  Maximilian Girlich [aut],\n  Kevin Ushey [ctb],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Hadley Wickham <hadley@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-01-24 14:50:09 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 02:46:58 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "tidyselect": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2702,6 +3531,34 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-03-11 14:10:02 UTC",
         "Built": "R 4.4.3; ; 2025-08-04 01:49:18 UTC; windows"
+      }
+    },
+    "timechange": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "timechange",
+        "Title": "Efficient Manipulation of Date-Times",
+        "Version": "0.3.0",
+        "Authors@R": "c(person(\"Vitalie\", \"Spinu\", email = \"spinuvit@gmail.com\", role = c(\"aut\", \"cre\")),\n             person(\"Google Inc.\", role = c(\"ctb\", \"cph\")))",
+        "Description": "Efficient routines for manipulation of date-time objects while\n   accounting for time-zones and daylight saving times. The package includes\n   utilities for updating of date-time components (year, month, day etc.),\n   modification of time-zones, rounding of date-times, period addition and\n   subtraction etc. Parts of the 'CCTZ' source code, released under the Apache\n   2.0 License, are included in this package. See\n   <https://github.com/google/cctz> for more details.",
+        "Depends": "R (>= 3.3)",
+        "License": "GPL (>= 3)",
+        "Encoding": "UTF-8",
+        "LinkingTo": "cpp11 (>= 0.2.7)",
+        "Suggests": "testthat (>= 0.7.1.99), knitr",
+        "SystemRequirements": "A system with zoneinfo data (e.g.\n/usr/share/zoneinfo) as well as a recent-enough C++11 compiler\n(such as g++-4.8 or later). On Windows the zoneinfo included\nwith R is used.",
+        "BugReports": "https://github.com/vspinu/timechange/issues",
+        "URL": "https://github.com/vspinu/timechange/",
+        "RoxygenNote": "7.2.1",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-01-18 08:57:24 UTC; vspinu",
+        "Author": "Vitalie Spinu [aut, cre],\n  Google Inc. [ctb, cph]",
+        "Maintainer": "Vitalie Spinu <spinuvit@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-01-18 09:20:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 00:21:59 UTC; windows",
+        "Archs": "x64"
       }
     },
     "tinytex": {
@@ -2985,374 +3842,581 @@
     }
   },
   "files": {
-    "%": {
-      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    "app.R": {
+      "checksum": "1dd1eed6484c8d998d51e4ebe3f114e9"
     },
-    ".Renviron": {
-      "checksum": "79a6f6425f22b5e0de65e419129c4388"
+    "data/data/realms/RL_Realms.cpg": {
+      "checksum": "ae3b3df9970b49b6523e608759bc957d"
     },
-    ".Renviron_backup": {
-      "checksum": "79a6f6425f22b5e0de65e419129c4388"
+    "data/data/realms/RL_Realms.dbf": {
+      "checksum": "bf9bdc1948e76f2ef7940a78620f40d1"
     },
-    "assesssment_with_roi_selection.R": {
-      "checksum": "c2a93fce99422ba6f7ca67e2e4c1f258"
+    "data/data/realms/RL_Realms.prj": {
+      "checksum": "c742bee3d4edfc2948a2ad08de1790a5"
     },
-    "Default.rdp": {
-      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    "data/data/realms/RL_Realms.qmd": {
+      "checksum": "8290af7e6942b2028a8a7f74be04f09f"
     },
-    "desktop.ini": {
-      "checksum": "93c8b5c191bdcf8aca86d7463d77e6c8"
+    "data/data/realms/RL_Realms.shp": {
+      "checksum": "9899739fc6695e161d43f2fe3aa60801"
     },
-    "geocomputation/images/whitebox_terra_1.png": {
-      "checksum": "ab0f234d59e2040f1447de92cf7f5174"
+    "data/data/realms/RL_Realms.shx": {
+      "checksum": "bc6d6f19e56d8f06d64fa8e1232fa80a"
     },
-    "gisdata/indicative-maps-bundle/latest/all-maps-raster-geotiff.tar.bz2": {
-      "checksum": "245d09d535609d1c010eff52e9c8bfaa"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_01.tif": {
+      "checksum": "ecbcd7d3ccfb7a35a103b983c8642ce5"
     },
-    "gisdata/indicative-maps-bundle/latest/all-maps-vector-geojson.tar.bz2": {
-      "checksum": "8490adfd971bc3a5b02cc72832e2df3e"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_02.tif": {
+      "checksum": "c7770a7c5f226879bd45bb09794744d1"
     },
-    "gisdata/indicative-maps-bundle/latest/map-details.xml": {
-      "checksum": "5177a7a6fc5aa4981088093a68b2964e"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_03.tif": {
+      "checksum": "55547be5bc1f2ff6700ead95efee5b95"
     },
-    "gisdata/indicative-maps-bundle/latest/README.md": {
-      "checksum": "e6cdcb4b46b261fecd5fce5c31fb5805"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_04.tif": {
+      "checksum": "2a4d962f2581639e2b0f4c61fa02488f"
     },
-    "gisdata/profiles/IUCN-GET-profiles-exported.xlsx": {
-      "checksum": "61c83ee24ec046dd73b89751fa7eb96e"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_05.tif": {
+      "checksum": "0add62cb49935fe31f6cc6486935ac20"
     },
-    "renv.lock": {
-      "checksum": "2f378376cb4358aaa857b7a03623ee6b"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_06.tif": {
+      "checksum": "8c9c905646346219dd6ef6f353c66c14"
     },
-    "report.Rmd": {
-      "checksum": "fd5ced4f077aada695243c01abf6f9c7"
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_07.tif": {
+      "checksum": "35cf0c5af9aa61bf4a7e43cd62bb3bf1"
     },
-    "sandbox/latest/F1.1.web.mix_v2.0.tif": {
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_08.tif": {
+      "checksum": "e671d64db32cb5c459dec21fa29e95bd"
+    },
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_09.tif": {
+      "checksum": "a138932df0120f2d0bcafbd987f9c7ae"
+    },
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_10.tif": {
+      "checksum": "9dc66f6b71409adc12df5c975a6b55ed"
+    },
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_11.tif": {
+      "checksum": "e660b55c3c7e3e05e058c77fc85fda93"
+    },
+    "data/data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_12.tif": {
+      "checksum": "53902bde21a6c2ac6a974515917a0fe4"
+    },
+    "data/Ecoregions/Ecoregions2017.dbf": {
+      "checksum": "792c89eb5cb1c8b161d238252edb5f86"
+    },
+    "data/Ecoregions/Ecoregions2017.prj": {
+      "checksum": "1f078dc49b8d9f011560191f687333d4"
+    },
+    "data/Ecoregions/Ecoregions2017.shp": {
+      "checksum": "61cd6633e47fa91ec70326bd54c14ae1"
+    },
+    "data/Ecoregions/Ecoregions2017.shx": {
+      "checksum": "b783c57daa4c13e2498d14b6565fd3b2"
+    },
+    "data/ecosystem_typology_lookup_table.csv": {
+      "checksum": "39ab90ac54bfa333e757a225f6285a7a"
+    },
+    "data/ecosystem_typology_lookup_table2.csv": {
+      "checksum": "39ab90ac54bfa333e757a225f6285a7a"
+    },
+    "data/get_geotiff/F1.1.web.mix_v2.0.tif": {
       "checksum": "f30ff1197f5424aebb8432bf7b4979fe"
     },
-    "sandbox/latest/F1.2.web.map_v1.0.tif": {
+    "data/get_geotiff/F1.2.web.map_v1.0.tif": {
       "checksum": "5133dcac9294b3baea6a6ea4ab0d3f52"
     },
-    "sandbox/latest/F1.3.web.map_v1.0.tif": {
+    "data/get_geotiff/F1.3.web.map_v1.0.tif": {
       "checksum": "7af84ba55a8480520fcf14949a6f6a88"
     },
-    "sandbox/latest/F1.4.web.map_v1.0.tif": {
+    "data/get_geotiff/F1.4.web.map_v1.0.tif": {
       "checksum": "fd431c7b02feca8ff6f3c1112a578559"
     },
-    "sandbox/latest/F1.5.web.map_v1.0.tif": {
+    "data/get_geotiff/F1.5.web.map_v1.0.tif": {
       "checksum": "5a0757edd97f079d935b4c63593f55a4"
     },
-    "sandbox/latest/F1.6.web.mix_v1.0.tif": {
+    "data/get_geotiff/F1.6.web.mix_v1.0.tif": {
       "checksum": "a43c1d0cc8e150343cdfebe582a9fcc2"
     },
-    "sandbox/latest/F1.7.web.orig_v2.0.tif": {
+    "data/get_geotiff/F1.7.web.orig_v2.0.tif": {
       "checksum": "155a222e5de7d748f8407fb142e96fda"
     },
-    "sandbox/latest/F2.1.web.alt_v4.0.tif": {
+    "data/get_geotiff/F2.1.web.alt_v4.0.tif": {
       "checksum": "875a9bd11c8987524f8228ac6f847bb5"
     },
-    "sandbox/latest/F2.10.web.mix_v2.0.tif": {
+    "data/get_geotiff/F2.10.web.mix_v2.0.tif": {
       "checksum": "472bb5ac33ae4f3b25a8132e9f2b888a"
     },
-    "sandbox/latest/F2.2.web.mix_v2.0.tif": {
+    "data/get_geotiff/F2.2.web.mix_v2.0.tif": {
       "checksum": "11658679bf2a6366eb823ffcfd64e1a1"
     },
-    "sandbox/latest/F2.3.web.mix_v2.0.tif": {
+    "data/get_geotiff/F2.3.web.mix_v2.0.tif": {
       "checksum": "4e239e6661c5506507da074026bdcc4f"
     },
-    "sandbox/latest/F2.4.web.mix_v1.0.tif": {
+    "data/get_geotiff/F2.4.web.mix_v1.0.tif": {
       "checksum": "bd0d98f971f37addfe541dfcd721a764"
     },
-    "sandbox/latest/F2.5.web.mix_v1.0.tif": {
+    "data/get_geotiff/F2.5.web.mix_v1.0.tif": {
       "checksum": "a588a05fd2fb524f28b182ae8421415c"
     },
-    "sandbox/latest/F2.6.web.mix_v4.0.tif": {
+    "data/get_geotiff/F2.6.web.mix_v4.0.tif": {
       "checksum": "d289725956c5dd009314b7a357d3265a"
     },
-    "sandbox/latest/F2.7.web.mix_v1.0.tif": {
+    "data/get_geotiff/F2.7.web.mix_v1.0.tif": {
       "checksum": "3546f4a7f720dff3305ef733c2a411b0"
     },
-    "sandbox/latest/F2.8.web.mix_v1.0.tif": {
+    "data/get_geotiff/F2.8.web.mix_v1.0.tif": {
       "checksum": "5d667df4639bca82e57673fcb33abaea"
     },
-    "sandbox/latest/F2.9.web.mix_v1.0.tif": {
+    "data/get_geotiff/F2.9.web.mix_v1.0.tif": {
       "checksum": "92917ade2229dcae6701c093772f9d16"
     },
-    "sandbox/latest/F3.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/F3.1.web.orig_v1.0.tif": {
       "checksum": "29fc9a9e93787923c150aa3b9944c5e3"
     },
-    "sandbox/latest/F3.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/F3.2.web.orig_v1.0.tif": {
       "checksum": "12106700175518b8fdf6dd93aa22c4ac"
     },
-    "sandbox/latest/F3.3.web.alt_v2.0.tif": {
+    "data/get_geotiff/F3.3.web.alt_v2.0.tif": {
       "checksum": "e8514a725e92056c725d39da173f8d18"
     },
-    "sandbox/latest/F3.4.web.orig_v1.0.tif": {
+    "data/get_geotiff/F3.4.web.orig_v1.0.tif": {
       "checksum": "e0f81d233ce884a8831eea1fbe27fd13"
     },
-    "sandbox/latest/F3.5.web.orig_v1.0.tif": {
+    "data/get_geotiff/F3.5.web.orig_v1.0.tif": {
       "checksum": "1c8a6d8e433768e35a5d9dc6c308c9f0"
     },
-    "sandbox/latest/FM1.1.web.map_v1.0.tif": {
+    "data/get_geotiff/FM1.1.web.map_v1.0.tif": {
       "checksum": "8f1477d3b1cb0f282cdc62f498b73f2a"
     },
-    "sandbox/latest/FM1.2.web.map_v1.0.tif": {
+    "data/get_geotiff/FM1.2.web.map_v1.0.tif": {
       "checksum": "6851a3c3254fa8fa373e1135648af753"
     },
-    "sandbox/latest/FM1.3.web.orig_v2.0.tif": {
+    "data/get_geotiff/FM1.3.web.orig_v2.0.tif": {
       "checksum": "1334fbbda3bd609ee27abdfc5d02c7e2"
     },
-    "sandbox/latest/M1.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.1.web.orig_v1.0.tif": {
       "checksum": "c497d531e2c1c517a8fd55e3ed73e102"
     },
-    "sandbox/latest/M1.10.WM.nwx_v1.0.tif": {
+    "data/get_geotiff/M1.10.WM.nwx_v1.0.tif": {
       "checksum": "085e66c510e6d9e11778fef19c076a05"
     },
-    "sandbox/latest/M1.2.web.orig_v2.2.tif": {
+    "data/get_geotiff/M1.2.web.orig_v2.2.tif": {
       "checksum": "6bc89d64684a310f30011dd164706f74"
     },
-    "sandbox/latest/M1.3.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.3.web.orig_v1.0.tif": {
       "checksum": "81fe53e48be2faa529908202a5471010"
     },
-    "sandbox/latest/M1.4.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.4.web.orig_v1.0.tif": {
       "checksum": "a65d5d93cc99ee1159f03bb5166b0e11"
     },
-    "sandbox/latest/M1.5.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.5.web.orig_v1.0.tif": {
       "checksum": "a7d0bc17a014f3857bedb781b6464a3c"
     },
-    "sandbox/latest/M1.6.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.6.web.orig_v1.0.tif": {
       "checksum": "f9585c2d8eafa4e634c539e8ee7c94b1"
     },
-    "sandbox/latest/M1.7.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.7.web.orig_v1.0.tif": {
       "checksum": "34c5d4bca34e5f6be0b7251264b774cd"
     },
-    "sandbox/latest/M1.8.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.8.web.orig_v1.0.tif": {
       "checksum": "8fa0ecd39ecad6e1620413efb94a8b48"
     },
-    "sandbox/latest/M1.9.web.orig_v1.0.tif": {
+    "data/get_geotiff/M1.9.web.orig_v1.0.tif": {
       "checksum": "fad70dae9af8214a56c7c109e904a119"
     },
-    "sandbox/latest/M2.1.web.orig_v2.1.tif": {
+    "data/get_geotiff/M2.1.web.orig_v2.1.tif": {
       "checksum": "47eacd8c04af68de6008d5d153b48951"
     },
-    "sandbox/latest/M2.2.web.orig_v2.0.tif": {
+    "data/get_geotiff/M2.2.web.orig_v2.0.tif": {
       "checksum": "0dcb61917bfecf8312b1548fc32670c0"
     },
-    "sandbox/latest/M2.3.web.orig_v1.0.tif": {
+    "data/get_geotiff/M2.3.web.orig_v1.0.tif": {
       "checksum": "d9c33f34f9eb674d12ff74665ff7c21c"
     },
-    "sandbox/latest/M2.4.web.orig_v1.0.tif": {
+    "data/get_geotiff/M2.4.web.orig_v1.0.tif": {
       "checksum": "be69433ac450457f325a39c214504c76"
     },
-    "sandbox/latest/M2.5.web.orig_v1.0.tif": {
+    "data/get_geotiff/M2.5.web.orig_v1.0.tif": {
       "checksum": "4d7a9173895d3f19d869a30ec29c4c45"
     },
-    "sandbox/latest/M3.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/M3.1.web.orig_v1.0.tif": {
       "checksum": "4bf334fe1fe860000555df19e247c033"
     },
-    "sandbox/latest/M3.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/M3.2.web.orig_v1.0.tif": {
       "checksum": "75079e110dbe73f9bbece765f2d01228"
     },
-    "sandbox/latest/M3.3.web.orig_v1.0.tif": {
+    "data/get_geotiff/M3.3.web.orig_v1.0.tif": {
       "checksum": "751454e6a851ddc1ebdf7d7d400c0058"
     },
-    "sandbox/latest/M3.4.web.orig_v2.0.tif": {
+    "data/get_geotiff/M3.4.web.orig_v2.0.tif": {
       "checksum": "a08024bd5d190b4470eac60fd8803fa1"
     },
-    "sandbox/latest/M3.5.web.orig_v1.0.tif": {
+    "data/get_geotiff/M3.5.web.orig_v1.0.tif": {
       "checksum": "41364380ff33f1054e5ee37a541028f7"
     },
-    "sandbox/latest/M3.6.web.orig_v1.0.tif": {
+    "data/get_geotiff/M3.6.web.orig_v1.0.tif": {
       "checksum": "c2479bc6ba5ba47a00b6f68d36599913"
     },
-    "sandbox/latest/M3.7.web.orig_v1.0.tif": {
+    "data/get_geotiff/M3.7.web.orig_v1.0.tif": {
       "checksum": "bb4d894e8d4325e61e47becd86671a12"
     },
-    "sandbox/latest/M4.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/M4.1.web.orig_v1.0.tif": {
       "checksum": "61dc3b316fe04fe10437b5a13d33e057"
     },
-    "sandbox/latest/M4.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/M4.2.web.orig_v1.0.tif": {
       "checksum": "97f5201f048a4551be5d62bacda2fc30"
     },
-    "sandbox/latest/MFT1.1.map.orig_v1.0.tif": {
+    "data/get_geotiff/MFT1.1.map.orig_v1.0.tif": {
       "checksum": "71a8fea5c3b884903bd1f3702f126a35"
     },
-    "sandbox/latest/MFT1.2.web.orig_v2.0.tif": {
+    "data/get_geotiff/MFT1.2.web.orig_v2.0.tif": {
       "checksum": "d25d2e283c8522700d94cb521a5a85f1"
     },
-    "sandbox/latest/MFT1.3.web.orig_v2.0.tif": {
+    "data/get_geotiff/MFT1.3.web.orig_v2.0.tif": {
       "checksum": "7fd0c4c73b082155898c851c6da7b645"
     },
-    "sandbox/latest/MT1.1.web.map_v1.0.tif": {
+    "data/get_geotiff/MT1.1.web.map_v1.0.tif": {
       "checksum": "3d886a6f60e9fa95b700d70733d4b388"
     },
-    "sandbox/latest/MT1.2.IM.orig_v1.0.tif": {
+    "data/get_geotiff/MT1.2.IM.orig_v1.0.tif": {
       "checksum": "f7fc26c084c8fea4daccdb36593f04c7"
     },
-    "sandbox/latest/MT1.3.web.map_v1.0.tif": {
+    "data/get_geotiff/MT1.3.web.map_v1.0.tif": {
       "checksum": "d04e8a923d05a8d5bd9b8138045118c2"
     },
-    "sandbox/latest/MT1.4.web.map_v1.0.tif": {
+    "data/get_geotiff/MT1.4.web.map_v1.0.tif": {
       "checksum": "77ff0330568e32b6a6304185ce928591"
     },
-    "sandbox/latest/MT2.1.web.map_v1.0.tif": {
+    "data/get_geotiff/MT2.1.web.map_v1.0.tif": {
       "checksum": "ace69f87414d34b2bc76f3049ead1a01"
     },
-    "sandbox/latest/MT2.2.IM.orig_v1.0.tif": {
+    "data/get_geotiff/MT2.2.IM.orig_v1.0.tif": {
       "checksum": "1b33e98f4f28f7c0bbe19e4c046f4b25"
     },
-    "sandbox/latest/MT3.1.web.map_v1.0.tif": {
+    "data/get_geotiff/MT3.1.web.map_v1.0.tif": {
       "checksum": "b58e971307c4c7ac349b0cc0bcb5d3e0"
     },
-    "sandbox/latest/S1.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/S1.1.web.orig_v1.0.tif": {
       "checksum": "58c58ccc681b0c1463140053d91445af"
     },
-    "sandbox/latest/S2.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/S2.1.web.orig_v1.0.tif": {
       "checksum": "e43c71e905682c04813f86c8c0a3f3ff"
     },
-    "sandbox/latest/SF1.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/SF1.1.web.orig_v1.0.tif": {
       "checksum": "a8505554a104831746ad6d7d590b5b6a"
     },
-    "sandbox/latest/SF1.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/SF1.2.web.orig_v1.0.tif": {
       "checksum": "39d6ff15d826fbcc101a78b6269ed94b"
     },
-    "sandbox/latest/SF2.1.web.orig_v1.0.tif": {
+    "data/get_geotiff/SF2.1.web.orig_v1.0.tif": {
       "checksum": "62e30f5cb5ffe52facd4af90b0bc65f8"
     },
-    "sandbox/latest/SF2.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/SF2.2.web.orig_v1.0.tif": {
       "checksum": "6224318dff8c2e76cabbf33059d526d1"
     },
-    "sandbox/latest/SM1.1.web.grid_v3.0.tif": {
+    "data/get_geotiff/SM1.1.web.grid_v3.0.tif": {
       "checksum": "7fccd29f31cd5e3f74f77b10fcd9db4a"
     },
-    "sandbox/latest/SM1.2.web.grid_v3.0.tif": {
+    "data/get_geotiff/SM1.2.web.grid_v3.0.tif": {
       "checksum": "e84f3232d15df5a0cabbc7c631d07ddf"
     },
-    "sandbox/latest/SM1.3.web.grid_v3.0.tif": {
+    "data/get_geotiff/SM1.3.web.grid_v3.0.tif": {
       "checksum": "173783afb49e9b635a77b273112bec19"
     },
-    "sandbox/latest/T1.1.web.mix_v2.0.tif": {
+    "data/get_geotiff/T1.1.web.mix_v2.0.tif": {
       "checksum": "16122835610b4c6cf3f7563faa11ca9a"
     },
-    "sandbox/latest/T1.2.web.mix_v1.0.tif": {
+    "data/get_geotiff/T1.2.web.mix_v1.0.tif": {
       "checksum": "ce6703ce034dc5d2f4b32000becb38dd"
     },
-    "sandbox/latest/T1.3.WM.nwx_v1.0.tif": {
+    "data/get_geotiff/T1.3.WM.nwx_v1.0.tif": {
       "checksum": "0daf1cc39b4590b012c2da877162321f"
     },
-    "sandbox/latest/T1.4.web.orig_v2.0.tif": {
+    "data/get_geotiff/T1.4.web.orig_v2.0.tif": {
       "checksum": "8aa5b5648c7f2a17a0e1d810584dbbe8"
     },
-    "sandbox/latest/T2.1.web.mix_v1.0.tif": {
+    "data/get_geotiff/T2.1.web.mix_v1.0.tif": {
       "checksum": "c1b857923c1a688c3d47885d108cc41f"
     },
-    "sandbox/latest/T2.2.web.mix_v1.0.tif": {
+    "data/get_geotiff/T2.2.web.mix_v1.0.tif": {
       "checksum": "37e692e928aa26758990d12840e2921a"
     },
-    "sandbox/latest/T2.3.web.orig_v1.0.tif": {
+    "data/get_geotiff/T2.3.web.orig_v1.0.tif": {
       "checksum": "d2e6e21033554ec74672449d3ffc39a5"
     },
-    "sandbox/latest/T2.4.web.orig_v2.0.tif": {
+    "data/get_geotiff/T2.4.web.orig_v2.0.tif": {
       "checksum": "c7fb25e539f9c962d8692089805413ef"
     },
-    "sandbox/latest/T2.5.web.alt_v2.0.tif": {
+    "data/get_geotiff/T2.5.web.alt_v2.0.tif": {
       "checksum": "ff0fde9658cefd9d5dd0bd4a98d3cbce"
     },
-    "sandbox/latest/T2.6.web.mix_v1.0.tif": {
+    "data/get_geotiff/T2.6.web.mix_v1.0.tif": {
       "checksum": "032ad544a4553dd461e6be6e6706cfa6"
     },
-    "sandbox/latest/T3.1.web.orig_v2.0.tif": {
+    "data/get_geotiff/T3.1.web.orig_v2.0.tif": {
       "checksum": "2d4c8f02be5db840ad5a6d22fbbecc38"
     },
-    "sandbox/latest/T3.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/T3.2.web.orig_v1.0.tif": {
       "checksum": "313cdbbef18da34c92238101f3534ec7"
     },
-    "sandbox/latest/T3.3.web.alt_v4.0.tif": {
+    "data/get_geotiff/T3.3.web.alt_v4.0.tif": {
       "checksum": "475b0090184776058d472e582fe17cb1"
     },
-    "sandbox/latest/T3.4.web.mix_v1.0.tif": {
+    "data/get_geotiff/T3.4.web.mix_v1.0.tif": {
       "checksum": "37bf9fcf1ecad978f36f74f162352ce4"
     },
-    "sandbox/latest/T4.1.web.mix_v1.0.tif": {
+    "data/get_geotiff/T4.1.web.mix_v1.0.tif": {
       "checksum": "849d9ff2efeac8f555d1e7fc8f56a4e4"
     },
-    "sandbox/latest/T4.2.web.orig_v1.0.tif": {
+    "data/get_geotiff/T4.2.web.orig_v1.0.tif": {
       "checksum": "2d03271a72cca6f1e87668bfab0a0d3c"
     },
-    "sandbox/latest/T4.3.web.orig_v1.0.tif": {
+    "data/get_geotiff/T4.3.web.orig_v1.0.tif": {
       "checksum": "5dfc33d9e3ed74ccc27cd94783d3e77b"
     },
-    "sandbox/latest/T4.4.web.orig_v1.0.tif": {
+    "data/get_geotiff/T4.4.web.orig_v1.0.tif": {
       "checksum": "95e87595bf7f7b87447326c015d8aaf4"
     },
-    "sandbox/latest/T4.5.web.orig_v1.0.tif": {
+    "data/get_geotiff/T4.5.web.orig_v1.0.tif": {
       "checksum": "240bf2b07ad36fc0ef3fafa9989a0336"
     },
-    "sandbox/latest/T5.1.web.mix_v1.0.tif": {
+    "data/get_geotiff/T5.1.web.mix_v1.0.tif": {
       "checksum": "8584d5d97345baa2da2c1f2ca1aa6321"
     },
-    "sandbox/latest/T5.2.web.mix_v1.0.tif": {
+    "data/get_geotiff/T5.2.web.mix_v1.0.tif": {
       "checksum": "ea19fddf0b8e06ce93114f6b86836a76"
     },
-    "sandbox/latest/T5.3.web.mix_v1.0.tif": {
+    "data/get_geotiff/T5.3.web.mix_v1.0.tif": {
       "checksum": "0410c1be3f68cff6f196deb6c4f56a29"
     },
-    "sandbox/latest/T5.4.web.mix_v1.0.tif": {
+    "data/get_geotiff/T5.4.web.mix_v1.0.tif": {
       "checksum": "3b1d08cf8af9ce5d943e02b4630d1327"
     },
-    "sandbox/latest/T5.5.web.mix_v1.0.tif": {
+    "data/get_geotiff/T5.5.web.mix_v1.0.tif": {
       "checksum": "053a2bf5f1596325141a080e3c0b5e8f"
     },
-    "sandbox/latest/T6.1.web.map_v1.0.tif": {
+    "data/get_geotiff/T6.1.web.map_v1.0.tif": {
       "checksum": "fc54cd53af53b0d75e88a7aa138e6b38"
     },
-    "sandbox/latest/T6.2.web.alt_v2.0.tif": {
+    "data/get_geotiff/T6.2.web.alt_v2.0.tif": {
       "checksum": "469545310b1c6ab5659c222305052305"
     },
-    "sandbox/latest/T6.3.web.map_v1.0.tif": {
+    "data/get_geotiff/T6.3.web.map_v1.0.tif": {
       "checksum": "b44bab37694761be44b34ac05d3ce5d6"
     },
-    "sandbox/latest/T6.4.web.orig_v1.0.tif": {
+    "data/get_geotiff/T6.4.web.orig_v1.0.tif": {
       "checksum": "cf2e5d8966df830102b09e3a06240b2e"
     },
-    "sandbox/latest/T6.5.web.mix_v1.0.tif": {
+    "data/get_geotiff/T6.5.web.mix_v1.0.tif": {
       "checksum": "67e11bee9b27aad7415cb5da419a0be8"
     },
-    "sandbox/latest/T7.1.web.alt_v2.0.tif": {
+    "data/get_geotiff/T7.1.web.alt_v2.0.tif": {
       "checksum": "af8f9bc1c08ae9c47e9fc66e4a60097f"
     },
-    "sandbox/latest/T7.2.web.map_v1.0.tif": {
+    "data/get_geotiff/T7.2.web.map_v1.0.tif": {
       "checksum": "bc4d44091e0692b837fbcd5a426442cc"
     },
-    "sandbox/latest/T7.3.web.alt_v2.0.tif": {
+    "data/get_geotiff/T7.3.web.alt_v2.0.tif": {
       "checksum": "b667f14b038f3b5e410a99b4d4f2bff1"
     },
-    "sandbox/latest/T7.4.web.orig_v1.0.tif": {
+    "data/get_geotiff/T7.4.web.orig_v1.0.tif": {
       "checksum": "7744397265890f9a18422adf570936b3"
     },
-    "sandbox/latest/T7.5.web.mix_v1.0.tif": {
+    "data/get_geotiff/T7.5.web.mix_v1.0.tif": {
       "checksum": "d36614f0345190e5df732319ae3c2167"
     },
-    "sandbox/latest/TF1.1.web.map_v1.0.tif": {
+    "data/get_geotiff/TF1.1.web.map_v1.0.tif": {
       "checksum": "5bb2406d1b1f5c84dda0edce9f34fd8d"
     },
-    "sandbox/latest/TF1.2.web.orig_v2.0.tif": {
+    "data/get_geotiff/TF1.2.web.orig_v2.0.tif": {
       "checksum": "60c25a61bf9e7d588bc97be3fc9d50bf"
     },
-    "sandbox/latest/TF1.3.web.orig_v1.0.tif": {
+    "data/get_geotiff/TF1.3.web.orig_v1.0.tif": {
       "checksum": "ca324ea0d8fc43161979fb7447c6da46"
     },
-    "sandbox/latest/TF1.4.web.map_v1.0.tif": {
+    "data/get_geotiff/TF1.4.web.map_v1.0.tif": {
       "checksum": "c718105003cd1dd8bbec0e28521bb546"
     },
-    "sandbox/latest/TF1.5.web.map_v2.0.tif": {
+    "data/get_geotiff/TF1.5.web.map_v2.0.tif": {
       "checksum": "b3661982e395666267302edfa1943054"
     },
-    "sandbox/latest/TF1.6.web.orig_v1.0.tif": {
+    "data/get_geotiff/TF1.6.web.orig_v1.0.tif": {
       "checksum": "dd646e0c4daf49d488d65656f49371ba"
     },
-    "sandbox/latest/TF1.7.web.orig_v1.0.tif": {
+    "data/get_geotiff/TF1.7.web.orig_v1.0.tif": {
       "checksum": "66acc9198ce5fd4e9a2f8ca712f28b45"
+    },
+    "data/realms/RL_Realms.cpg": {
+      "checksum": "ae3b3df9970b49b6523e608759bc957d"
+    },
+    "data/realms/RL_Realms.dbf": {
+      "checksum": "bf9bdc1948e76f2ef7940a78620f40d1"
+    },
+    "data/realms/RL_Realms.prj": {
+      "checksum": "c742bee3d4edfc2948a2ad08de1790a5"
+    },
+    "data/realms/RL_Realms.qmd": {
+      "checksum": "8290af7e6942b2028a8a7f74be04f09f"
+    },
+    "data/realms/RL_Realms.shp": {
+      "checksum": "9899739fc6695e161d43f2fe3aa60801"
+    },
+    "data/realms/RL_Realms.shx": {
+      "checksum": "bc6d6f19e56d8f06d64fa8e1232fa80a"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_01.tif": {
+      "checksum": "ecbcd7d3ccfb7a35a103b983c8642ce5"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_02.tif": {
+      "checksum": "c7770a7c5f226879bd45bb09794744d1"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_03.tif": {
+      "checksum": "55547be5bc1f2ff6700ead95efee5b95"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_04.tif": {
+      "checksum": "2a4d962f2581639e2b0f4c61fa02488f"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_05.tif": {
+      "checksum": "0add62cb49935fe31f6cc6486935ac20"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_06.tif": {
+      "checksum": "8c9c905646346219dd6ef6f353c66c14"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_07.tif": {
+      "checksum": "35cf0c5af9aa61bf4a7e43cd62bb3bf1"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_08.tif": {
+      "checksum": "e671d64db32cb5c459dec21fa29e95bd"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_09.tif": {
+      "checksum": "a138932df0120f2d0bcafbd987f9c7ae"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_10.tif": {
+      "checksum": "9dc66f6b71409adc12df5c975a6b55ed"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_11.tif": {
+      "checksum": "e660b55c3c7e3e05e058c77fc85fda93"
+    },
+    "data/temperature/wc2.1_10m_tavg/wc2.1_10m_tavg_12.tif": {
+      "checksum": "53902bde21a6c2ac6a974515917a0fe4"
+    },
+    "data/World_Cylindrical_Equal_Area_WKT.txt": {
+      "checksum": "1b58b3e2480a90e277dc2bfc75514261"
+    },
+    "global.R": {
+      "checksum": "930ad6ef2fd17c7dc7bdbe0ea71e5c7c"
+    },
+    "helpers/analysis_functions.R": {
+      "checksum": "ed4c03e208648cbcedd84cae78a1a599"
+    },
+    "helpers/helper_functions.R": {
+      "checksum": "aa8adff8a14a53c56b55faf43e3c4aa7"
+    },
+    "helpers/helpers.R": {
+      "checksum": "9ca0445c0d6f3baa5ba8699e4e8326b5"
+    },
+    "modules/about.R": {
+      "checksum": "ab0c4fbe492f3808e05e27da9c7afb04"
+    },
+    "modules/classification_files.R": {
+      "checksum": "8857a6a1df8773da3c909d301b07689e"
+    },
+    "modules/code to potentially add.R": {
+      "checksum": "a9f0ddd4a2d2de4e455f372c72fd5242"
+    },
+    "modules/criterion_a.R": {
+      "checksum": "b02b88cf9ae7362a9bb3645e7bd0ab1b"
+    },
+    "modules/criterion_a_with_tables.R": {
+      "checksum": "5e4a8fb5bc2c8c42cef0aaf144ec9b84"
+    },
+    "modules/criterion_b.R": {
+      "checksum": "18aba5d302b69c02b6dd05f2605054ef"
+    },
+    "modules/data.R": {
+      "checksum": "0bdde4ac7faf7fec86812a299764cfb0"
+    },
+    "modules/data_description.R": {
+      "checksum": "b1c52a292120f46575f4b4f9edc9adfd"
+    },
+    "modules/description.R": {
+      "checksum": "a9689f8a51087a3204f9a82ffce28e06"
+    },
+    "modules/description_v2.R": {
+      "checksum": "be644e6d4d12fd46bcb8144a92476dea"
+    },
+    "modules/helpers.R": {
+      "checksum": "4e95c4f2b28614f67628d0d98fd0592a"
+    },
+    "modules/report.R": {
+      "checksum": "18ce907ca4db777640bae324d7590d2b"
+    },
+    "R/analysis_functions.R": {
+      "checksum": "ed4c03e208648cbcedd84cae78a1a599"
+    },
+    "R/helper_functions.R": {
+      "checksum": "aa8adff8a14a53c56b55faf43e3c4aa7"
+    },
+    "R/module_criterion_b.R": {
+      "checksum": "95b2acb69475bab2812d778d9a5e00da"
+    },
+    "renv.lock": {
+      "checksum": "0f0aef2c59d4fe11064d9340b53667b5"
+    },
+    "simplified.R": {
+      "checksum": "43d44f852f044566ff60f94af812bc72"
+    },
+    "www/custom.css": {
+      "checksum": "79cd8037f63488f6d78b427f8b93eac3"
+    },
+    "www/FranklinGothic.ttf": {
+      "checksum": "9c9dbb999dd7068f51335d93cc7328bd"
+    },
+    "www/Kew Logo Pack/EPS/kew_logo_2015_k.eps": {
+      "checksum": "b3a599692b41c202f010ca682cbdb5bf"
+    },
+    "www/Kew Logo Pack/EPS/kew_logo_2015_small_k.eps": {
+      "checksum": "6f7ef30a820d22912f5e0eb09ecfa327"
+    },
+    "www/Kew Logo Pack/EPS/kew_logo_2015_small_w.eps": {
+      "checksum": "3cd4659588c955b6ed5fcd272164bdcd"
+    },
+    "www/Kew Logo Pack/EPS/kew_logo_2015_w.eps": {
+      "checksum": "461278104d532c38c00051d2f6c10289"
+    },
+    "www/Kew Logo Pack/JPG/kew_logo_2015_k.jpg": {
+      "checksum": "25e122e4fe7f79ac73b530a675381cfc"
+    },
+    "www/Kew Logo Pack/JPG/kew_logo_2015_small_k.jpg": {
+      "checksum": "5d0c34145e4988915322e7db42ca58ee"
+    },
+    "www/Kew Logo Pack/Kew Guidelines_logo pages_Full Rev2.pdf": {
+      "checksum": "c9dd571ebb16630c253b516f4f343ad3"
+    },
+    "www/Kew Logo Pack/PNG/kew_logo_2015_k.png": {
+      "checksum": "73887c44a6ab79b43a5bb6842fd5ffb4"
+    },
+    "www/Kew Logo Pack/PNG/kew_logo_2015_small_k.png": {
+      "checksum": "02d817d66ffbc986224d80d496deb94b"
+    },
+    "www/Kew Logo Pack/PNG/kew_logo_2015_small_w.png": {
+      "checksum": "463f3cda1ffae3e65136f6811118e122"
+    },
+    "www/Kew Logo Pack/PNG/kew_logo_2015_w.png": {
+      "checksum": "24d75a6f699dce9b7cf61fb7da19b2ac"
+    },
+    "www/kew_logo_2015_w.png": {
+      "checksum": "24d75a6f699dce9b7cf61fb7da19b2ac"
+    },
+    "www/logo.png": {
+      "checksum": "d32efb8701180ed12d4d7573a3ed11d6"
+    },
+    "www/logo_GET.png": {
+      "checksum": "4213cc66ff7f91261ae027d63d582032"
+    },
+    "www/logo_RLE.png": {
+      "checksum": "378f3d853e8b590d34d22ccf5aa00f3a"
+    },
+    "www/template.docx": {
+      "checksum": "53fcfb4e8104bef92a358e163b6c734d"
     }
   },
   "users": null
