@@ -2552,6 +2552,41 @@
         "Built": "R 4.4.3; ; 2025-09-01 02:42:54 UTC; windows"
       }
     },
+    "rnaturalearthdata": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "rnaturalearthdata",
+        "Title": "World Vector Map Data from Natural Earth Used in 'rnaturalearth'",
+        "Version": "1.0.0",
+        "Authors@R": "c(\n  person(\n    family = \"South\",\n    given = \"Andy\",\n    email = \"southandy@gmail.com\",\n    role = c(\"aut\"),\n    comment = c(ORCID = \"0000-0003-4051-6135\")\n  ),\n  person(\n    family = \"Michael\",\n    given = \"Schramm\",\n    email = \"mpschramm@gmail.com\",\n    role = c(\"aut\")\n  ),\n  person(\n    family = \"Massicotte\",\n    given = \"Philippe\",\n    email = \"pmassicotte@hotmail.com\",\n    role = c(\"aut\", \"cre\"),\n    comment = c(ORCID = \"0000-0002-5919-4116\")\n  ))",
+        "Description": "Vector map data from <https://www.naturalearthdata.com/>. Access functions are provided in the accompanying package 'rnaturalearth'.",
+        "License": "CC0",
+        "LazyData": "true",
+        "LazyDataCompression": "xz",
+        "Encoding": "UTF-8",
+        "URL": "https://docs.ropensci.org/rnaturalearthdata/,\nhttps://github.com/ropensci/rnaturalearthdata",
+        "BugReports": "https://github.com/ropensci/rnaturalearthdata/issues",
+        "Depends": "R (>= 3.1.1)",
+        "Imports": "",
+        "Suggests": "knitr (>= 1.12.3), testthat (>= 0.9.1)",
+        "RoxygenNote": "7.3.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-02-09 14:10:35 UTC; filoche",
+        "Author": "Andy South [aut] (<https://orcid.org/0000-0003-4051-6135>),\n  Schramm Michael [aut],\n  Philippe Massicotte [aut, cre]\n    (<https://orcid.org/0000-0002-5919-4116>)",
+        "Maintainer": "Philippe Massicotte <pmassicotte@hotmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-02-09 16:50:02 UTC",
+        "Built": "R 4.4.3; ; 2025-10-21 11:55:19 UTC; windows",
+        "RemoteType": "standard",
+        "RemoteRef": "rnaturalearthdata",
+        "RemotePkgRef": "rnaturalearthdata",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "1.0.0"
+      }
+    },
     "rsconnect": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3501,7 +3536,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "1dd1eed6484c8d998d51e4ebe3f114e9"
+      "checksum": "3e4c288ade19ced46b2ee405df620bb4"
     },
     "data/data/realms/RL_Realms.cpg": {
       "checksum": "ae3b3df9970b49b6523e608759bc957d"
@@ -3960,7 +3995,7 @@
       "checksum": "1b58b3e2480a90e277dc2bfc75514261"
     },
     "global.R": {
-      "checksum": "8e652e411134bb4751ca2f9eea63d187"
+      "checksum": "502256317350e59bdb70fe89b1662dcc"
     },
     "helpers/analysis_functions.R": {
       "checksum": "ed4c03e208648cbcedd84cae78a1a599"
@@ -3992,9 +4027,6 @@
     "modules/data.R": {
       "checksum": "0bdde4ac7faf7fec86812a299764cfb0"
     },
-    "modules/data_description.R": {
-      "checksum": "b1c52a292120f46575f4b4f9edc9adfd"
-    },
     "modules/description.R": {
       "checksum": "a9689f8a51087a3204f9a82ffce28e06"
     },
@@ -4007,17 +4039,8 @@
     "modules/report.R": {
       "checksum": "18ce907ca4db777640bae324d7590d2b"
     },
-    "R/analysis_functions.R": {
-      "checksum": "ed4c03e208648cbcedd84cae78a1a599"
-    },
-    "R/helper_functions.R": {
-      "checksum": "aa8adff8a14a53c56b55faf43e3c4aa7"
-    },
-    "R/module_criterion_b.R": {
-      "checksum": "95b2acb69475bab2812d778d9a5e00da"
-    },
     "renv.lock": {
-      "checksum": "9b68bc53b1aee4d9c67c8321bfa31dfc"
+      "checksum": "54e27e28aeae8aa3df278fa1b6d7cf5e"
     },
     "simplified.R": {
       "checksum": "43d44f852f044566ff60f94af812bc72"

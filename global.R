@@ -20,6 +20,7 @@ library(terra)
 library(sf)
 library(leaflet)
 library(rnaturalearth) # ne_countries
+library(rnaturalearthdata)
 library(stringr) # str_extract
 library(dplyr) # rename
 library(leaflet.extras)
