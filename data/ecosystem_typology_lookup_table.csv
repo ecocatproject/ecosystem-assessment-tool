@@ -1,0 +1,111 @@
+EFG_ID,ECOSYSTEM_FUNCTIONAL_GROUP,REALM,BIOME,CONCEPT_ALIGNMENT,IS_1KM_RESOLUTION
+T1.1,Tropical-subtropical lowland rainforests,Terrestrial,Tropical-subtropical forests,Indirect,Yes
+T1.2,Tropical-subtropical dry forests and thickets,Terrestrial,Tropical-subtropical forests,Indirect,Yes
+T1.3,Tropical-subtropical montane rainforests,Terrestrial,Tropical-subtropical forests,Direct,Yes
+T1.4,Tropical heath forests,Terrestrial,Tropical-subtropical forests,Indirect,No
+T2.1,Boreal and temperate montane forests and woodlands,Terrestrial,Temperate-boreal forests & woodlands,Semi-direct,No
+T2.2,Deciduous temperate forests,Terrestrial,Temperate-boreal forests & woodlands,Semi-direct,Yes
+T2.3,Oceanic cool temperate rainforests,Terrestrial,Temperate-boreal forests & woodlands,Semi-direct,No
+T2.4,Warm temperate laurophyll forests,Terrestrial,Temperate-boreal forests & woodlands,Indirect,No
+T2.5,Temperate pyric humid forests,Terrestrial,Temperate-boreal forests & woodlands,Semi-direct,Yes
+T2.6,Temperate pyric sclerophyll forests and woodlands,Terrestrial,Temperate-boreal forests & woodlands,Indirect,Yes
+T3.1,Seasonally dry tropical shrublands,Terrestrial,Shrublands & shrubby woodlands,Indirect,No
+T3.2,Seasonally dry temperate heaths and shrublands,Terrestrial,Shrublands & shrubby woodlands,Indirect,No
+T3.3,Cool temperate heathlands,Terrestrial,Shrublands & shrubby woodlands,Semi-direct,Yes
+T3.4,"Rocky pavements, screes and lava flows",Terrestrial,Shrublands & shrubby woodlands,Semi-direct,Yes
+T4.1,Trophic savannas,Terrestrial,Savannas & grasslands,Indirect,Yes
+T4.2,Pyric tussock savannas,Terrestrial,Savannas & grasslands,Indirect,No
+T4.3,Hummock savannas,Terrestrial,Savannas & grasslands,Direct,Yes
+T4.4,Temperate woodlands,Terrestrial,Savannas & grasslands,Indirect,No
+T4.5,Temperate tussock grasslands,Terrestrial,Savannas & grasslands,Indirect,No
+T5.1,Semi-desert steppes,Terrestrial,Deserts & semi-deserts,Indirect,Yes
+T5.2,Thorny deserts and semi-deserts,Terrestrial,Deserts & semi-deserts,Indirect,Yes
+T5.3,Sclerophyll hot deserts and semi-deserts,Terrestrial,Deserts & semi-deserts,Direct,Yes
+T5.4,Cool deserts and semi-deserts,Terrestrial,Deserts & semi-deserts,Indirect,Yes
+T5.5,Hyper-arid deserts,Terrestrial,Deserts & semi-deserts,Semi-direct,Yes
+T6.1,"Ice sheets, glaciers and perennial snowfields",Terrestrial,Polar-alpine,Direct,Yes
+T6.2,Polar-alpine rocky outcrops,Terrestrial,Polar-alpine,Direct,Yes
+T6.3,Polar tundra and deserts,Terrestrial,Polar-alpine,Semi-direct,Yes
+T6.4,Temperate alpine grasslands and shrublands,Terrestrial,Polar-alpine,Indirect,No
+T6.5,Tropical alpine grasslands and shrublands,Terrestrial,Polar-alpine,Semi-direct,Yes
+T7.1,Croplands,Terrestrial,Intensive land-use systems,Direct,Yes
+T7.2,Intensive livestock pastures,Terrestrial,Intensive land-use systems,Indirect,No
+T7.3,Plantations,Terrestrial,Intensive land-use systems,Direct,Yes
+T7.4,"Cities, villages and infrastructure",Terrestrial,Intensive land-use systems,Direct,Yes
+T7.5,Derived semi-natural pastures and oldfields,Terrestrial,Intensive land-use systems,Indirect,No
+S1.1,Aerobic caves,Subterranean,Subterranean lithic systems,Indirect,No
+S1.2,Endolithic systems,Subterranean,Subterranean lithic systems,-,-
+S2.1,Anthropogenic subterranean voids,Subterranean,Anthropogenic subterranean voids,Indirect,No
+SF1.1,Underground streams and pools,Subteranean-Freshwater,Subterranean freshwaters,Indirect,No
+SF1.2,Groundwater ecosystems,Subteranean-Freshwater,Subterranean freshwaters,Direct,No
+SF2.1,Water pipes and subterranean canals,Subteranean-Freshwater,Anthropogenic subterranean freshwaters,Indirect,No
+SF2.2,Flooded mines and other voids,Subteranean-Freshwater,Anthropogenic subterranean freshwaters,Semi-direct,Points
+SM1.1,Anchialine caves,Subterranean -Marine,Tidal subterranean systems,Indirect,Polygons
+SM1.2,Anchialine pools,Subterranean -Marine,Tidal subterranean systems,Indirect,Yes
+SM1.3,Sea caves,Subterranean -Marine,Tidal subterranean systems,Indirect,No
+TF1.1,Tropical flooded forests and peat forests,Terrestrial-Freshwater,Palustrine wetlands,Direct,Yes
+TF1.2,Subtropical/temperate forested wetlands,Terrestrial-Freshwater,Palustrine wetlands,Indirect,No
+TF1.3,Permanent marshes,Terrestrial-Freshwater,Palustrine wetlands,Indirect,No
+TF1.4,Seasonal floodplain marshes,Terrestrial-Freshwater,Palustrine wetlands,Direct,Yes
+TF1.5,Episodic arid floodplains,Terrestrial-Freshwater,Palustrine wetlands,Indirect,Yes
+TF1.6,"Boreal, temperate and montane peat bogs",Terrestrial-Freshwater,Palustrine wetlands,Indirect,No
+TF1.7,Boreal and temperate fens,Terrestrial-Freshwater,Palustrine wetlands,Indirect,No
+F1.1,Permanent upland streams,Freshwater,Rivers and streams,Semi-direct,Yes
+F1.2,Permanent lowland rivers,Freshwater,Rivers and streams,Semi-direct,Yes
+F1.3,Freeze-thaw rivers and streams,Freshwater,Rivers and streams,Direct,Yes
+F1.4,Seasonal upland streams,Freshwater,Rivers and streams,Direct,Yes
+F1.5,Seasonal lowland rivers,Freshwater,Rivers and streams,Semi-direct,Yes
+F1.6,Episodic arid rivers,Freshwater,Rivers and streams,Indirect,Yes
+F1.7,Large lowland rivers,Freshwater,Rivers and streams,Direct,Points
+F2.1,Large permanent freshwater lakes,Freshwater,Lakes,Direct,Yes
+F2.2,Small permanent freshwater lakes,Freshwater,Lakes,Semi-direct,Yes
+F2.3,Seasonal freshwater lakes,Freshwater,Lakes,Semi-direct,Yes
+F2.4,Freeze-thaw freshwater lakes,Freshwater,Lakes,Direct,Yes
+F2.5,Ephemeral freshwater lakes,Freshwater,Lakes,Semi-direct,Yes
+F2.6,Permanent salt and soda lakes,Freshwater,Lakes,Semi-direct,Yes
+F2.7,Ephemeral salt lakes,Freshwater,Lakes,Semi-direct,Yes
+F2.8,Artesian springs and oases,Freshwater,Lakes,Indirect,Polygons
+F2.9,Geothermal pools and wetlands,Freshwater,Lakes,Indirect,Yes
+F2.10,Subglacial lakes,Freshwater,Lakes,Direct,Points
+F3.1,Large reservoirs,Freshwater,Artificial freshwaters,Direct,Yes
+F3.2,Constructed lacustrine wetlands,Freshwater,Artificial freshwaters,Indirect,No
+F3.3,Rice paddies,Freshwater,Artificial freshwaters,Direct,No
+F3.4,Freshwater aquafarms,Freshwater,Artificial freshwaters,Indirect,No
+F3.5,"Canals, ditches and drains",Freshwater,Artificial freshwaters,Indirect,Yes
+FM1.1,Deepwater coastal inlets,Freshwater-Marine,Semi-confined transitional waters,Direct,Yes
+FM1.2,Permanently open riverine estuaries and bays,Freshwater-Marine,Semi-confined transitional waters,Indirect,No
+FM1.3,Intermittently closed and open lakes and lagoons,Freshwater-Marine,Semi-confined transitional waters,Indirect,No
+M1.1,Seagrass meadows,Marine,Marine shelves,Direct,Polygons
+M1.2,Kelp forests,Marine,Marine shelves,Direct,Yes
+M1.3,Photic coral reefs,Marine,Marine shelves,Direct,Yes
+M1.4,Shellfish beds and reefs,Marine,Marine shelves,Semi-direct,No
+M1.5,Photo-limited marine animal forests,Marine,Marine shelves,Indirect,No
+M1.6,Subtidal rocky reefs,Marine,Marine shelves,Indirect,No
+M1.7,Subtidal sand beds,Marine,Marine shelves,Indirect,No
+M1.8,Subtidal mud plains,Marine,Marine shelves,Indirect,No
+M1.9,Upwelling zones,Marine,Marine shelves,Indirect,No
+M1.10,Rhodolith/Marl beds,Marine,Marine shelves,Direct,Yes
+M2.1,Epipelagic ocean waters,Marine,Pelagic ocean waters,Direct,Yes
+M2.2,Mesopelagic ocean waters,Marine,Pelagic ocean waters,Direct,Yes
+M2.3,Bathypelagic ocean waters,Marine,Pelagic ocean waters,Direct,Yes
+M2.4,Abyssopelagic ocean waters,Marine,Pelagic ocean waters,Direct,Yes
+M2.5,Sea ice,Marine,Pelagic ocean waters,Direct,No
+M3.1,Continental and island slopes,Marine,Deep sea floors,Direct,Polygons
+M3.2,Marine canyons,Marine,Deep sea floors,Direct,Polygons
+M3.3,Abyssal plains,Marine,Deep sea floors,Direct,Polygons
+M3.4,"Seamounts, ridges and plateaus",Marine,Deep sea floors,Direct,Polygons
+M3.5,Deepwater biogenic beds,Marine,Deep sea floors,Indirect,No
+M3.6,Hadal trenches and troughs,Marine,Deep sea floors,Direct,Polygons
+M3.7,Chemosynthetically-based ecosystems,Marine,Deep sea floors,Indirect,No
+M4.1,Submerged artificial structures,Marine,Anthropogenic marine systems,Direct,No
+M4.2,Marine aquafarms,Marine,Anthropogenic marine systems,Indirect,No
+MT1.1,Rocky shores,Marine-Terrestrial,Shoreline systems,Indirect,No
+MT1.2,Muddy shores,Marine-Terrestrial,Shoreline systems,Direct,Yes
+MT1.3,Sandy shores,Marine-Terrestrial,Shoreline systems,Direct,Yes
+MT1.4,Boulder and cobble shores,Marine-Terrestrial,Shoreline systems,Indirect,No
+MT2.1,Coastal shrublands and grasslands,Marine-Terrestrial,Supralittoral coastal systems,Indirect,Yes
+MT2.2,Large seabird and pinniped colonies,Marine-Terrestrial,Supralittoral coastal systems,Direct,No
+MT3.1,Artificial shores,Marine-Terrestrial,Anthropogenic shorelines,Indirect,Polygons
+MFT1.1,Coastal river deltas,Marine-Freshwater-Terrestrial,Brackish tidal systems,Direct,Yes
+MFT1.2,Intertidal forests and shrublands,Marine-Freshwater-Terrestrial,Brackish tidal systems,Direct,Yes
+MFT1.3,Coastal saltmarshes and reedbeds,Marine-Freshwater-Terrestrial,Brackish tidal systems,Direct,Yes
