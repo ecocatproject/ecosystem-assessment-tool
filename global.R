@@ -59,9 +59,9 @@ link_rle <- tags$a(div(img(src=rle_logo, height = "40px")),
 
 # Load static data
 #efg_lookup <- read.csv("data/ecosystem_typology_lookup_table.csv")
-ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
-realms <- terra::vect("data/realms/RL_Realms.shp")
-countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
+#ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
+#realms <- terra::vect("data/realms/RL_Realms.shp")
+#countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
 # theme
 custom_theme <- bs_theme(
