@@ -39,6 +39,7 @@ library(plotly)
 library(base64enc)
 library(leafem) # updatelayerscontrol
 library(shinycssloaders)
+library(progress)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
@@ -72,3 +73,4 @@ custom_theme <- bs_theme(
   fg = "#333333",
   base_font = font_google("Roboto")
 )
+
