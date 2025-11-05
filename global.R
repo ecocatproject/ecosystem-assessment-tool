@@ -39,6 +39,7 @@ library(plotly)
 library(base64enc)
 library(leafem) # updatelayerscontrol
 library(shinycssloaders)
+library(zip)
 library(progress)
 
 # memory options
@@ -73,4 +74,5 @@ custom_theme <- bs_theme(
   fg = "#333333",
   base_font = font_google("Roboto")
 )
+
 
