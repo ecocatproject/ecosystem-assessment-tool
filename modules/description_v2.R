@@ -393,7 +393,7 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       rv$countries <- compute_country_overlap(roi, countries)
       # Update progress
       progress$inc(3/6, detail = "rainfall")
-      rv$rainfall <- compute_rainfall(roi)
+      #rv$rainfall <- compute_rainfall(roi)
       # Update progress
       progress$inc(4/6,detail = "temperature")
       rv$temperature <- compute_temperature(roi)
@@ -402,7 +402,7 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       rv$elevation <- compute_elevation(roi)
       # Update progress
       progress$inc(6/6, detail = "typology")
-      rv$typology <- compute_typology(roi, efg_lookup)
+      #rv$typology <- compute_typology(roi, efg_lookup)
       
       # hide modal once done
       removeModal()
@@ -586,3 +586,4 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
     })
   })
 }
+
