@@ -124,26 +124,26 @@ server <- function(input, output, session) {
     rasters_original = data_module$rasters_original,
   )
 
-  # # Run report module -------------------------------------------------------
-  report_module_server("report",
-                       ecosystem_name = reactive(input$ecosystem_name),
-                       rasters = rasters,
-                       areas = areas,
-                       roi_countries = roi_countries,
-                       chirps_summary = chirps_summary,
-                       rain_data = rain_data,
-                       temp_data = temp_data,
-                       elevation_summary = elevation_summary,
-                       roi_vec = roi_vec,
-                       roi_wgs = roi_wgs,
-                       typology_table = typology_table,
-                       area_change_data = area_change_data,
-                       area_prediction_data = area_prediction_data,
-                       mcp_table = mcp_table,
-                       mcp_poly = mcp_poly,
-                       b2_table = b2_table,
-                       aoo_sel_ids = aoo_sel_ids,
-                       b2_poly = b2_poly)
+ # # # Run report module -------------------------------------------------------
+ # report_module_server("report",
+ #                      ecosystem_name = reactive(input$ecosystem_name),
+ #                      rasters = rasters,
+ #                      areas = areas,
+ #                      roi_countries = roi_countries,
+ #                      chirps_summary = chirps_summary,
+ #                      rain_data = rain_data,
+ #                      temp_data = temp_data,
+ #                      elevation_summary = elevation_summary,
+ #                      roi_vec = roi_vec,
+ #                      roi_wgs = roi_wgs,
+ #                      typology_table = typology_table,
+ #                      area_change_data = area_change_data,
+ #                      area_prediction_data = area_prediction_data,
+ #                      mcp_table = mcp_table,
+ #                      mcp_poly = mcp_poly,
+ #                      b2_table = b2_table,
+ #                      aoo_sel_ids = aoo_sel_ids,
+ #                      b2_poly = b2_poly)
   
   # # Run about module --------------------------------------------------------
   # criterion_A_module_server("about")
@@ -160,5 +160,6 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
 
 
