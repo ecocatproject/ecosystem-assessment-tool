@@ -502,7 +502,7 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
         addRasterImage(
           rv$elevation,  # note the parentheses to read reactive
           colors = colorNumeric(
-            palette = wiki.colors(100),
+            palette = terrain.colors(100),
             domain = values(rv$elevation),
             na.color = "transparent"
           ),
@@ -586,4 +586,5 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
     })
   })
 }
+
 
