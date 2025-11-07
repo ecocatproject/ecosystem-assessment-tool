@@ -375,18 +375,6 @@ library(ggplot2)
 #   })
 # }
 
-library(shiny)
-library(shinycssloaders)
-library(shinyWidgets)
-library(promises)
-library(future)
-library(leaflet)
-library(plotly)
-library(terra)
-library(dplyr)
-library(sf)
-library(rstac)
-
 drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -601,3 +589,4 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
     })
   })
 }
+
