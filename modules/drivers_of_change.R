@@ -482,68 +482,49 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
       
       oldest <- ras_list[[1]]
       recent <- ras_list[[length(ras_list)]]
-      change_sampled <- get_change_mask(oldest, recent)
+      
       # --- Run future safely ---
-fut <- future({
-  change_file <- tempfile(fileext = ".tif")
-  writeRaster(change_sampled, change_file, overwrite = TRUE)
-
-ms_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
-ms_esa_query <- rstac::stac_search(
+      fut <- future({
+        library(terra)
+        library(rstac)
+        progress_steps <- list()
+        
+        # Step 1
+        progress_steps[[1]] <- "Calculating change mask"
+        change_sampled <- get_change_mask(oldest, recent)
+        
+        # Step 2 - try STAC
+        progress_steps[[2]] <- "Downloading ESA WorldCover"
+        stac_result <- tryCatch({
+          ms_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
+          ms_esa_query <- rstac::stac_search(
             q = ms_query,
             collections = "esa-worldcover",
             datetime = "2021-01-01T00:00:00Z/2021-12-31T23:59:59Z",
             bbox = st_bbox(st_as_sf(vect(ext(oldest))))
           ) |> rstac::get_request()
-  ms_query_signin <- rstac::items_sign(ms_esa_query, rstac::sign_planetary_computer())
-  esa_map_url <- rstac::assets_url(ms_query_signin, "map")
+          ms_query_signin <- rstac::items_sign(ms_esa_query, rstac::sign_planetary_computer())
+          esa_map_url <- rstac::assets_url(ms_esa_query, "map")
+          
+          make_vsicurl_url <- function(base_url, collection) {
+            paste0("/vsicurl?pc_url_signing=yes",
+                   paste0("&pc_collection=", collection),
+                   "&url=", base_url)
+          }
+          map_url <- make_vsicurl_url(esa_map_url, "esa-worldcover")
+          
+          esa_map_url <- rstac::assets_url(ms_query_signin, "map")
           map_url <- paste0("/vsicurl/", esa_map_url)
-  out_file <- tempfile(fileext = ".tif")
-  sf::gdal_utils("warp", source = map_url, destination = out_file, options = c("-te", sf::st_bbox(vect(ext(oldest)))))
 
-  list(change_file = change_file, landcover_file = out_file)
-})
-      
-     # fut <- future({
-     #   progress_steps <- list()
-     #   
-     #   # Step 1
-     #   progress_steps[[1]] <- "Calculating change mask"
-     #   change_sampled <- get_change_mask(oldest, recent)
-     #   
-     #   # Step 2 - try STAC
-     #   progress_steps[[2]] <- "Downloading ESA WorldCover"
-     #   stac_result <- tryCatch({
-     #     ms_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
-     #     ms_esa_query <- rstac::stac_search(
-     #       q = ms_query,
-     #       collections = "esa-worldcover",
-     #       datetime = "2021-01-01T00:00:00Z/2021-12-31T23:59:59Z",
-     #       bbox = st_bbox(st_as_sf(vect(ext(oldest))))
-     #     ) |> rstac::get_request()
-     #     ms_query_signin <- rstac::items_sign(ms_esa_query, rstac::sign_planetary_computer())
-     #     esa_map_url <- rstac::assets_url(ms_esa_query, "map")
-     #     
-     #     make_vsicurl_url <- function(base_url, collection) {
-     #       paste0("/vsicurl?pc_url_signing=yes",
-     #              paste0("&pc_collection=", collection),
-     #              "&url=", base_url)
-     #     }
-     #     map_url <- make_vsicurl_url(esa_map_url, "esa-worldcover")
-     #     
-     #     esa_map_url <- rstac::assets_url(ms_query_signin, "map")
-     #     map_url <- paste0("/vsicurl/", esa_map_url)
-     #
-     #
-     #     print(paste0("doing gdal_utils on ", map_url))
-     #     out_file <- tempfile(fileext = ".tif")
-     #     sf::gdal_utils("warp", source = map_url, destination = out_file,
-     #                    options = c("-te", sf::st_bbox(vect(ext(oldest)))))
-     #     rast(out_file)
-     #   }, error = function(e) NULL)
-     #   print(stac_result)
-     #   list(change_sampled = change_sampled, land_cover_raster = stac_result)
-     # })
+          print(paste0("doing gdal_utils on ", map_url))
+          out_file <- tempfile(fileext = ".tif")
+          sf::gdal_utils("warp", source = map_url, destination = out_file,
+                         options = c("-te", sf::st_bbox(vect(ext(oldest)))))
+          rast(out_file)
+        }, error = function(e) NULL)
+        print(stac_result)
+        list(change_sampled = change_sampled, land_cover_raster = stac_result)
+      })
       
       # --- Promise resolution (in Shiny session context) ---
       fut %...>% (function(res) {
@@ -551,11 +532,8 @@ ms_esa_query <- rstac::stac_search(
         removeModal()
         try(progress$close(), silent = TRUE)
         
-        #change_sampled <- res$change_sampled
-        #land_cover_raster <- res$land_cover_raster
-
-          change_sampled <- terra::rast(res$change_file)
-          land_cover_raster <- terra::rast(res$landcover_file)
+        change_sampled <- res$change_sampled
+        land_cover_raster <- res$land_cover_raster
         
         if (is.null(land_cover_raster)) {
           showNotification("STAC ESA WorldCover download failed. Displaying only change mask.", type = "error")
@@ -571,39 +549,39 @@ ms_esa_query <- rstac::stac_search(
         }
         
         # Mask, summarize, and plot
-        change_aligned <- project(change_sampled, land_cover_raster, method = "near")
-        lc_masked <- mask(land_cover_raster, change_aligned, maskvalue = NA)
-        lc_masked_sampled <- spatSample(lc_masked, 100000, method = "regular", as.raster = TRUE)
+        #change_aligned <- project(change_sampled, land_cover_raster, method = "near")
+        #lc_masked <- mask(land_cover_raster, change_aligned, maskvalue = NA)
+        #lc_masked_sampled <- spatSample(lc_masked, 100000, method = "regular", as.raster = TRUE)
         
-        lc_table <- freq(lc_masked)
-        esa_lc_lookup <- data.frame(
-          map_code = c(seq(10,90, by = 10), 95, 100),
-          lc_class = c("tree_cover","shrubland","grassland","cropland","built-up",
-                       "bare_sparse","snow_ice","permanent_water",
-                       "herbaceous_wetland","mangroves","moss_lichen")
-        )
+        #lc_table <- freq(lc_masked)
+        #esa_lc_lookup <- data.frame(
+        #  map_code = c(seq(10,90, by = 10), 95, 100),
+        #  lc_class = c("tree_cover","shrubland","grassland","cropland","built-up",
+        #               "bare_sparse","snow_ice","permanent_water",
+        #               "herbaceous_wetland","mangroves","moss_lichen")
+        #)
+        #
+        # merged_table <- lc_table %>%
+        #  left_join(esa_lc_lookup, by = c("value" = "map_code")) %>%
+        #  mutate(total = sum(count, na.rm = TRUE),
+        #         perc = 100 * count / total) %>%
+        #  arrange(desc(perc)) %>%
+        #  select(lc_class, value, count, perc)
         
-        merged_table <- lc_table %>%
-          left_join(esa_lc_lookup, by = c("value" = "map_code")) %>%
-          mutate(total = sum(count, na.rm = TRUE),
-                 perc = 100 * count / total) %>%
-          arrange(desc(perc)) %>%
-          select(lc_class, value, count, perc)
-        
-        merged_table_col <- merge_colors(land_cover_raster, merged_table)
+        # merged_table_col <- merge_colors(land_cover_raster, merged_table)
         
         leafletProxy(ns("map_drivers")) %>%
           clearShapes() %>%
           addRasterImage(change_sampled, opacity = 0.7, colors = "red", group = "Ecosystem change") %>%
-          addRasterImage(lc_masked_sampled, opacity = 0.7, colors = "red", group = "Land Cover") %>%
+          # addRasterImage(lc_masked_sampled, opacity = 0.7, colors = "red", group = "Land Cover") %>%
           addLayersControl(
             overlayGroups = c("Ecosystem change", "Land Cover"),
             options = layersControlOptions(collapsed = FALSE)
           )
         
-        output$drivers_graph <- renderPlotly({
-          render_drivers_plot(merged_table_col)
-        })
+       # output$drivers_graph <- renderPlotly({
+       #   render_drivers_plot(merged_table_col)
+       # })
         
         showNotification("Drivers of change analysis complete!", type = "message")
         
@@ -615,9 +593,6 @@ ms_esa_query <- rstac::stac_search(
     })
   })
 }
-
-
-
 
 
 
