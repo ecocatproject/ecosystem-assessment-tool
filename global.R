@@ -41,6 +41,7 @@ library(leafem) # updatelayerscontrol
 library(shinycssloaders)
 library(zip) # for data download
 library(progress)
+library(promises)
 library(future)
 library(rstac)
 
@@ -77,4 +78,5 @@ custom_theme <- bs_theme(
   fg = "#333333",
   base_font = font_google("Roboto")
 )
+
 
