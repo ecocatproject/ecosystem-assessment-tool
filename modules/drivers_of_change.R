@@ -484,47 +484,66 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
       recent <- ras_list[[length(ras_list)]]
       
       # --- Run future safely ---
-      fut <- future({
-        library(terra)
-        library(rstac)
-        progress_steps <- list()
-        
-        # Step 1
-        progress_steps[[1]] <- "Calculating change mask"
-        change_sampled <- get_change_mask(oldest, recent)
-        
-        # Step 2 - try STAC
-        progress_steps[[2]] <- "Downloading ESA WorldCover"
-        stac_result <- tryCatch({
-          ms_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
-          ms_esa_query <- rstac::stac_search(
+fut <- future({
+  change_file <- tempfile(fileext = ".tif")
+  writeRaster(change_sampled, change_file, overwrite = TRUE)
+
+ms_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
+ms_esa_query <- rstac::stac_search(
             q = ms_query,
             collections = "esa-worldcover",
             datetime = "2021-01-01T00:00:00Z/2021-12-31T23:59:59Z",
             bbox = st_bbox(st_as_sf(vect(ext(oldest))))
           ) |> rstac::get_request()
-          ms_query_signin <- rstac::items_sign(ms_esa_query, rstac::sign_planetary_computer())
-          esa_map_url <- rstac::assets_url(ms_esa_query, "map")
-          
-          make_vsicurl_url <- function(base_url, collection) {
-            paste0("/vsicurl?pc_url_signing=yes",
-                   paste0("&pc_collection=", collection),
-                   "&url=", base_url)
-          }
-          map_url <- make_vsicurl_url(esa_map_url, "esa-worldcover")
-          
-          esa_map_url <- rstac::assets_url(ms_query_signin, "map")
+  ms_query_signin <- rstac::items_sign(ms_esa_query, rstac::sign_planetary_computer())
+  esa_map_url <- rstac::assets_url(ms_query_signin, "map")
           map_url <- paste0("/vsicurl/", esa_map_url)
+  out_file <- tempfile(fileext = ".tif")
+  sf::gdal_utils("warp", source = map_url, destination = out_file, options = c("-te", sf::st_bbox(vect(ext(oldest)))))
 
-          print(paste0("doing gdal_utils on ", map_url))
-          out_file <- tempfile(fileext = ".tif")
-          sf::gdal_utils("warp", source = map_url, destination = out_file,
-                         options = c("-te", sf::st_bbox(vect(ext(oldest)))))
-          rast(out_file)
-        }, error = function(e) NULL)
-        print(stac_result)
-        list(change_sampled = change_sampled, land_cover_raster = stac_result)
-      })
+  list(change_file = change_file, landcover_file = out_file)
+})
+      
+     # fut <- future({
+     #   progress_steps <- list()
+     #   
+     #   # Step 1
+     #   progress_steps[[1]] <- "Calculating change mask"
+     #   change_sampled <- get_change_mask(oldest, recent)
+     #   
+     #   # Step 2 - try STAC
+     #   progress_steps[[2]] <- "Downloading ESA WorldCover"
+     #   stac_result <- tryCatch({
+     #     ms_query <- rstac::stac("https://planetarycomputer.microsoft.com/api/stac/v1")
+     #     ms_esa_query <- rstac::stac_search(
+     #       q = ms_query,
+     #       collections = "esa-worldcover",
+     #       datetime = "2021-01-01T00:00:00Z/2021-12-31T23:59:59Z",
+     #       bbox = st_bbox(st_as_sf(vect(ext(oldest))))
+     #     ) |> rstac::get_request()
+     #     ms_query_signin <- rstac::items_sign(ms_esa_query, rstac::sign_planetary_computer())
+     #     esa_map_url <- rstac::assets_url(ms_esa_query, "map")
+     #     
+     #     make_vsicurl_url <- function(base_url, collection) {
+     #       paste0("/vsicurl?pc_url_signing=yes",
+     #              paste0("&pc_collection=", collection),
+     #              "&url=", base_url)
+     #     }
+     #     map_url <- make_vsicurl_url(esa_map_url, "esa-worldcover")
+     #     
+     #     esa_map_url <- rstac::assets_url(ms_query_signin, "map")
+     #     map_url <- paste0("/vsicurl/", esa_map_url)
+     #
+     #
+     #     print(paste0("doing gdal_utils on ", map_url))
+     #     out_file <- tempfile(fileext = ".tif")
+     #     sf::gdal_utils("warp", source = map_url, destination = out_file,
+     #                    options = c("-te", sf::st_bbox(vect(ext(oldest)))))
+     #     rast(out_file)
+     #   }, error = function(e) NULL)
+     #   print(stac_result)
+     #   list(change_sampled = change_sampled, land_cover_raster = stac_result)
+     # })
       
       # --- Promise resolution (in Shiny session context) ---
       fut %...>% (function(res) {
@@ -532,8 +551,11 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
         removeModal()
         try(progress$close(), silent = TRUE)
         
-        change_sampled <- res$change_sampled
-        land_cover_raster <- res$land_cover_raster
+        #change_sampled <- res$change_sampled
+        #land_cover_raster <- res$land_cover_raster
+
+          change_sampled <- terra::rast(res$change_file)
+          land_cover_raster <- terra::rast(res$landcover_file)
         
         if (is.null(land_cover_raster)) {
           showNotification("STAC ESA WorldCover download failed. Displaying only change mask.", type = "error")
@@ -593,6 +615,7 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
     })
   })
 }
+
 
 
 
