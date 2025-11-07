@@ -395,10 +395,10 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       # rv$rainfall <- compute_rainfall(roi)
       # Update progress
       progress$inc(4/6,detail = "temperature")
-  #    rv$temperature <- compute_temperature(roi)
+      rv$temperature <- compute_temperature(roi)
       # Update progress
       progress$inc(5/6, detail = "elevation")
-  #    rv$elevation <- compute_elevation(roi)
+      rv$elevation <- compute_elevation(roi)
       # Update progress
       progress$inc(6/6, detail = "typology")
   #    rv$typology <- compute_typology(roi, efg_lookup)
@@ -686,3 +686,4 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
     
   })
 }
+
