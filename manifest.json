@@ -1993,6 +1993,37 @@
         "RemoteSha": "1.2.1"
       }
     },
+    "jpeg": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "jpeg",
+        "Version": "0.1-11",
+        "Title": "Read and write JPEG images",
+        "Author": "Simon Urbanek [aut, cre, cph] (https://urbanek.org,\n    <https://orcid.org/0000-0003-2297-1732>)",
+        "Authors@R": "person(\"Simon\", \"Urbanek\", role=c(\"aut\",\"cre\",\"cph\"), email=\"Simon.Urbanek@r-project.org\", comment=c(\"https://urbanek.org\", ORCID=\"0000-0003-2297-1732\"))",
+        "Maintainer": "Simon Urbanek <Simon.Urbanek@r-project.org>",
+        "Depends": "R (>= 2.9.0)",
+        "Description": "This package provides an easy and simple way to read, write and display bitmap images stored in the JPEG format. It can read and write both files and in-memory raw vectors.",
+        "License": "GPL-2 | GPL-3",
+        "SystemRequirements": "libjpeg",
+        "URL": "https://www.rforge.net/jpeg/",
+        "BugReports": "https://github.com/s-u/jpeg/issues",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-03-21 03:05:05 UTC; rforge",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-21 15:37:18 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-03-22 01:36:03 UTC; windows",
+        "Archs": "x64",
+        "RemoteType": "standard",
+        "RemoteRef": "jpeg",
+        "RemotePkgRef": "jpeg",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "0.1-11"
+      }
+    },
     "jquerylib": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3596,6 +3627,40 @@
         "RemoteSha": "1.6.1"
       }
     },
+    "rstac": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "rstac",
+        "Title": "Client Library for SpatioTemporal Asset Catalog",
+        "Version": "1.0.1",
+        "Authors@R": "\n    c(person(\"Rolf\", \"Simoes\",\n             email = \"rolfsimoes@gmail.com\",\n             role = c(\"aut\")),\n      person(\"Felipe\", \"Carvalho\",\n             email = \"lipecaso@gmail.com\",\n             role = c(\"aut\", \"cre\")),\n      person(\"Brazil Data Cube Team\",\n             email = \"brazildatacube@inpe.br\",\n             role = c(\"aut\")),\n      person(given = \"National Institute for Space Research (INPE)\",\n             role = c(\"cph\")))",
+        "Description": "Provides functions to access, search and download spacetime earth\n    observation data via SpatioTemporal Asset Catalog (STAC). This package \n    supports the version 1.0.0 (and older) of the STAC specification\n    (<https://github.com/radiantearth/stac-spec>). \n    For further details see Simoes et al. (2021) <doi:10.1109/IGARSS47720.2021.9553518>.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://brazil-data-cube.github.io/rstac/",
+        "BugReports": "https://github.com/brazil-data-cube/rstac/issues",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.1",
+        "Depends": "R (>= 3.5)",
+        "Imports": "utils, httr, jsonlite, crayon, sf, png, jpeg, grid, magrittr",
+        "Suggests": "lifecycle, testthat, knitr, tmap, leaflet, stars, slider,\nggplot2, purrr, dplyr",
+        "Collate": "'cql2-expr-funs.R' 'cql2-types.R' 'parse-utils.R'\n'cql2-core.R' 'cql2-json.R' 'cql2-text.R' 'cql2-adv_comp.R'\n'cql2-funs.R' 'cql2-env.R' 'cql2-utils.R' 'assets-utils.R'\n'assets-funs.R' 'check-utils.R' 'conformance-query.R'\n'collections-funs.R' 'collections-query.R' 'deprec-funs.R'\n'doc-funs.R' 'ext_filter.R' 'ext_query.R' 'extensions.R'\n'geom-funs.R' 'items-funs.R' 'items-utils.R' 'items-query.R'\n'message-utils.R' 'preview-utils.R' 'print.R' 'query-funs.R'\n'queryables-query.R' 'request.R' 'signatures.R' 'stac-query.R'\n'search-query.R' 'stac-funs.R' 'static-funs.R' 'url-utils.R'\n'utils.R' 'rstac.R' 'rstac-funs.R'",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-07-18 20:01:52 UTC; sits",
+        "Author": "Rolf Simoes [aut],\n  Felipe Carvalho [aut, cre],\n  Brazil Data Cube Team [aut],\n  National Institute for Space Research (INPE) [cph]",
+        "Maintainer": "Felipe Carvalho <lipecaso@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-07-18 20:30:01 UTC",
+        "Built": "R 4.4.3; ; 2025-11-01 03:45:56 UTC; windows",
+        "RemoteType": "standard",
+        "RemoteRef": "rstac",
+        "RemotePkgRef": "rstac",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "1.0.1"
+      }
+    },
     "rstudioapi": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -4811,10 +4876,10 @@
   },
   "files": {
     ".Rprofile": {
-      "checksum": "dc2f2bf4963ce6d816f144b900011d6f"
+      "checksum": "4b9351da39a9cdd84a8881495fa681a8"
     },
     "app.R": {
-      "checksum": "655a1a125d18dd4ce260df34babb6958"
+      "checksum": "4a09012c404a27d08fd0022c7a47d73a"
     },
     "data/data/realms/RL_Realms.cpg": {
       "checksum": "ae3b3df9970b49b6523e608759bc957d"
@@ -5285,7 +5350,7 @@
       "checksum": "305515b622f23104d231abab36642997"
     },
     "global.R": {
-      "checksum": "e64948fd1bf448f129aaeac345945a2d"
+      "checksum": "5d8002f0d201339913f22724faa386ff"
     },
     "helpers/analysis_functions.R": {
       "checksum": "ed4c03e208648cbcedd84cae78a1a599"
@@ -5297,7 +5362,7 @@
       "checksum": "9ca0445c0d6f3baa5ba8699e4e8326b5"
     },
     "items.json": {
-      "checksum": "f28d75268a1ae0f2b98a106029b3ccbd"
+      "checksum": "4161e740a010ea02696a3dcd0e052ebf"
     },
     "modules/about.R": {
       "checksum": "ab0c4fbe492f3808e05e27da9c7afb04"
@@ -5330,7 +5395,10 @@
       "checksum": "a9689f8a51087a3204f9a82ffce28e06"
     },
     "modules/description_v2.R": {
-      "checksum": "5ecd29418f9f051264f9b3a700e22bf7"
+      "checksum": "f47472a45c148ca627f3ac5d5eb6173e"
+    },
+    "modules/drivers_of_change.R": {
+      "checksum": "4b98a0235fe6ad3c3bc8c7f0d532b354"
     },
     "modules/helpers.R": {
       "checksum": "4e95c4f2b28614f67628d0d98fd0592a"
@@ -5339,7 +5407,7 @@
       "checksum": "096ad30db815d75bd737e54c766e1e1c"
     },
     "renv.lock": {
-      "checksum": "649c31d3a884b325263939bbd66c4816"
+      "checksum": "fe347472ce866be5373107f223206c4b"
     },
     "rle_report_template_html.Rmd": {
       "checksum": "e2e0af18c2484f2149c14a603e8d515e"

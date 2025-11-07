@@ -2024,6 +2024,25 @@
       "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
       "Repository": "CRAN"
     },
+    "jpeg": {
+      "Package": "jpeg",
+      "Version": "0.1-11",
+      "Source": "Repository",
+      "Title": "Read and write JPEG images",
+      "Author": "Simon Urbanek [aut, cre, cph] (https://urbanek.org, <https://orcid.org/0000-0003-2297-1732>)",
+      "Authors@R": "person(\"Simon\", \"Urbanek\", role=c(\"aut\",\"cre\",\"cph\"), email=\"Simon.Urbanek@r-project.org\", comment=c(\"https://urbanek.org\", ORCID=\"0000-0003-2297-1732\"))",
+      "Maintainer": "Simon Urbanek <Simon.Urbanek@r-project.org>",
+      "Depends": [
+        "R (>= 2.9.0)"
+      ],
+      "Description": "This package provides an easy and simple way to read, write and display bitmap images stored in the JPEG format. It can read and write both files and in-memory raw vectors.",
+      "License": "GPL-2 | GPL-3",
+      "SystemRequirements": "libjpeg",
+      "URL": "https://www.rforge.net/jpeg/",
+      "BugReports": "https://github.com/s-u/jpeg/issues",
+      "NeedsCompilation": "yes",
+      "Repository": "CRAN"
+    },
     "jquerylib": {
       "Package": "jquerylib",
       "Version": "0.1.4",
@@ -3760,6 +3779,50 @@
       "NeedsCompilation": "no",
       "Author": "Aron Atkins [aut, cre], Toph Allen [aut], Hadley Wickham [aut], Jonathan McPherson [aut], JJ Allaire [aut], Posit Software, PBC [cph, fnd]",
       "Maintainer": "Aron Atkins <aron@posit.co>",
+      "Repository": "CRAN"
+    },
+    "rstac": {
+      "Package": "rstac",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Title": "Client Library for SpatioTemporal Asset Catalog",
+      "Authors@R": "c(person(\"Rolf\", \"Simoes\", email = \"rolfsimoes@gmail.com\", role = c(\"aut\")), person(\"Felipe\", \"Carvalho\", email = \"lipecaso@gmail.com\", role = c(\"aut\", \"cre\")), person(\"Brazil Data Cube Team\", email = \"brazildatacube@inpe.br\", role = c(\"aut\")), person(given = \"National Institute for Space Research (INPE)\", role = c(\"cph\")))",
+      "Description": "Provides functions to access, search and download spacetime earth observation data via SpatioTemporal Asset Catalog (STAC). This package  supports the version 1.0.0 (and older) of the STAC specification (<https://github.com/radiantearth/stac-spec>).  For further details see Simoes et al. (2021) <doi:10.1109/IGARSS47720.2021.9553518>.",
+      "License": "MIT + file LICENSE",
+      "URL": "https://brazil-data-cube.github.io/rstac/",
+      "BugReports": "https://github.com/brazil-data-cube/rstac/issues",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.1",
+      "Depends": [
+        "R (>= 3.5)"
+      ],
+      "Imports": [
+        "utils",
+        "httr",
+        "jsonlite",
+        "crayon",
+        "sf",
+        "png",
+        "jpeg",
+        "grid",
+        "magrittr"
+      ],
+      "Suggests": [
+        "lifecycle",
+        "testthat",
+        "knitr",
+        "tmap",
+        "leaflet",
+        "stars",
+        "slider",
+        "ggplot2",
+        "purrr",
+        "dplyr"
+      ],
+      "Collate": "'cql2-expr-funs.R' 'cql2-types.R' 'parse-utils.R' 'cql2-core.R' 'cql2-json.R' 'cql2-text.R' 'cql2-adv_comp.R' 'cql2-funs.R' 'cql2-env.R' 'cql2-utils.R' 'assets-utils.R' 'assets-funs.R' 'check-utils.R' 'conformance-query.R' 'collections-funs.R' 'collections-query.R' 'deprec-funs.R' 'doc-funs.R' 'ext_filter.R' 'ext_query.R' 'extensions.R' 'geom-funs.R' 'items-funs.R' 'items-utils.R' 'items-query.R' 'message-utils.R' 'preview-utils.R' 'print.R' 'query-funs.R' 'queryables-query.R' 'request.R' 'signatures.R' 'stac-query.R' 'search-query.R' 'stac-funs.R' 'static-funs.R' 'url-utils.R' 'utils.R' 'rstac.R' 'rstac-funs.R'",
+      "NeedsCompilation": "no",
+      "Author": "Rolf Simoes [aut], Felipe Carvalho [aut, cre], Brazil Data Cube Team [aut], National Institute for Space Research (INPE) [cph]",
+      "Maintainer": "Felipe Carvalho <lipecaso@gmail.com>",
       "Repository": "CRAN"
     },
     "rstudioapi": {

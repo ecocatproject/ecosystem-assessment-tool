@@ -1,14 +1,14 @@
 # global.R
 
-
+# renv::snapshot(exclude=c("climateR", "RNetCDF", "rnz", "ncmeta")) # creates lockfile
 # renv::snapshot() # creates lockfile
-# # # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
+# renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
 # rsconnect::writeManifest() #captures dependencies from lockfile
 # manifest <- jsonlite::fromJSON("manifest.json")
 # names(manifest$packages)
-# # renv::install("DT")
-# # renv::snapshot()
-# remove.packages("tidyterra")
+# # # renv::install("DT")
+# # # renv::snapshot()
+# # #remove.packages("tidyterra")
 
 library(shiny)
 library(shinythemes)
@@ -39,7 +39,7 @@ library(plotly)
 library(base64enc)
 library(leafem) # updatelayerscontrol
 library(shinycssloaders)
-library(zip)
+library(zip) # for data download
 library(progress)
 
 # memory options
@@ -62,7 +62,7 @@ link_rle <- tags$a(div(img(src=rle_logo, height = "40px")),
 
 # Load static data
 efg_lookup <- read.csv("data/ecosystem_typology_lookup_table.csv")
-# ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
+ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
 realms <- terra::vect("data/realms/RL_Realms.shp")
 countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
@@ -74,5 +74,3 @@ custom_theme <- bs_theme(
   fg = "#333333",
   base_font = font_google("Roboto")
 )
-
-

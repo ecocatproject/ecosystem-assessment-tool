@@ -13,12 +13,18 @@ source("global.R")
 # -------------------------------------------------------
 # Load all modules
 source("modules/data.R")
-source("modules/data_description.R")
+# source("modules/data_description.R")
 source("modules/description_v2.R") # was description.R
+
+# source("modules/classification_processing.R") # this now separates up the raster part from description_v2.R and joins with code in data.R 
+# CURRENTLY CAN'T SYNC THE MAPS WELL - IF ONLY HAVE TIFS THE MAP IS NOT PLOTTED
+
 # source("modules/classification_files.R") # ideally have separate for rasters, but can't get the maps to marry
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
+source("modules/drivers_of_change.R")
 source("modules/report.R")
+source("modules/data_download.R")
 source("modules/about.R")
 
 # -------------------------------------------------------
@@ -79,7 +85,9 @@ ui <- page_navbar(
   description_module_ui("description"),
   criterion_a_module_ui("criteria_a"),
   criterion_b_module_ui("criteria_b"),
+  drivers_module_ui("drivers_of_change"),
   report_module_ui("report"),
+  download_module_ui("download"),
   about_module_ui("about"),
   
   # add links ----------------------------------------------------------------
@@ -101,9 +109,17 @@ server <- function(input, output, session) {
   
   # data module (for raster) --------------------------------------------------
   data_module <- data_module_server("data")
+  
+  # # classification processing module ------------------------------------------
+  # classification_module <- raster_module_server(
+  #   "raster",
+  #   tifs_input = tifs_input,     # from fileInput or reactive in app
+  #   year_inputs = year_inputs,   # from your UI year input
+  #   process_btn = process_btn    # from your "Process" button
+  # )
 
   # Description module --------------------------------------------------------
-  description_module_server(
+  description_module <- description_module_server(
     "description",
     roi_input = reactive({ input$roi }),
     process_roi_btn = reactive({ input$load_roi }),
@@ -115,37 +131,53 @@ server <- function(input, output, session) {
     )
 
   # Run Criterion A module ----------------------------------------------------
-  criterion_A_module_server("criteria_a", data_module = data_module)
+  criterion_a_module <- criterion_A_module_server("criteria_a",
+                                                        data_module = data_module)
   
   # Run Criterion B module ----------------------------------------------------
-  criterion_b_module_server(id = "criteria_b",
+  criterion_b_module <- criterion_b_module_server(id = "criteria_b",
     rasters = data_module$rasters,
     year_inputs = data_module$years,
     rasters_original = data_module$rasters_original,
   )
-
- # # # Run report module -------------------------------------------------------
- # report_module_server("report",
- #                      ecosystem_name = reactive(input$ecosystem_name),
- #                      rasters = rasters,
- #                      areas = areas,
- #                      roi_countries = roi_countries,
- #                      chirps_summary = chirps_summary,
- #                      rain_data = rain_data,
- #                      temp_data = temp_data,
- #                      elevation_summary = elevation_summary,
- #                      roi_vec = roi_vec,
- #                      roi_wgs = roi_wgs,
- #                      typology_table = typology_table,
- #                      area_change_data = area_change_data,
- #                      area_prediction_data = area_prediction_data,
- #                      mcp_table = mcp_table,
- #                      mcp_poly = mcp_poly,
- #                      b2_table = b2_table,
- #                      aoo_sel_ids = aoo_sel_ids,
- #                      b2_poly = b2_poly)
   
-  # # Run about module --------------------------------------------------------
+  # Run drivers of change module ----------------------------------------------------
+  drivers_module <- drivers_module_server(id = "drivers_of_change",
+                                                  rasters = data_module$rasters,
+                                                  year_inputs = data_module$years,
+                                                  rasters_original = data_module$rasters_original
+                                          )
+
+  # # Run report module -------------------------------------------------------
+  report_module_server("report",
+                       ecosystem_name = input$ecosystem_name,
+                       author = input$author,
+                       organisation = input$organisation,
+                       email = input$email,
+                       rasters = data_module$rasters,
+                       areas = data_module$areas,
+                       years = data_module$years,
+                       roi_vec = description_module$roi, #  roi_vec = reactive(description_module$rv$roi)  # wrap in reactive() if not already
+                       countries = description_module$countries,
+                       rainfall = description_module$rainfall,
+                       # chirps_summary = chirps_summary,
+                       # rain_data = rain_data,
+                       # temp_data = temp_data,
+                       # elevation_summary = elevation_summary,
+                       # typology_table = typology_table,
+                       area_change_data = criterion_a_module$area_change_data,
+                       area_prediction_data = criterion_a_module$area_prediction_data,
+                       mcp_data = criterion_b_module$mcp_data,
+                       mcp_poly = criterion_b_module$mcp_poly,
+                       b2_data = criterion_b_module$b2_table,
+                       aoo_sel_ids = criterion_b_module$aoo_sel_ids,
+                       aoo_all_ids = criterion_b_module$aoo_all_ids,
+                       b2_poly = criterion_b_module$b2_poly)
+                       
+  # Run download module --------------------------------------------------------
+  # download_module_server("download", )
+  
+    # # Run about module --------------------------------------------------------
   # criterion_A_module_server("about")
   
     # Dynamic year inputs -----------------------------------------------------
@@ -159,7 +191,8 @@ server <- function(input, output, session) {
   
 }
 
-shinyApp(ui, server)
 
+# run the app -----------------------------------------------------------------
+shinyApp(ui, server)
 
 
