@@ -512,6 +512,7 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
                    "&url=", base_url)
           }
           map_url <- make_vsicurl_url(esa_map_url, "esa-worldcover")
+          map_irl <- esa_map_url
           
           out_file <- tempfile(fileext = ".tif")
           sf::gdal_utils("warp", source = map_url, destination = out_file,
@@ -589,4 +590,5 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
     })
   })
 }
+
 
