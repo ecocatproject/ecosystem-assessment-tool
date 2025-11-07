@@ -379,7 +379,7 @@ criterion_A_module_server <- function(id, data_module) {
         ungroup() %>%
         select(method, scenario, perc_change, A2b)
       
-      print(worst_cases)
+      # print(worst_cases)
 
       #  create value boxes --------------------------------------------------
       #  source("helpers/helpers.R") # info_icon, get_box_status, format_assessment_lines, make_value_box
@@ -424,7 +424,14 @@ criterion_A_module_server <- function(id, data_module) {
       
     }) # end of Criterion A observe assessment
     
+  
+      # Return reactive values for use outside the module
+    return(list(
+      area_change_data = reactive({area_change_data}),
+      area_prediction_data = reactive({rv$area_prediction_data})
+    ))
     
+      
     })
 }
 

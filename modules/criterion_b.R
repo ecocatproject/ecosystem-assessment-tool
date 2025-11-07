@@ -201,13 +201,14 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         )
       })
     
-    }) # end of overserve event (button click here)
+    }) # end of observe event (button click here)
     
     # Subcriterion B2 ---------------------------------------------------------
     # reactive vars to store data
     b2_table   <- reactiveVal(NULL)   # stores summary df
     b2_poly <- reactiveVal(NULL)
     aoo_sel_ids <- reactiveVal(NULL)
+    aoo_all_ids <- reactiveVal(NULL)
     
     observeEvent(input$get_AOO, {
       
@@ -291,7 +292,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         filter(cum_prop > 0) %>%
         group_by(year) %>%
         summarise(cell_ids = list(cell_id))
-      #aoo_all_ids(all_ids)
+      aoo_all_ids(all_ids)
       
       # make a table of "which cell_ids exceed 0.01" per year
       sel_ids <- aoo_grid_counts_cumulative %>%
@@ -345,7 +346,16 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       })
 
       
-    }) # end of observe event
+    }) # end of observeEvent(get_AOO)
     
+    # Return reactive values for use outside the module
+    return(list(
+      mcp_data = reactive({mcp_table}),
+      mcp_poly = reactive({mcp_poly}),
+      aoo_sel_ids = reactive({aoo_sel_ids}),
+      aoo_all_ids = reactive({aoo_all_ids}),
+      b2_table = reactive({b2_table}),
+      b2_poly = reactive({b2_poly})
+    ))
   })
 }
