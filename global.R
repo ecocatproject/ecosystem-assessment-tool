@@ -6,7 +6,7 @@
 # rsconnect::writeManifest() #captures dependencies from lockfile
 # manifest <- jsonlite::fromJSON("manifest.json")
 # names(manifest$packages)
-# # # renv::install("DT")
+# renv::install("DT")
 # # # renv::snapshot()
 # # #remove.packages("tidyterra")
 
@@ -41,6 +41,9 @@ library(leafem) # updatelayerscontrol
 library(shinycssloaders)
 library(zip) # for data download
 library(progress)
+library(future)
+library(rstac)
+
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
