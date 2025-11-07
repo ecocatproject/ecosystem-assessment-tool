@@ -482,7 +482,7 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
       
       oldest <- ras_list[[1]]
       recent <- ras_list[[length(ras_list)]]
-      
+      change_sampled <- get_change_mask(oldest, recent)
       # --- Run future safely ---
 fut <- future({
   change_file <- tempfile(fileext = ".tif")
@@ -615,6 +615,7 @@ ms_esa_query <- rstac::stac_search(
     })
   })
 }
+
 
 
 
