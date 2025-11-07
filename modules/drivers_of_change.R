@@ -515,13 +515,14 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
           
           esa_map_url <- rstac::assets_url(ms_query_signin, "map")
           map_url <- paste0("/vsicurl/", esa_map_url)
-          
+
+          print(paste0("doing gdal_utils on ", map_url))
           out_file <- tempfile(fileext = ".tif")
           sf::gdal_utils("warp", source = map_url, destination = out_file,
                          options = c("-te", sf::st_bbox(vect(ext(oldest)))))
           rast(out_file)
         }, error = function(e) NULL)
-        
+        print(stac_result)
         list(change_sampled = change_sampled, land_cover_raster = stac_result)
       })
       
@@ -592,6 +593,7 @@ drivers_module_server <- function(id, rasters_original, year_inputs, rasters) {
     })
   })
 }
+
 
 
 
