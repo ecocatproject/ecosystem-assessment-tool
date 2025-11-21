@@ -169,7 +169,10 @@ make_b_value_boxes <- function(title, reactive_data, status_col,
 
 #------------------------------------------------------------------------------
 # Helper: build descriptive lines for each row (handles optional 'scenario') - Criteria A 
-format_assessment_lines <- function(data, status_col, data_col, method_col, scenario_col = NULL) {
+# nrow(rv$area_prediction_data$type) == 2
+
+
+format_assessment_lines <- function(data, status_col, data_col, method_col, scenario_col = NULL, year_data = NULL) {
   
   method_names <- c(
     ARC = "Absolute rate of change",
@@ -185,6 +188,24 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
       perc_label = paste0(round(abs(.data[[data_col]]) * 100, 2), "%"),
       direction = ifelse(.data[[data_col]] > 0, "decrease", "increase")
     )
+  
+  # only want PRC in output
+  data <- data %>%
+    dplyr::filter(method == "PRC")
+  
+  # Only keep one row if scenario values are identical
+  if ("scenario" %in% names(data)) {
+    # Only keep one row if there are exactly 2 rows and values are identical
+    if (nrow(data) == 2 && all(data$perc_change[1] == data$perc_change[2])) {
+      data <- data[1, , drop = FALSE]
+      data$scenario <- NULL                     # Remove scenario column entirely
+    }
+  }
+
+
+
+  
+  
   
   # Build the text per row
   if (!is.null(scenario_col) && scenario_col %in% names(data)) {
@@ -211,12 +232,31 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
 #------------------------------------------------------------------------------
 # Generalized helper to build a value_box for criteria A
 make_value_box <- function(title, reactive_data, status_col, data_col, method_col,
-                           scenario_col = NULL, hover_text = NULL) {
+                           scenario_col = NULL, hover_text = NULL, year_data = NULL) {
   reactive({
     data <- reactive_data()
-    status <- get_box_status(data[[status_col]])
+    status <- get_box_status(data[[status_col]]) # THIS MIGTH NEED TO CHANGE IF ONLY PRESENTING PRC DATA?
     
-    description_html <- format_assessment_lines(data, status_col, data_col, method_col, scenario_col)
+    # Map each status code to tooltip text
+    status_tooltips <- list(
+      "CR" = "Critically Endangered",
+      "EN" = "Endangered",
+      "VU" = "Vulnerable",
+      "LC" = "Least Concern"
+    )
+    
+    hover_status_text <- status_tooltips[[status$text]]
+    
+    description_html <- format_assessment_lines(data, status_col, data_col, method_col, scenario_col,  year_data = year_data)
+    
+    # Wrap status text in a small span and attach tooltip
+    status_value <- tags$span(
+      tooltip(
+        tags$span(status$text, style = "font-weight: bold; font-size: 1.2em; display: inline-block;"),
+        hover_status_text,
+        placement = "right"
+      )
+    )
     
     value_box(
       # title = tagList(
@@ -227,7 +267,8 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
                   span(title, style = "display:inline-block;"),   # main title
                   info_icon(hover_text) # floating icon
       ),
-      value = status$text,
+      # value = status$text,
+      value = status_value,
       p(HTML(description_html)),
       height = 200L,
       # theme = "bg-gradient-green-orange",
