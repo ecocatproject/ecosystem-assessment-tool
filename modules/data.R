@@ -67,10 +67,10 @@ data_module_server <- function(id) {
         
         # Only sample the most recent raster (last in sequence)
         if (i == length(files)) {
-          r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE)
+          r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE, na.rm=T)
           ras_list[[i]] <- r_map
         }
-        r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE)
+        r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE, na.rm=T)
         ras_list[[i]] <- r_map
         
       } # end of for loop

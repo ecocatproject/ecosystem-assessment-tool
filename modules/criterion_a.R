@@ -60,10 +60,21 @@ criterion_A_module_server <- function(id, data_module) {
     # Reactive expression for area change
     area_change_data <- reactive({
       req(data_module$rasters())
+      cat("area_change_data recalculated\n")
       df <- calc_area_change(data_module$areas()) 
       df          # <-- MUST return df
     })
 
+    
+    # reset when new rasters uploaded ------------------------------------------
+    observeEvent(data_module$rasters(), {
+      # reset UI and reactive holders
+      # output$criterion_boxes_a <- renderUI({ NULL })
+      output$criterion_boxes_a <- NULL   # better than renderUI(NULL)
+
+      #rv$area_prediction_data(NULL)
+    }, ignoreNULL = TRUE)
+    
     # Render DT table --------------------------------------------------------
     output$area_change_table <- DT::renderDataTable({
       req(area_change_data())
@@ -132,6 +143,7 @@ criterion_A_module_server <- function(id, data_module) {
       req(area_change_data(), NROW(area_change_data()) > 1)
       area_prediction_data <- predict_area_change(area_change_data())
       rv$area_prediction_data <- area_prediction_data # store in reactive
+      cat("Updating rv$area_prediction_data\n")
       
       # ---------------------------------------------------------------------
       # plot the data
@@ -226,7 +238,8 @@ criterion_A_module_server <- function(id, data_module) {
                 data = pred_gam_before,
                 x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
                 line = list(color = 'blue', width = 3, dash = 'dash'),
-                showlegend = FALSE
+                showlegend = FALSE,
+                name="GAM"
               ) %>%
               add_trace(
                 data = pred_gam_after,
@@ -259,14 +272,17 @@ criterion_A_module_server <- function(id, data_module) {
     #-----------------------------------------------------------
     # Assessments
     #-----------------------------------------------------------
-    observe({
-      req(area_change_data(), NROW(area_change_data()) > 1)
+    # observe({
+    #   req(data_module$rasters())   # <-- NEW: force observer to re-run on raster upload
+    #   req(area_change_data(), NROW(area_change_data()) > 1)
+      observeEvent(data_module$rasters(), ignoreInit = FALSE, {
+        req(area_change_data(), NROW(area_change_data()) > 1)
       # actually lets do the assessment tables separately
       results <- rv$area_prediction_data
       obsv.fut <- results %>%
         group_by(type, method, scenario) %>%
         filter(scenario != "past") %>%
-        slice(n())
+        slice(n()) # this keeps the most recent observed only (certainly where there are just 2 data points...)
       
       # then get past
       past <- results %>%
@@ -277,11 +293,13 @@ criterion_A_module_server <- function(id, data_module) {
       # then combine
       past.obsv.fut <- bind_rows(past, obsv.fut) %>%
         arrange(year)
+    
       
       #-----------------------------------------------------------
       # A1 assessment calculation
       a1_result <- past.obsv.fut %>%
         filter(scenario %in% "past", method %in% c("ARC", "PRC")) %>%
+        # filter(scenario %in% "past", method %in% c("PRC")) %>%
         group_by(method) %>%
         slice_min(year, n = 1) %>%           # earliest past
         ungroup() %>%
@@ -290,13 +308,15 @@ criterion_A_module_server <- function(id, data_module) {
           # perc_change = 1-abs((latest_observed_area - area) / latest_observed_area)
           perc_change = ((area - latest_observed_area) / area)
         ) %>%
-        select(method, area, latest_observed_area, perc_change) %>%
+        dplyr::select(method, area, latest_observed_area, perc_change) %>%
         mutate(A1 = dplyr::case_when(
           perc_change > 0.8 ~ "CR",
           perc_change > 0.5 ~ "EN",
           perc_change > 0.3 ~ "VU",
           TRUE ~ "LC"
         ))
+      
+      # print(a1_result)
       
       #-----------------------------------------------------------
       # A2a assessment
@@ -309,13 +329,15 @@ criterion_A_module_server <- function(id, data_module) {
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
           perc_change = ((latest_observed_area-area) / latest_observed_area)
         ) %>%
-        select(method, scenario, area, latest_observed_area, perc_change) %>%
+        dplyr::select(method, scenario, area, latest_observed_area, perc_change) %>%
         mutate(A2a = dplyr::case_when(
           perc_change > 0.8 ~ "CR",
           perc_change > 0.5 ~ "EN",
           perc_change > 0.3 ~ "VU",
           TRUE ~ "LC"
         ))
+      
+      # print(a2a_result)
       
       #-----------------------------------------------------------
       # A2b assessment
@@ -377,11 +399,18 @@ criterion_A_module_server <- function(id, data_module) {
         group_by(method, scenario) %>%
         slice_max(perc_change, n = 1, with_ties = FALSE) %>%
         ungroup() %>%
-        select(method, scenario, perc_change, A2b)
+        dplyr::select(method, scenario, perc_change, A2b)
       
       # print(worst_cases)
 
+      
+      
+      
       #  create value boxes --------------------------------------------------
+      # # 1. filter data for PRC only
+      # a2a_result_vb <- a2a_result %>%
+      # 
+      
       #  source("helpers/helpers.R") # info_icon, get_box_status, format_assessment_lines, make_value_box
       a1_box  <- make_value_box(
         title = "Subcriterion A1",
@@ -389,7 +418,8 @@ criterion_A_module_server <- function(id, data_module) {
         status_col = "A1",
         data_col = "perc_change",
         method_col = "method",
-        hover_text = "Past reduction in geographic distribution (past 50 years)"
+        hover_text = "Past reduction in geographic distribution (past 50 years)",
+        year_data = rv$area_prediction_data
       )
       
       a2a_box <- make_value_box(
@@ -429,6 +459,9 @@ criterion_A_module_server <- function(id, data_module) {
     return(list(
       area_change_data = reactive({area_change_data}),
       area_prediction_data = reactive({rv$area_prediction_data})
+      # should these be: (i.e. above once are returning a function?)
+      # area_change_data = reactive(area_change_data()),
+      # area_prediction_data = reactive(rv$area_prediction_data)
     ))
     
       

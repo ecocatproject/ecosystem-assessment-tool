@@ -6,7 +6,7 @@
 report_module_ui <- function(id) {
   ns <- NS(id)
   nav_panel(
-    "Generate Report",
+    "Report/Data download",
     page_fillable(uiOutput(ns("status_boxes"))),
     card(
       card_body(
@@ -18,7 +18,12 @@ report_module_ui <- function(id) {
             textInput(ns("author"), "Author"),
             textInput(ns("email"), "Email address"),
             downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
-          )
+          ),
+          column(
+            width = 6,
+            checkboxGroupInput(ns("dataset_choice"), "Choose datasets:", choices = NULL),
+            downloadButton(ns("download_file"), "Download")
+        )
         )
       )
     )
@@ -28,49 +33,52 @@ report_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # server
 # -----------------------------------------------------------------------------
-report_module_server <- function(id,
+report_module_server <- function(datasets,
+                                 id,
                                  ecosystem_name, author, organisation, email,
                                  rasters,
                                  areas,
                                  years,
-                                 roi_vec, 
-                                 countries, 
+                                 roi_vec,
+                                 countries,
                                  rainfall,
-                                 area_change_data,
-                                 area_prediction_data,
-                                 mcp_data,
-                                 mcp_poly,
+                                 typology,
+                                  area_change_data,
+                                  area_prediction_data,
+                                  mcp_data,
+                                  mcp_poly,
                                  b2_data,
                                  aoo_sel_ids,
                                  aoo_all_ids,
-                                 b2_poly) {
+                                 b2_poly
+                                 ) {
   moduleServer(id, function(input, output, session) {
-    
+
     output$generate_report <- downloadHandler(
       filename = function() {
         paste0("RLE_Assessment_", gsub(" ", "_", input$ecosystem_name), ".html")
       },
       content = function(file) {
+
+        # # Show modal popup while rendering ------------------------------------
+        # showModal(modalDialog(
+        #   title = "Generating report...",
+        #   tagList(
+        #     div(
+        #       style = "text-align:center;",
+        #       tags$h4("Please wait while your RLE assessment report is being generated."),
+        #       tags$p("This process usually takes approximately 10 seconds."),
+        #       tags$p(tags$em("Rendering the HTML report...")),
+        #       withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
+        #     )
+        #   ),
+        #   easyClose = FALSE,
+        #   footer = NULL
+        # ))
         
-        # --- Show modal popup while rendering --------------------------------
-        showModal(modalDialog(
-          title = "Generating report...",
-          tagList(
-            div(
-              style = "text-align:center;",
-              tags$h4("Please wait while your RLE assessment report is being generated."),
-              tags$p("This process usually takes approximately 10 seconds."),
-              tags$p(tags$em("Rendering the HTML report...")),
-              withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
-            )
-          ),
-          easyClose = FALSE,
-          footer = NULL
-        ))
-        
-        # --- Create temporary directory for large objects --------------------
+        # Create temporary directory for large objects ------------------------
         tmpdir <- tempdir()
-        
+
         # Save rasters safely
         raster_list <- rasters()
         raster_paths <- NULL
@@ -80,98 +88,157 @@ report_module_server <- function(id,
             terra::writeRaster(raster_list[[i]], raster_paths[i], overwrite = TRUE)
           }
         }
-        
+
         # Save evaluated ROI vector safely
         roi_vec_eval <- req(roi_vec())
         roi_vec_path <- file.path(tmpdir, "roi_vec.rds")
         saveRDS(roi_vec_eval, roi_vec_path)
-        
-        # --- Build params list for R Markdown --------------------------------
+
+        # Build params list for R Markdown ------------------------------------
         params_list <- list(
           ecosystem_name = input$ecosystem_name,
           author = input$author,
           organisation = input$organisation,
           email = input$email,
-          areas = req(areas()),
-          years = req(years()),
+          areas = (areas()),
+          years = (years()),
           raster_files = raster_paths,
           roi_vec_file = roi_vec_path,
-          countries = req(countries()),
-          rainfall = req(rainfall()),
-          area_change_data = req(area_change_data()),
-          area_prediction_data = req(area_prediction_data()),
-          mcp_data = req(mcp_data()),
-          mcp_poly = req(mcp_poly()),
-          b2_data = req(b2_data()),
-          aoo_sel_ids = req(aoo_sel_ids()),
-          aoo_all_ids = req(aoo_all_ids()),
-          b2_poly = req(b2_poly())
+          countries = (countries()),
+          rainfall = (rainfall()),
+          typology = (typology()),
+          area_change_data = (area_change_data()),
+          area_prediction_data = (area_prediction_data()),
+          mcp_data = (mcp_data()),
+          mcp_poly = (mcp_poly()),
+          b2_data = (b2_data()),
+          aoo_sel_ids = (aoo_sel_ids()),
+          aoo_all_ids = (aoo_all_ids()),
+          b2_poly = (b2_poly())
         )
-        
-        message("Rendering report with parameters:")
+
         str(params_list)
+
+        # # --- Render the report ----------------------------------------------
+        # rmarkdown::render(
+        #   input = "rle_report_template_html_testing.rmd",
+        #   output_file = file,
+        #   params = params_list,
+        #   envir = new.env(parent = globalenv())
+        # )
         
         # --- Render the report ----------------------------------------------
-        tryCatch({
+        # safe for deployed app?
+        report_path < -tempfile(fileext = ".Rmd")
+        file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
+        
+        # tryCatch({
           rmarkdown::render(
-            input = "rle_report_template_html_testing.rmd",
+            # input = "rle_report_template_html_testing.rmd",
+            input = report_path, # safe for deployed app
             output_file = file,
             params = params_list,
             envir = new.env(parent = globalenv())
           )
-        },
-        error = function(e) {
-          removeModal()
-          showModal(modalDialog(
-            title = "Error",
-            tags$p("An error occurred while generating the report:"),
-            tags$pre(conditionMessage(e)),
-            easyClose = TRUE,
-            footer = modalButton("Close")
-          ))
-          stop(e)
-        })
+       # },
+        # error = function(e) {
+        #   removeModal()
+        #   showModal(modalDialog(
+        #     title = "Error",
+        #     tags$p("An error occurred while generating the report:"),
+        #     tags$pre(conditionMessage(e)),
+        #     easyClose = TRUE,
+        #     footer = modalButton("Close")
+        #   ))
+        #   stop(e)
+        # }
+        #)
         
         # Remove modal after successful render --------------------------------
-        removeModal()
+        # removeModal()
+
       }
     )
+    
+    # data download section ---------------------------------------------------
+    # Update checkboxes whenever available datasets change
+    observe({
+      ds <- datasets()
+      updateCheckboxGroupInput(
+        session,
+        "dataset_choice",
+        choices = names(ds)
+      )
+    })
+    
+    # download handler --------------------------------------------------------
+    output$download_file <- downloadHandler(
+      filename = function() {
+        paste0(gsub(" ", "_", input$ecosystem_name),"_datasets", "_",format(Sys.Date(), "%d%m%Y"), ".zip")
+      },
+      content = function(file) {
+        # Get selected datasets
+        selected <- input$dataset_choice
+        ds <- datasets()  # reactive list of datasets
+        
+        if (length(selected) == 0) {
+          showNotification("No datasets selected!", type = "error")
+          return(NULL)
+        }
+        
+        # Temp directory to store CSVs
+        tmpdir <- tempdir()
+        file_paths <- c()
+        
+        # Current date string
+        date_str <- format(Sys.Date(), "%d%m%Y")
+        
+        # Helper to create safe filenames
+        safe_filename <- function(name) {
+          name <- gsub("[:/\\?<>\\*|]", "_", name, perl = TRUE) # Replace invalid characters with underscores
+          name <- gsub("[\\s–—]+", "_", name) # Replace spaces or long dashes with underscore
+          name <- gsub("[^A-Za-z0-9_\\-]", "", name) # Remove any remaining non-alphanumeric, underscore, dash
+          name <- tolower(name)# Make lowercase 
+          name
+        }
+        
+        # Save each selected dataset as CSV
+        for (nm in selected) {
+          dat <- ds[[nm]]()
+          if (!is.null(dat)) {
+            # Determine type of dataset
+            if (inherits(dat, "SpatVector")) {
+              # Save SpatVector as GeoPackage (single file)
+              gpkg_name <- paste0(
+                safe_filename(input$ecosystem_name), "_",
+                safe_filename(gsub("Criterion ", "", nm)), "_",
+                date_str, ".gpkg"
+              )
+              gpkg_path <- file.path(tmpdir, gpkg_name)
+              terra::writeVector(dat, gpkg_path, overwrite = TRUE)
+              file_paths <- c(file_paths, gpkg_path)
+              
+            } else {
+            csv_name <- paste0(
+              safe_filename(input$ecosystem_name), "_",
+              safe_filename(gsub("Criterion ", "", nm)), "_",   # remove "Criterion" from name
+              date_str, ".csv"
+            )
+            csv_path <- file.path(tmpdir, csv_name)
+            write.csv(dat, csv_path, row.names = FALSE)
+            file_paths <- c(file_paths, csv_path)
+            }
+            
+            }
+        }
+        
+        # Zip all CSVs together
+        zip::zip(zipfile = file, files = file_paths, mode = "cherry-pick")
+      }
+    )
+    
+    
+    
+    
   })
 }
-
- 
-# report_module_server <- function(id,
-#                                  ecosystem_name,
-#                                  rasters,
-#                                  areas,
-#                                  roi_vec,
-#                                  roi_wgs)
-#   {
-#   moduleServer(id, function(input, output, session) {
-#     ns <- session$ns
-#     
-#     output$generate_report <- downloadHandler(
-#       filename = function() {
-#         paste0("RLE_Assessment_", gsub(" ", "_", ecosystem_name()), ".html")
-#       },
-#       content = function(file) {
-#         template_file <- "rle_report_template_html_testing.rmd"  # your template file
-#         # template_file <- system.file("rmarkdown", "rle_report_template_html.rmd", package = "EcoCAT") # this might be needed in deployed app
-#         rmarkdown::render(
-#           template_file,
-#           output_file = file,
-#           params = list(
-#             ecosystem_name = ecosystem_name(),
-#             rasters = rasters(),
-#             years = areas()$Year,
-#             area_table = areas(),
-#             roi_vec = roi_vec,
-#             roi_wgs = roi_wgs
-# 
-#           ),
-#           envir = new.env(parent = globalenv())
-#         )
-#       }
-#     )
-#   })
-# }

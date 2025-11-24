@@ -11,8 +11,6 @@
 # 1. separate out raster and roi parts
 # 2. separate out the description classification part so that it loads an ROI quickly?
 # 3. roi area draw/selection
-# 6. height of cards
-
 
 # -----------------------------------------------------------------------------
 # UI
@@ -56,7 +54,7 @@ description_module_ui <- function(id) {
         card(
           full_screen = TRUE,
           card_header("Elevation", tooltip(bs_icon("info-circle"),
-                                           "Elevation distribution within the ROI"
+                                           "Elevation distribution within the ecosystem"
           )),
           card_body(plotlyOutput(ns("elev_graph")),  min_height = 150)
         )
@@ -69,11 +67,12 @@ description_module_ui <- function(id) {
       # Country overlap -------------------------------------------------------
       card(
         full_screen = TRUE,
-        card_header("ROI Country Overlap", tooltip(bs_icon("info-circle"),
-                                                   "Proportion of the ROI overlapping each country"
+        card_header("Ecosystem Country Overlap", tooltip(bs_icon("info-circle"),
+                                                   "Proportion of the ecosystem within each country"
         )),
         card_body(DT::dataTableOutput(ns("roi_country_table")))
       ),
+      
       # Typology -------------------------------------------------------------
       card(
         full_screen = TRUE,
@@ -81,7 +80,9 @@ description_module_ui <- function(id) {
           href = "https://global-ecosystems.org/",
           "Global Ecosystem Typology",
           target = "_blank"
-        )),
+        ), tooltip(bs_icon("info-circle"),
+                   "Global Ecosystem Typology (Levels 1-3) within the ecosystem")
+        ),
         card_body(shinycssloaders::withSpinner(DT::dataTableOutput(ns("get_table")), type=5))
       )
     )
@@ -185,7 +186,8 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
         # leafletProxy(ns("roi_map")) %>%
           addLayersControl(
             baseGroups = c("OSM", "ESRI Satellite"),
-            overlayGroups = c(display_label, "ROI", "Elevation"), # , "Rainfall (10y avg.)"
+            # overlayGroups = c(display_label, "ROI", "Elevation"), # , "Rainfall (10y avg.)"
+            overlayGroups = c(display_label), # , ""ROI", "Elevation, Rainfall (10y avg.)"
             options = layersControlOptions(collapsed = FALSE))
         
         
@@ -194,170 +196,30 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
     }
     
     # -------------------------------------------------------------------------
-    # Compute overlap with countries
-    compute_country_overlap <- function(roi, countries) {
-      validate(need(!is.null(countries), "Countries data not available"))
-      validate(need(!is.null(roi), "ROI not loaded."))
-      
-      countries_proj <- terra::project(countries, "EPSG:4326")
-      roi_proj <- terra::project(roi, "EPSG:4326")
-      
-      roi_int <- tryCatch({
-        terra::intersect(countries_proj, roi_proj)
-      }, error = function(e) {
-        message("Error during intersect: ", e$message)
-        NULL
-      })
-      
-      if (is.null(roi_int) || nrow(roi_int) == 0) return(data.frame())
-      
-      roi_int$area_km2 <- terra::expanse(roi_int, unit = "km")
-      total_area <- terra::expanse(roi_proj, unit = "km")
-      
-      as.data.frame(roi_int) %>%
-        dplyr::group_by(admin) %>%
-        dplyr::summarise(area_km2 = sum(area_km2), .groups = "drop") %>%
-        dplyr::mutate(
-          perc_roi = 100 * area_km2 / total_area,
-          area_km2 = format(round(area_km2, 0), big.mark = ","),
-          perc_roi = format(round(perc_roi, 1))
-        ) %>%
-        dplyr::arrange(desc(perc_roi)) %>%
-        dplyr::rename(Country = admin, `Area (km²)` = area_km2, `% of ROI` = perc_roi)
-    }
+    #                        Description variables
+    # -------------------------------------------------------------------------
     
     # -------------------------------------------------------------------------
-    # Compute rainfall
-    compute_rainfall <- function(roi) {
-
-      # Load and crop TerraClim rainfall
-      roi_rast <- getTerraClim(roi, varname = "ppt",
-                               startDate = "2010-01-01",
-                               endDate = "2024-12-31") |>
-        {\(x) crop(x$ppt, roi) |> mask(roi)}()
-
-      # Extract dates and months
-      dates <- as.Date(gsub("ppt_|_total", "", names(roi_rast)))
-      months <- lubridate::month(dates, label = TRUE)
-
-      # Compute mean, min, max per layer
-      layer_stats <- terra::global(roi_rast, c("mean", "range"), na.rm = TRUE) |> as.data.frame()
-      layer_stats$date <- dates
-      layer_stats$month <- months
-      layer_stats$month_num <- as.numeric(months)  # numeric for loess smoothing
-
-      # Aggregate by month
-      monthly_avg <- layer_stats %>%
-        dplyr::group_by(month) %>%
-        dplyr::summarise(
-          mean = mean(mean, na.rm = TRUE),
-          min = min(min, na.rm = TRUE),
-          max = max(max, na.rm = TRUE)
-        ) %>%
-        dplyr::arrange(match(month, month.abb))  # ensure Jan-Dec order
-
-
-      # Smooth min, mean, max with loess
-      smooth_df <- monthly_avg %>%
-        mutate(
-          min_smooth  = predict(loess(min  ~ as.numeric(month), span = 0.5)),
-          max_smooth  = predict(loess(max  ~ as.numeric(month), span = 0.5)),
-          mean_smooth = predict(loess(mean ~ as.numeric(month), span = 0.5))
-        ) %>% mutate_if(is.numeric, round, 1) %>%
-        mutate(across(where(is.numeric), ~ ifelse(. < 0, 0, .)))# <0 to 0s
-
-      return(smooth_df)
-    }
-
+    # Compute overlap with countries
+    source("helpers/country_overlap.R") #compute_countries
+    
     # -------------------------------------------------------------------------
     # Compute temperature
-    compute_temperature <- function(roi) {
-      t_10 <- list.files("data/temperature/wc2.1_10m_tavg", full.names = TRUE) |>
-        rast(win = terra::ext(roi)) |> crop(roi) |> mask(roi)
-      stats <- terra::global(t_10, c("mean", "range"), na.rm = TRUE)
-      stats$month <- lubridate::month(1:12, label = TRUE)
-      
-      # Aggregate by month across all years
-      monthly_avg <- stats %>%
-        dplyr::group_by(month) %>%
-        dplyr::summarise(
-          mean = mean(mean, na.rm = TRUE),
-          min = min(min, na.rm = TRUE),
-          max = max(max, na.rm = TRUE)
-        ) %>%
-        dplyr::arrange(match(month, month.abb))  # ensure Jan-Dec order
-      
-      # Smooth min, mean, max with loess - this makes it much prettier!
-      smooth_df <- monthly_avg %>%
-        mutate(
-          min_smooth  = predict(loess(min  ~ as.numeric(month), span = 0.5)),
-          max_smooth  = predict(loess(max  ~ as.numeric(month), span = 0.5)),
-          mean_smooth = predict(loess(mean ~ as.numeric(month), span = 0.5))
-        ) %>% mutate_if(is.numeric, round, 1)
-      
-      return(smooth_df)
-    }
+    source("helpers/temperature.R") # compute_temperature
     
     # -------------------------------------------------------------------------
     # Compute elevation
-    compute_elevation <- function(roi) {
-      elev_roi <- rast(get_elev_raster(locations = st_as_sf(roi), z = 6)) |> crop(roi) |> mask(roi)
-      return(elev_roi)
-    }
+    source("helpers/typology.R") # compute_elevation
     
     # -------------------------------------------------------------------------
     # Compute Global Ecosystem Typology
-    compute_typology <- function(roi, efg_lookup) {
-      validate(need(!is.null(roi), "ROI not loaded."))
-      
-      # Load typology rasters ----------------------------------------------------
-      get_data <- rast(list.files("data/get_geotiff",
-                                  pattern = "\\.tif$", full.names = TRUE)[c(1:26, 28:70, 72:109)],
-                       win = ext(roi))
-      # if (length(get_data) == 0) return(data.frame())
-      validate(need(!is.null(get_data), "Could not load typology rasters."))
-      
-      # Crop + mask to ROI
-      r_roi <- terra::crop(get_data, roi) |> terra::mask(roi)
-      
-      # count number of cells for each layer/value
-      cellCount <- freq(r_roi, usenames=T) %>% arrange(desc(count), desc(value))
-
-      # grand total of all counts (all layers, both values)
-      grand_total <- sum(cellCount$count, na.rm = TRUE)
-      
-      # Summarise proportion per EFG --------------------------------------------
-      typ_tbl <- cellCount |>
-        dplyr::group_by(layer) |>
-        dplyr::summarise(
-          count_major = sum(ifelse(value == 1, count, 0), na.rm = TRUE),
-          count_total = sum(count, na.rm = TRUE),
-          .groups = "drop"
-        ) |>
-        dplyr::mutate(
-          proportion_global = count_major / grand_total,
-          proportion_within_layer = dplyr::if_else(count_total > 0,
-                                                   count_major / count_total, NA_real_),
-          EFG_CODE = stringr::str_extract(layer, "^[^.]+\\.[0-9]+") # Extract EFG_CODE = text up to the second dot
-        ) |>
-        dplyr::arrange(desc(proportion_global)) |>
-        dplyr::filter(proportion_global >= 0.05) |>
-        dplyr::left_join(
-          efg_lookup %>%
-            dplyr::select(
-              EFG_CODE = EFG_ID,
-              `Ecosystem Functional Group` = ECOSYSTEM_FUNCTIONAL_GROUP,
-              Realm = REALM,
-              Biome = BIOME
-            ),
-          by = "EFG_CODE"
-        ) |>
-        dplyr::mutate(`% of ROI` = scales::percent(proportion_global, accuracy = 0.1)) |>
-        dplyr::select(EFG_CODE, `Ecosystem Functional Group`, Realm, Biome, `% of ROI`)
-      
-      typ_tbl
-    }
+    source("helpers/elevation.R") # compute_typology
     
+    # -------------------------------------------------------------------------
+    # Compute rainfall
+    source("helpers/precipitation.R") # compute_precipitation
+   
+
     # -------------------------------------------------------------------------
     # Process ROI on button click
     observeEvent(process_roi_btn(), {
@@ -387,23 +249,8 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       roi <- load_roi(roi_input())
       rv$roi <- roi
       update_roi_map(roi)
-      # Update progress
-      progress$inc(2/6, detail = "countries")
-      rv$countries <- compute_country_overlap(roi, countries)
-      # Update progress
-      progress$inc(3/6, detail = "rainfall")
-      # rv$rainfall <- compute_rainfall(roi)
-      # Update progress
-      progress$inc(4/6,detail = "temperature")
-      rv$temperature <- compute_temperature(roi)
-      # Update progress
-      progress$inc(5/6, detail = "elevation")
-      rv$elevation <- compute_elevation(roi)
-      # Update progress
-      progress$inc(6/6, detail = "typology")
-  #    rv$typology <- compute_typology(roi, efg_lookup)
-      
-      # hide modal once done
+
+     # hide modal once done
       removeModal()
       progress$close()
       
@@ -492,31 +339,7 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       dom = 't'              # only show table
     ), rownames = FALSE)
 
-    #map layers --------------------------------------------------------------
-    observe({
-      req(rv$elevation)  # ensure raster exists
-      
-      leafletProxy(ns("roi_map")) %>%
-        clearImages() %>%   # optional: clear previous raster layers
-        addRasterImage(
-          rv$elevation,  # note the parentheses to read reactive
-          colors = colorNumeric(
-            palette = terrain.colors(100),
-            domain = values(rv$elevation),
-            na.color = "transparent"
-          ),
-          opacity = 0.7,
-          group = "Elevation"
-        ) %>%
-        addLayersControl(
-          baseGroups = c("OSM", "ESRI Satellite"),
-          overlayGroups = c("ROI", "Rainfall (10y avg.)", "Elevation"),
-          options = layersControlOptions(collapsed = FALSE)
-        )
-    })
-    
-    
-    
+
     
     
     #-------------------------------------------------------------------------
@@ -538,8 +361,8 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
         tagList(
           div(style = "text-align:center;",
               tags$h4("Please wait... "),
-              tags$p("This will take approximately 5 seconds per classification map"),
-              tags$p(tags$b("Criteria A"), "results will be visable on the ",tags$b("'Criteria A'")," tab on completion"),
+              # tags$p("This will take approximately 15 seconds per classification map"),
+              tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
               withSpinner(uiOutput("dummy_spinner"), type = 5)  # CSS spinner
           )
         ),
@@ -550,8 +373,39 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       # Call the data module function (see data.R) to process rasters
       data_module$process_rasters(files, years)
       
+      
+      # Description data ------------------------------------------------------
+      # Create a Progress object
+      progress <- shiny::Progress$new(min = 0,
+                                      max = 2)
+      progress$set(message = "extacting data...", value = 0)
+      
+      latest <- data_module$rasters_original()[[length(files)]]
+      ##latest <- r_list[[length(r_list)]]
+
+      # 1. country overlap
+      progress$inc(2/6, detail = "countries") # update progress
+      rv$countries <- compute_countries(latest, countries)
+
+      # 2. temperature
+      progress$inc(3/6,detail = "monthly temperature") # update progress
+      rv$temperature <- compute_temperature(latest)
+
+      # 3. elevation
+      progress$inc(4/6, detail = "elevation")
+      rv$elevation <- compute_elevation(latest)
+
+      # 4. global ecosystem typology (get)
+      progress$inc(5/6, detail = "global ecosystem typology")
+      rv$typology <- compute_typology(latest, efg_lookup)
+
+      # 5. precipitation
+      progress$inc(6/6, detail = "monthly rainfall") # update progress
+      rv$rainfall <- compute_precipitation(latest)
+      
       # hide modal once done
       removeModal()
+      progress$close()
     })
 
     # Render leaflet map ------------------------------------------------------
@@ -571,10 +425,10 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       # overlay groups
       overlay_groups <- display_label  # always include the raster
       
-      # Only add ROI/Elevation if the ROI map exists
-      if (!is.null( rv$roi) && length( rv$roi) > 0) {
-        overlay_groups <- c(overlay_groups, "ROI", "Elevation")
-      }
+      # # Only add ROI/Elevation if the ROI map exists
+      # if (!is.null( rv$roi) && length( rv$roi) > 0) {
+      #   overlay_groups <- c(overlay_groups, "ROI", "Elevation")
+      # }
       
       leafletProxy(ns("roi_map")) %>%
         clearGroup("classification") %>%  # remove any existing classification rasters
@@ -593,97 +447,16 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       
     })
     
-    
-    # ##
-    # # -------------------------------------------------------------------------
-    # # Compute Global Ecosystem Typology
-    # #   - Based on the most recent uploaded EAU raster instead of ROI polygon
-    # # -------------------------------------------------------------------------
-    # compute_typology <- function(eau_rasters, efg_lookup) {
-    #   validate(need(!is.null(eau_rasters) && length(eau_rasters) > 0,
-    #                 "No EAU rasters available."))
-    # 
-    #   # Use the most recent EAU raster (assuming names are years or sorted chronologically)
-    #   latest_raster <- eau_rasters[[length(eau_rasters)]]
-    #   validate(need(!is.null(latest_raster), "Latest EAU raster not found."))
-    # 
-    #   # Load typology rasters ----------------------------------------------------
-    #   typology_files <- list.files(
-    #     "data/get_geotiff",
-    #     pattern = "\\.tif$",
-    #     full.names = TRUE
-    #   )[c(1:26, 28:70, 72:109)]
-    # 
-    #   get_data <- rast(typology_files, win = ext(latest_raster))
-    #   validate(need(!is.null(get_data), "Could not load typology rasters."))
-    # 
-    #   # Crop + mask to the extent of the latest EAU raster
-    #   r_masked <- terra::crop(get_data, latest_raster) |>
-    #     terra::mask(latest_raster)
-    # 
-    #   # Count number of cells for each layer/value
-    #   cellCount <- freq(r_masked, usenames = TRUE) |>
-    #     dplyr::arrange(desc(count), desc(value))
-    # 
-    #   # Grand total of all counts
-    #   grand_total <- sum(cellCount$count, na.rm = TRUE)
-    # 
-    #   # Summarise proportion per EFG --------------------------------------------
-    #   typ_tbl <- cellCount |>
-    #     dplyr::group_by(layer) |>
-    #     dplyr::summarise(
-    #       count_major = sum(ifelse(value == 1, count, 0), na.rm = TRUE),
-    #       count_total = sum(count, na.rm = TRUE),
-    #       .groups = "drop"
-    #     ) |>
-    #     dplyr::mutate(
-    #       proportion_global = count_major / grand_total,
-    #       proportion_within_layer = dplyr::if_else(count_total > 0,
-    #                                                count_major / count_total, NA_real_),
-    #       EFG_CODE = stringr::str_extract(layer, "^[^.]+\\.[0-9]+") # Extract code before 2nd dot
-    #     ) |>
-    #     dplyr::arrange(desc(proportion_global)) |>
-    #     dplyr::filter(proportion_global >= 0.05) |>
-    #     dplyr::left_join(
-    #       efg_lookup |>
-    #         dplyr::select(
-    #           EFG_CODE = EFG_ID,
-    #           `Ecosystem Functional Group` = ECOSYSTEM_FUNCTIONAL_GROUP,
-    #           Realm = REALM,
-    #           Biome = BIOME
-    #         ),
-    #       by = "EFG_CODE"
-    #     ) |>
-    #     dplyr::mutate(`% of Area` = scales::percent(proportion_global, accuracy = 0.1)) |>
-    #     dplyr::select(EFG_CODE, `Ecosystem Functional Group`, Realm, Biome, `% of Area`)
-    # 
-    #   typ_tbl
-    # }
-    # 
-    # observeEvent(input$compute_typology, {
-    #   req(data_module$rasters())
-    #   typology_tbl <- compute_typology(data_module$rasters(), efg_lookup)
-    #   output$typology_table <- renderTable(typology_tbl)
-    #   # typology table ---------------------------------------------------------
-    #   output$get_table <- DT::renderDataTable({
-    #     typology_tbl
-    #   }, options = list(
-    #     paging = FALSE,        # no pagination
-    #     searching = FALSE,     # no search box
-    #     info = FALSE,          # no "Showing X of Y entries"
-    #     dom = 't'              # only show table
-    #   ), rownames = FALSE)
-    # 
-    # })
-    
     # return the data/function ------------------------------------------------
     return(list(
       roi = reactive({ rv$roi }),
       roi_wgs = reactive({ rv$roi_wgs }),
       countries = reactive({rv$countries}),
-      rainfall = reactive({rv$rainfall})
+      rainfall = reactive({rv$rainfall}),
+      typology = reactive({rv$typology}),
+      temperature = reactive({rv$temperature}),
+      elevation = reactive({rv$elevation})
     ))
     
   })
 }
-
