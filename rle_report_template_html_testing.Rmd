@@ -16,7 +16,7 @@ params:
   roi_vec_file: NA
   countries: NA
   rainfall: NA
-  typology: NA
+ # typology: NA
   area_change_data: NA
   area_prediction_data: NA
   mcp_data: NA
@@ -91,25 +91,25 @@ All data and files are downloaded as part of this report for the user, including
 [Global Ecosystem Typology](https://global-ecosystems.org/):
 
 ```{r typology, echo=FALSE, message=FALSE, warning=FALSE}
-typology_df <- params$typology
-
-htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Percentage of Global Ecosystem Typology across the ecosystem"
-  ),
-  DT::datatable(typology_df, rownames=F,
-                escape = FALSE,
-                options = list(
-                  paging = FALSE,
-                  searching = FALSE,
-                  info = FALSE,
-                  dom = 't',
-                  autoWidth = TRUE,
-                  scrollX = FALSE)) %>%
-    DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
-)
+# typology_df <- params$typology
+# 
+# htmltools::tagList(
+#   # centered Title
+#   htmltools::div(
+#     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
+#     "Percentage of Global Ecosystem Typology across the ecosystem"
+#   ),
+#   DT::datatable(typology_df, rownames=F,
+#                 escape = FALSE,
+#                 options = list(
+#                   paging = FALSE,
+#                   searching = FALSE,
+#                   info = FALSE,
+#                   dom = 't',
+#                   autoWidth = TRUE,
+#                   scrollX = FALSE)) %>%
+#     DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
+# )
 ```
 
 ### Distribution
