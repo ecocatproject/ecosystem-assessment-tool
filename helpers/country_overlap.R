@@ -6,7 +6,7 @@
 # library(exactextractr)
 # library(sf)
 # # load data
-# countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
+ countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
 
 # country_overlap.R
@@ -100,14 +100,21 @@ compute_countries <- function(x, countries) {
   stop("Input x must be either a SpatVector or a SpatRaster.")
 }
 
-# # # test function
+# # # # test function
 # eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
-# result_eau <- compute_country_overlap_eau(eau, countries)
+# result_eau <- compute_countries(eau, countries)
 # result_eau
-# test function
-# roi <- vect("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiSumbuThicketEcoregion20kmBuffer.shp")
-# result_shp <- compute_country_overlap_roi(roi, countries)
-
+# # test function
+# # roi <- vect("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiSumbuThicketEcoregion20kmBuffer.shp")
+# # result_shp <- compute_country_overlap_roi(roi, countries)
+# 
+# 
+# countries_filtered <- countries[countries$admin %in% result_eau$Country, ]
+# countries_filtered
+# 
+# library(wdpar)
+# test <- wdpa_fetch(countries_filtered$iso_a3[1])
+# 
 
 
 

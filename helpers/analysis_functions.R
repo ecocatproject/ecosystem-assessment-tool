@@ -62,8 +62,8 @@ predict_area_change <- function(obsv_change, horizon = 50) {
     project_seq(oldest$area, -oldest$proportional_rate_change, "PRC", nYearsPast, "past"),
     project_seq(oldest$area, -oldest$absolute_rate_change, "ARC", nYearsPast, "past")
   ) %>% mutate(scenario = "past") %>%
-    select(year, area, type = ptype, method, scenario) %>%
-    arrange(year)
+    dplyr::select(year, area, type = ptype, method, scenario) %>%
+    dplyr::arrange(year)
   
   # Future projections
   scenarios <- list(
@@ -98,13 +98,13 @@ predict_area_change <- function(obsv_change, horizon = 50) {
       project_seq(recent$area, rates$PRC, "PRC", horizon),
       project_seq(recent$area, rates$ARC, "ARC", horizon)
     ) %>% mutate(scenario = scen) %>%
-      select(year, area, type = ptype, method, scenario) %>%
+      dplyr::select(year, area, type = ptype, method, scenario) %>%
       arrange(year)
   })
   
   # Combine observed + projections
   observed <- obsv_change %>% 
-    select(year, area) %>%                                                # select the data required for combining
+    dplyr::select(year, area) %>%                                                # select the data required for combining
     mutate(type = "observed", method = "observed", scenario = "observed") # force names to comply with other data
   
   out <- bind_rows(past_proj, observed,  future_proj)                     # combine the 3 sets of data

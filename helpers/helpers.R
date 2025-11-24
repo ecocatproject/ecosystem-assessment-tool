@@ -235,6 +235,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
                            scenario_col = NULL, hover_text = NULL, year_data = NULL) {
   reactive({
     data <- reactive_data()
+    data <- data %>% dplyr::filter(method == "PRC")
     status <- get_box_status(data[[status_col]]) # THIS MIGTH NEED TO CHANGE IF ONLY PRESENTING PRC DATA?
     
     # Map each status code to tooltip text
