@@ -87,7 +87,7 @@ ui <- page_navbar(
   criterion_b_module_ui("criteria_b"),
   drivers_module_ui("drivers_of_change"),
   report_module_ui("report"),
-  download_module_ui("download"),
+  # download_module_ui("download"),
   about_module_ui("about"),
   
   # add links ----------------------------------------------------------------
@@ -135,13 +135,15 @@ server <- function(input, output, session) {
                                                         data_module = data_module)
   
   # Run Criterion B module ----------------------------------------------------
+  main_tab <- reactive(input$main_nav)  # or whatever your navbar id is
   criterion_b_module <- criterion_b_module_server(id = "criteria_b",
     rasters = data_module$rasters,
     year_inputs = data_module$years,
     rasters_original = data_module$rasters_original,
+    main_tab = main_tab
   )
   
-  # Run drivers of change module ----------------------------------------------------
+  # # Run drivers of change module ----------------------------------------------------
   drivers_module <- drivers_module_server(id = "drivers_of_change",
                                                   rasters = data_module$rasters,
                                                   year_inputs = data_module$years,
@@ -149,7 +151,39 @@ server <- function(input, output, session) {
                                           )
 
   # # Run report module -------------------------------------------------------
-  report_module_server("report",
+  # report_module_server(
+  #   "report",
+  #                       ecosystem_name = input$ecosystem_name,
+  #                       author = input$author,
+  #                       organisation = input$organisation,
+  #                       email = input$email,
+  #   rasters = data_module$rasters,
+  #   areas = data_module$areas,
+  #   years = data_module$years,
+  #   roi_vec = description_module$roi,
+  #   # roi_wgs = description_module$roi_wgs,
+  #   countries = description_module$countries,
+  #   rainfall = description_module$rainfall
+  # )
+  
+  available_datasets <- reactive({
+    all <- list(
+      "Criterion A - area change data" = criterion_a_module$area_change_data,
+      "Criterion A - area prediction data" = criterion_a_module$area_prediction_data,
+      "Criterion B - EOO data" = criterion_b_module$mcp_table,
+      "Criterion B - EOO spatial data" = criterion_b_module$mcp_vectors,
+      "Criterion B - AOO data" = criterion_b_module$b2_table,
+      "Criterion B - AOO spatial data" = criterion_b_module$b2_poly
+    )
+    
+    # Keep only those whose reactive returns *non-null*
+    Filter(function(r) {
+      !is.null(r())  # run reactive to check if data exists
+    }, all)
+  })
+  
+   report_module_server("report",
+                        datasets = available_datasets,
                        ecosystem_name = input$ecosystem_name,
                        author = input$author,
                        organisation = input$organisation,
@@ -164,18 +198,22 @@ server <- function(input, output, session) {
                        # rain_data = rain_data,
                        # temp_data = temp_data,
                        # elevation_summary = elevation_summary,
-                       # typology_table = typology_table,
-                       area_change_data = criterion_a_module$area_change_data,
-                       area_prediction_data = criterion_a_module$area_prediction_data,
-                       mcp_data = criterion_b_module$mcp_data,
-                       mcp_poly = criterion_b_module$mcp_poly,
+                        typology = description_module$typology,
+                        area_change_data = criterion_a_module$area_change_data,
+                        area_prediction_data = criterion_a_module$area_prediction_data,
+                        mcp_data = criterion_b_module$mcp_table,
+                        mcp_poly = criterion_b_module$mcp_poly,
                        b2_data = criterion_b_module$b2_table,
                        aoo_sel_ids = criterion_b_module$aoo_sel_ids,
                        aoo_all_ids = criterion_b_module$aoo_all_ids,
-                       b2_poly = criterion_b_module$b2_poly)
-                       
-  # Run download module --------------------------------------------------------
-  # download_module_server("download", )
+                       b2_poly = criterion_b_module$b2_poly
+                       )
+
+  # # Run download module --------------------------------------------------------
+  # download_module_server(
+  #   "download",
+  #   datasets = available_datasets
+  # )
   
     # # Run about module --------------------------------------------------------
   # criterion_A_module_server("about")

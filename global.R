@@ -45,7 +45,6 @@ library(promises)
 library(future)
 library(rstac)
 
-
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
 
@@ -66,17 +65,15 @@ link_rle <- tags$a(div(img(src=rle_logo, height = "40px")),
 
 # Load static data
 efg_lookup <- read.csv("data/ecosystem_typology_lookup_table.csv")
-#ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
+ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
 realms <- terra::vect("data/realms/RL_Realms.shp")
 countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
 # theme
 custom_theme <- bs_theme(
   bootswatch = "flatly",
-  primary = "#669900",
+  primary = "#669900", # darkgreen - #275e37 - see https://kewnet.kew.org/wp-content/uploads/2010/07/brand-guidelines-1017.pdf
   bg = "#f5f5f5",
   fg = "#333333",
   base_font = font_google("Roboto")
 )
-
-
