@@ -13,7 +13,7 @@ params:
   raster_files: NA
   years: NA
   areas: NA
-  roi_vec_file: NA
+  #roi_vec_file: NA
   countries: NA
   rainfall: NA
  # typology: NA
@@ -45,8 +45,7 @@ library(mgcv)
 
 # evaluate some parameters
 rasters <- if (!is.null(params$raster_files)) lapply(params$raster_files, terra::rast) else NULL
-roi_vec <- readRDS(params$roi_vec_file)
-print(str(roi_vec))
+#roi_vec <- readRDS(params$roi_vec_file)
 years <- params$years %||% numeric(0)
 n <- length(rasters)
 ```
@@ -74,13 +73,10 @@ Assessed on `r format(Sys.Date(), "%d %B %Y")` `r
 
 This report documents an ecosystem assessment, as part of the IUCN Red List of Ecosystems, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. The data behind this ecosystem assessment report has been generated machine learning models of remote sensing data as part of the EcoCAT (Ecosystem Classification Assessment Tool) project from RBG Kew.
 
-All data and files are downloaded as part of this report for the user, including:
+ - The graphs can be downloaded from this report by selecting the 'download as png' icon at the top of each plot.
+ - Watch this space to be able to download the maps too ......
+ - To download the data and mapping files as part of this assessment, please revisit the download tab and select the required data files for download.
   
-  -   summary of area change (.csv)
--   projections of area change (.csv)
--   summary of aoo (.csv) + associated spatial files
--   summary of eoo (.csv) + associated spatial files
-
 
 ------------------------------------------------------------------------
   
@@ -90,26 +86,26 @@ All data and files are downloaded as part of this report for the user, including
 
 [Global Ecosystem Typology](https://global-ecosystems.org/):
 
-```{r typology, echo=FALSE, message=FALSE, warning=FALSE}
-# typology_df <- params$typology
-# 
-# htmltools::tagList(
-#   # centered Title
-#   htmltools::div(
-#     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-#     "Percentage of Global Ecosystem Typology across the ecosystem"
-#   ),
-#   DT::datatable(typology_df, rownames=F,
-#                 escape = FALSE,
-#                 options = list(
-#                   paging = FALSE,
-#                   searching = FALSE,
-#                   info = FALSE,
-#                   dom = 't',
-#                   autoWidth = TRUE,
-#                   scrollX = FALSE)) %>%
-#     DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
-# )
+```{r typology, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$typology)}
+typology_df <- params$typology
+
+htmltools::tagList(
+  # centered Title
+  htmltools::div(
+    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
+    "Percentage of Global Ecosystem Typology across the ecosystem"
+  ),
+  DT::datatable(typology_df, rownames=F,
+                escape = FALSE,
+                options = list(
+                  paging = FALSE,
+                  searching = FALSE,
+                  info = FALSE,
+                  dom = 't',
+                  autoWidth = TRUE,
+                  scrollX = FALSE)) %>%
+    DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
+)
 ```
 
 ### Distribution
@@ -124,7 +120,7 @@ All data and files are downloaded as part of this report for the user, including
 
 **Countries:** `r params$countries$Country`
 
-```{r coo, echo=FALSE, message=FALSE, warning=FALSE}
+```{r coo, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$countries)}
 coo_df <- params$countries
 
 htmltools::tagList(
@@ -149,10 +145,10 @@ htmltools::tagList(
 **Spatial distribution of ecosystem**
   
 ```{r roi, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%'}
-if (!is.null(params$roi)) {
-  roi_wgs <- terra::project(roi_vec, "EPSG:4326")            # convert to wgs
-  map_data <- sf::st_as_sf(roi_wgs)                          # convert to sf
-  roi_ext <- st_bbox(map_data)                               # get extent
+#if (!is.null(params$rasters)) {
+ # roi_wgs <- terra::project(roi_vec, "EPSG:4326")            # convert to wgs
+ # map_data <- sf::st_as_sf(roi_wgs)                          # convert to sf
+  #roi_ext <- st_bbox(map_data)                               # get extent
   r_recent <- try(rasters[[length(rasters)]], silent = TRUE) # get the most recent raster for plotting
   
   # the map - recent raster only
@@ -161,23 +157,23 @@ if (!is.null(params$roi)) {
     addTiles() %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
     addRasterImage(r_recent, group = "EAU", colors = pal, method = "ngb", project = TRUE) %>% 
-    addPolygons(data = map_data, fillColor = "grey80", fillOpacity = 0.2,
-                color = "darkblue", weight = 2, group="ROI") %>%
+    #addPolygons(data = map_data, fillColor = "grey80", fillOpacity = 0.2,
+    #            color = "darkblue", weight = 2, group="ROI") %>%
     addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
-                     overlayGroups = c("EAU", "ROI"),
+                     overlayGroups = c("ROI"),
                      options = layersControlOptions(collapsed = FALSE))
   
   # plot the map
   m
   
-} else {
-  cat("No ROI shapefile was uploaded, so no ROI map is available.\n")
-}
+#} else {
+#  cat("No ROI shapefile was uploaded, so no ROI map is available.\n")
+#}
 ```
 
 **Rainfall:** The average annual rainfall patterns are shown below:
 
-```{r rainfall_2, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', fig.height=3}
+```{r rainfall_2, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', fig.height=3, eval = !is.null(params$rainfall)}
 monthly_avg <- params$rainfall
 
 if (knitr::is_html_output()) {
@@ -229,7 +225,7 @@ if (knitr::is_html_output()) {
 
 ### Criterion A: Reduction in geographic distribution
 
-```{r area_table, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5}
+```{r area_table, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$areas) }
 if (nrow(params$areas) > 1) {
     area_data <- params$areas
     area_data$Year <- as.numeric(area_data$Year)
@@ -246,18 +242,18 @@ if (nrow(params$areas) > 1) {
   } else {
     trend <- "changed"   # neutral fallback (will not say "stable")
   }
-} else {
-  start_year <- end_year <- start_area <- end_area <- change_percent <- NA
-  trend <- NA
-  print("No rasters were uploaded, so Criterion A (reduction in distribution) could not be assessed.")
 }
-
-
 ```
 
-Between `r start_year` and `r end_year` this area of this ecosystem has `r trend` by `r abs(change_percent)` % from `r  format(round(start_area,0), big.mark = ",")`km² to `r format(round(end_area,0), big.mark = ",")`km². The proportional rate (% of annual area change) and absolute rate (annual change in area) are detailed in the table below.
+`r if (nrow(params$areas) > 1) {
+paste0("Between ", start_year, " and ", end_year,  " the area of this ecosystem has ", trend, " by ",
+abs(change_percent), "% from ", format(round(start_area,0), big.mark = ","), "km² to ", format(round(end_area,0), big.mark = ","),
+"km². The proportional rate (% of annual area change) and absolute rate (annual change in area) are detailed in the table below.")
+ } else {
+ "The area of ecosystem change for criterion A could not be calculated because only a single year of data was provided. The area calculation is provided below. "
+ }`
 
-```{r area_table_2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5}
+```{r area_table_2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) > 1}
 area_change_data <- params$area_change_data()
 
 criteria_a_data <- area_change_data %>%
@@ -290,9 +286,46 @@ htmltools::div(
 a_tab
 ```
 
-To assess the subcriteria of Criterion, the changes in ecosystem area can be estimated for both past and present using various of methods depending on data availability. This includes quantifying the absolute change area (ARC), proportional change in area (PRC). Some of these trends are presenting the the interactive graph below.
+```{r area_table_3, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) == 1}
+area_data <- params$areas
 
-```{r area_change_graph, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, out.width = '100%'}
+# criteria_a_data <- area_change_data %>%
+#         mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
+#                area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
+#                proportional_rate_change = round(proportional_rate_change, 2),
+#                absolute_rate_change = round(absolute_rate_change, 2))
+
+
+a_tab <- htmltools::tagList(
+  # centered Title
+  htmltools::div(
+    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
+    "Ecosystem area"
+  ),
+  # centrered table too
+htmltools::div(
+  style = "text-align:center;",
+  htmltools::div(
+    style = "display:inline-block; width:auto;",  # shrink to fit content
+      DT::datatable(area_data,
+        # colnames = c("Year", "Area (km2)", "Area change (km2)",
+        #              "Proportional rate of change (%)", "Absolute rate of change (km2)"),
+        options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
+        rownames = FALSE
+      )
+  )
+)
+)
+a_tab
+```
+
+
+`r if (!is.null(params$area_prediction_data)) {
+  paste0("To assess the subcriteria of Criterion A, the changes in ecosystem area can be estimated for both past and present using various of methods depending on data availability. This includes quantifying the absolute change area (ARC), proportional change in area (PRC). Some of these trends are presenting the the interactive graph below.."
+  )
+}` 
+
+```{r area_change_graph, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, out.width = '100%',  eval = !is.null(params$area_prediction_data)}
 area_prediction_data <- params$area_prediction_data
 
 results <- area_prediction_data %>%
@@ -408,7 +441,7 @@ p  # print the plotly object
 
 #### Subcriterion B1: Restricted extent of occurrence (EOO)
 
-```{r b1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5}
+```{r b1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5,  eval = !is.null(params$mcp_data)}
 assessment_map <- c(
   "VU" = "Vulnerable",
   "EN" = "Endangered",
@@ -422,6 +455,8 @@ assessment_map <- c(
  } 
 
 ```
+
+Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) – the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystems types.
 
 `r if (!is.null(params$mcp_data)) {
   b1_data <- params$mcp_data
@@ -444,7 +479,7 @@ assessment_map <- c(
 }`
 
 
-```{r b1_table, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5,eval = !is.null(params$mcp_data)}
+```{r b1_table, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = !is.null(params$mcp_data)}
 b1_data$area_km2 <- format(round(b1_data$area_km2, 0), big.mark = ",", trim = TRUE)
 
 b1_tab <- htmltools::tagList(
@@ -485,11 +520,10 @@ htmltools::div(
 b1_tab
 
 ```
-##### **Extent of Occurrence (EOO) per year of available EAU data**
 
 ```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly)}
-# map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
-      # label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2,2), " km²"),
+map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
+# label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2,2), " km²")
 mcp_list <- params$mcp_poly %||% list()
 
 if (length(mcp_list) > 0) {
@@ -607,7 +641,7 @@ Subcriterion B2 is assessed by estimating the area of occupancy (AOO) by countin
   
   
 } else {
-  "The extent of occurrence (EOO) under subcriterion B1 could not be calculated because the 10 x 10km grid data was not created for this assessment."
+  "The area of occupancy (AOO) under subcriterion B2 could not be calculated because the 10 x 10km grid data was not created for this assessment."
 }`
 
 
