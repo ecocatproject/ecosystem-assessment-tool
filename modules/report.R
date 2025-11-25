@@ -129,7 +129,7 @@ report_module_server <- function(datasets,
         
         # --- Render the report ----------------------------------------------
         # safe for deployed app?
-        report_path < -tempfile(fileext = ".Rmd")
+        report_path <- tempfile(fileext = ".Rmd")
         file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
         
         # tryCatch({
@@ -242,3 +242,4 @@ report_module_server <- function(datasets,
     
   })
 }
+
