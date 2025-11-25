@@ -70,12 +70,12 @@ ui <- page_navbar(
   # sidebar ------------------------------------------------------------------
   sidebar = sidebar(
     width = 300,
-    fileInput("roi", "Upload Region of Interest (Shapefile components)",
-              multiple = TRUE,
-              accept = c(".shp", ".shx", ".dbf", ".prj", ".cpg")),
-    actionButton("load_roi", "Load ROI map"),
-    hr(),
-    fileInput("tifs", "Upload TIF file(s)", multiple = TRUE, accept = ".tif"),
+    # fileInput("roi", "Upload Region of Interest (Shapefile components)",
+    #           multiple = TRUE,
+    #           accept = c(".shp", ".shx", ".dbf", ".prj", ".cpg")),
+    # actionButton("load_roi", "Load ROI map"),
+    # hr(),
+    fileInput("tifs", "Upload Ecosystem classification file(s)", multiple = TRUE, accept = ".tif"),
     uiOutput("year_inputs"),
     actionButton("process", "Process ecosystem maps"),
     hr()
@@ -85,7 +85,7 @@ ui <- page_navbar(
   description_module_ui("description"),
   criterion_a_module_ui("criteria_a"),
   criterion_b_module_ui("criteria_b"),
-  #drivers_module_ui("drivers_of_change"),
+  # drivers_module_ui("drivers_of_change"),
   report_module_ui("report"),
   # download_module_ui("download"),
   about_module_ui("about"),
@@ -191,7 +191,7 @@ server <- function(input, output, session) {
                        rasters = data_module$rasters,
                        areas = data_module$areas,
                        years = data_module$years,
-                       roi_vec = description_module$roi, #  roi_vec = reactive(description_module$rv$roi)  # wrap in reactive() if not already
+                      # roi_vec = description_module$roi, #  roi_vec = reactive(description_module$rv$roi)  # wrap in reactive() if not already
                        countries = description_module$countries,
                        rainfall = description_module$rainfall,
                        # chirps_summary = chirps_summary,
@@ -231,7 +231,5 @@ server <- function(input, output, session) {
 
 # run the app -----------------------------------------------------------------
 shinyApp(ui, server)
-
-
 
 
