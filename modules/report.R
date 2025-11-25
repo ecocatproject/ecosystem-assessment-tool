@@ -34,8 +34,9 @@ report_module_ui <- function(id) {
 # server
 # -----------------------------------------------------------------------------
 report_path <- tempfile(fileext = ".Rmd")
-template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
+template_path <- file.path("rle_report_template_html_testing.rmd")
 file.copy(template_path, report_path, overwrite=T)
+
 
 report_module_server <- function(datasets,
                                  id,
@@ -43,7 +44,7 @@ report_module_server <- function(datasets,
                                  rasters,
                                  areas,
                                  years,
-                                 roi_vec,
+                                # roi_vec,
                                  countries,
                                  rainfall,
                                  #typology,
@@ -64,21 +65,21 @@ report_module_server <- function(datasets,
       },
       content = function(file) {
 
-        # # Show modal popup while rendering ------------------------------------
-        # showModal(modalDialog(
-        #   title = "Generating report...",
-        #   tagList(
-        #     div(
-        #       style = "text-align:center;",
-        #       tags$h4("Please wait while your RLE assessment report is being generated."),
-        #       tags$p("This process usually takes approximately 10 seconds."),
-        #       tags$p(tags$em("Rendering the HTML report...")),
-        #       withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
-        #     )
-        #   ),
-        #   easyClose = FALSE,
-        #   footer = NULL
-        # ))
+        # Show modal popup while rendering ------------------------------------
+        showModal(modalDialog(
+          title = "Generating report...",
+          tagList(
+            div(
+              style = "text-align:center;",
+              tags$h4("Please wait while your RLE assessment report is being generated."),
+              tags$p("This process usually takes approximately 10 seconds."),
+              tags$p(tags$em("Rendering the HTML report...")),
+              withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
+            )
+          ),
+          easyClose = FALSE,
+          footer = NULL
+        ))
         
         # Create temporary directory for large objects ------------------------
         tmpdir <- tempdir()
@@ -94,9 +95,9 @@ report_module_server <- function(datasets,
         }
 
         # Save evaluated ROI vector safely
-        roi_vec_eval <- req(roi_vec())
-        roi_vec_path <- file.path(tmpdir, "roi_vec.rds")
-        saveRDS(roi_vec_eval, roi_vec_path)
+        #roi_vec_eval <- req(roi_vec())
+        #roi_vec_path <- file.path(tmpdir, "roi_vec.rds")
+        #saveRDS(roi_vec_eval, roi_vec_path)
 
         # Build params list for R Markdown ------------------------------------
         params_list <- list(
@@ -107,7 +108,7 @@ report_module_server <- function(datasets,
           areas = (areas()),
           years = (years()),
           raster_files = raster_paths,
-          roi_vec_file = roi_vec_path,
+         # roi_vec_file = roi_vec_path,
           countries = (countries()),
           rainfall = (rainfall()),
          # typology = (typology()),
@@ -132,34 +133,31 @@ report_module_server <- function(datasets,
         # )
         
         # --- Render the report ----------------------------------------------
-        # safe for deployed app?
-        #report_path <- tempfile(fileext = ".Rmd")
-        #file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
-        
-        # tryCatch({
+        tryCatch({
           rmarkdown::render(
-            # input = "rle_report_template_html_testing.rmd",
-            input = report_path, # safe for deployed app
+            #input = "rle_report_template_html_testing.rmd", # for local app testing
+            input = report_path, # safe for deployed app # for deployed app
             output_file = file,
             params = params_list,
             envir = new.env(parent = globalenv())
           )
-       # },
-        # error = function(e) {
-        #   removeModal()
-        #   showModal(modalDialog(
-        #     title = "Error",
-        #     tags$p("An error occurred while generating the report:"),
-        #     tags$pre(conditionMessage(e)),
-        #     easyClose = TRUE,
-        #     footer = modalButton("Close")
-        #   ))
-        #   stop(e)
-        # }
-        #)
+          
+       },
+       error = function(e) {
+         removeModal()
+         showModal(modalDialog(
+           title = "Error",
+           tags$p("An error occurred while generating the report:"),
+           tags$pre(conditionMessage(e)),
+           easyClose = TRUE,
+           footer = modalButton("Close")
+         ))
+         stop(e)
+       }
+       )
         
-        # Remove modal after successful render --------------------------------
-        # removeModal()
+        # # Remove modal after successful render --------------------------------
+         removeModal()
 
       }
     )
@@ -238,16 +236,16 @@ report_module_server <- function(datasets,
         
         # Zip all CSVs together
         zip::zip(zipfile = file, files = file_paths, mode = "cherry-pick")
+        
+        #unlink(tmpdir, recursive = TRUE)
+        
       }
     )
-    
-    
-    
-    
+
   })
+  
+  # unlink(report_path, recursive = TRUE)
+
+  
+  
 }
-
-
-
-
-
