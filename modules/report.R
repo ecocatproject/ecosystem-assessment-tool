@@ -66,20 +66,20 @@ report_module_server <- function(datasets,
       content = function(file) {
 
         # Show modal popup while rendering ------------------------------------
-        showModal(modalDialog(
-          title = "Generating report...",
-          tagList(
-            div(
-              style = "text-align:center;",
-              tags$h4("Please wait while your RLE assessment report is being generated."),
-              tags$p("This process usually takes approximately 10 seconds."),
-              tags$p(tags$em("Rendering the HTML report...")),
-              withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
-            )
-          ),
-          easyClose = FALSE,
-          footer = NULL
-        ))
+       # showModal(modalDialog(
+       #   title = "Generating report...",
+       #   tagList(
+       #     div(
+       #       style = "text-align:center;",
+       #       tags$h4("Please wait while your RLE assessment report is being generated."),
+       #       tags$p("This process usually takes approximately 10 seconds."),
+       #       tags$p(tags$em("Rendering the HTML report...")),
+       #       withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
+       #     )
+       #   ),
+       #   easyClose = FALSE,
+       #   footer = NULL
+       # ))
         
         # Create temporary directory for large objects ------------------------
         tmpdir <- tempdir()
@@ -133,7 +133,7 @@ report_module_server <- function(datasets,
         # )
         
         # --- Render the report ----------------------------------------------
-        tryCatch({
+       # tryCatch({
           rmarkdown::render(
             #input = "rle_report_template_html_testing.rmd", # for local app testing
             input = report_path, # safe for deployed app # for deployed app
@@ -142,22 +142,22 @@ report_module_server <- function(datasets,
             envir = new.env(parent = globalenv())
           )
           
-       },
-       error = function(e) {
-         removeModal()
-         showModal(modalDialog(
-           title = "Error",
-           tags$p("An error occurred while generating the report:"),
-           tags$pre(conditionMessage(e)),
-           easyClose = TRUE,
-           footer = modalButton("Close")
-         ))
-         stop(e)
-       }
-       )
+   #    },
+    #   error = function(e) {
+     #    removeModal()
+      #   showModal(modalDialog(
+       #    title = "Error",
+        #   tags$p("An error occurred while generating the report:"),
+         #  tags$pre(conditionMessage(e)),
+          # easyClose = TRUE,
+           #footer = modalButton("Close")
+         #))
+         #stop(e)
+      # }
+      # )
         
         # # Remove modal after successful render --------------------------------
-         removeModal()
+       #  removeModal()
 
       }
     )
@@ -249,3 +249,4 @@ report_module_server <- function(datasets,
   
   
 }
+
