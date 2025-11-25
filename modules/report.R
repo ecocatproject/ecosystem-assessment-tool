@@ -33,6 +33,9 @@ report_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # server
 # -----------------------------------------------------------------------------
+report_path <- tempfile(fileext = ".Rmd")
+file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
+
 report_module_server <- function(datasets,
                                  id,
                                  ecosystem_name, author, organisation, email,
@@ -129,8 +132,8 @@ report_module_server <- function(datasets,
         
         # --- Render the report ----------------------------------------------
         # safe for deployed app?
-        report_path <- tempfile(fileext = ".Rmd")
-        file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
+        #report_path <- tempfile(fileext = ".Rmd")
+        #file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
         
         # tryCatch({
           rmarkdown::render(
@@ -242,4 +245,5 @@ report_module_server <- function(datasets,
     
   })
 }
+
 
