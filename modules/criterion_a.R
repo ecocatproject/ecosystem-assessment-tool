@@ -54,7 +54,8 @@ criterion_A_module_server <- function(id, data_module) {
         # -------------------------------------------------------------------------
         # Reactive values container
         rv <- reactiveValues(
-          area_prediction_data = NULL
+          area_prediction_data = NULL,
+          area_change_data = NULL
         )
         
     # Reactive expression for area change
@@ -65,6 +66,7 @@ criterion_A_module_server <- function(id, data_module) {
       df          # <-- MUST return df
     })
 
+    rv$area_change_data <- area_change_data 
     
     # reset when new rasters uploaded ------------------------------------------
     observeEvent(data_module$rasters(), {
@@ -457,7 +459,7 @@ criterion_A_module_server <- function(id, data_module) {
   
       # Return reactive values for use outside the module
     return(list(
-      area_change_data = reactive({area_change_data}),
+      area_change_data = reactive({rv$area_change_data()}),
       area_prediction_data = reactive({rv$area_prediction_data})
       # should these be: (i.e. above once are returning a function?)
       # area_change_data = reactive(area_change_data()),
