@@ -22,7 +22,7 @@ source("modules/description_v2.R") # was description.R
 # source("modules/classification_files.R") # ideally have separate for rasters, but can't get the maps to marry
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
-# source("modules/drivers_of_change.R")
+source("modules/drivers_of_change.R")
 source("modules/report.R")
 source("modules/data_download.R")
 source("modules/about.R")
@@ -85,7 +85,7 @@ ui <- page_navbar(
   description_module_ui("description"),
   criterion_a_module_ui("criteria_a"),
   criterion_b_module_ui("criteria_b"),
-  drivers_module_ui("drivers_of_change"),
+  #drivers_module_ui("drivers_of_change"),
   report_module_ui("report"),
   # download_module_ui("download"),
   about_module_ui("about"),
@@ -231,6 +231,7 @@ server <- function(input, output, session) {
 
 # run the app -----------------------------------------------------------------
 shinyApp(ui, server)
+
 
 
 
