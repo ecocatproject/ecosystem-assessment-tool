@@ -34,7 +34,10 @@ report_module_ui <- function(id) {
 # server
 # -----------------------------------------------------------------------------
 report_path <- tempfile(fileext = ".Rmd")
-file.copy("rle_report_template_html_testing.rmd", report_path, overwrite=T)
+template_path <- file.path("rle_report_template_html_testing.rmd")
+file.copy(template_path, report_path, overwrite=T)
+ok <- file.copy(template_path, report_path, overwrite = TRUE)
+if (!ok) stop("Could not copy template to temporary location")
 
 report_module_server <- function(datasets,
                                  id,
@@ -245,5 +248,6 @@ report_module_server <- function(datasets,
     
   })
 }
+
 
 
