@@ -68,10 +68,19 @@ report_module_server <- function(datasets,
             # Create a fresh temp Rmd on EVERY click ------------------------------
     report_path <- tempfile(fileext = ".Rmd")
     template_path <- file.path("www", "rle_report_template_html_testing.rmd")
-         
-        if (!file.exists(template_path)) {
+ #   file.copy(template_path, report_path, overwrite = TRUE)
+
+
+          if (!file.exists(template_path)) {
       stop("Template not found: ", template_path)
     }
+
+    ok <- file.copy(template_path, report_path, overwrite = TRUE)
+    if (!ok || !file.exists(report_path)) {
+      stop("Failed to create temporary Rmd at: ", report_path)
+    }
+
+
         # Show modal popup while rendering ------------------------------------
        # showModal(modalDialog(
        #   title = "Generating report...",
@@ -251,6 +260,7 @@ print(report_path)
   
   
 }
+
 
 
 
