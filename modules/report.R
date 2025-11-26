@@ -124,15 +124,12 @@ report_module_server <- function(datasets,
 
         str(params_list)
 
-        # # --- Render the report ----------------------------------------------
-        # rmarkdown::render(
-        #   input = "rle_report_template_html_testing.rmd",
-        #   output_file = file,
-        #   params = params_list,
-        #   envir = new.env(parent = globalenv())
-        # )
-        
-        # --- Render the report ----------------------------------------------
+print("params list created")
+try({print(file)})
+try({print(file_path)})
+print(report_path)
+
+      # --- Render the report ----------------------------------------------
        # tryCatch({
           rmarkdown::render(
             #input = "rle_report_template_html_testing.rmd", # for local app testing
@@ -249,6 +246,7 @@ report_module_server <- function(datasets,
   
   
 }
+
 
 
 
