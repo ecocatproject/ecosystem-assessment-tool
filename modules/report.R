@@ -33,9 +33,9 @@ report_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # server
 # -----------------------------------------------------------------------------
-report_path <- tempfile(fileext = ".Rmd")
-template_path <- file.path("www", "rle_report_template_html_testing.rmd")
-file.copy(template_path, report_path, overwrite=T)
+#report_path <- tempfile(fileext = ".Rmd")
+#template_path <- file.path("www", "rle_report_template_html_testing.rmd")
+#file.copy(template_path, report_path, overwrite=T)
 
 
 report_module_server <- function(datasets,
@@ -65,6 +65,13 @@ report_module_server <- function(datasets,
       },
       content = function(file) {
 
+            # Create a fresh temp Rmd on EVERY click ------------------------------
+    report_path <- tempfile(fileext = ".Rmd")
+    template_path <- file.path("www", "rle_report_template_html_testing.rmd")
+         
+        if (!file.exists(template_path)) {
+      stop("Template not found: ", template_path)
+    }
         # Show modal popup while rendering ------------------------------------
        # showModal(modalDialog(
        #   title = "Generating report...",
@@ -125,10 +132,8 @@ report_module_server <- function(datasets,
         str(params_list)
 
 print("params list created")
-try({print(file)})
-try({print(file_path)})
 print(report_path)
-
+        
       # --- Render the report ----------------------------------------------
        # tryCatch({
           rmarkdown::render(
@@ -246,6 +251,7 @@ print(report_path)
   
   
 }
+
 
 
 
