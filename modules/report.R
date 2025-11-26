@@ -34,7 +34,7 @@ report_module_ui <- function(id) {
 # server
 # -----------------------------------------------------------------------------
 #report_path <- tempfile(fileext = ".Rmd")
-#template_path <- file.path("www", "rle_report_template_html_testing.rmd")
+#template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
 #file.copy(template_path, report_path, overwrite=T)
 
 
@@ -67,7 +67,7 @@ report_module_server <- function(datasets,
 
             # Create a fresh temp Rmd on EVERY click ------------------------------
     report_path <- tempfile(fileext = ".Rmd")
-    template_path <- file.path("www", "rle_report_template_html_testing.rmd")
+    template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
  #   file.copy(template_path, report_path, overwrite = TRUE)
 
 
@@ -260,6 +260,7 @@ print(report_path)
   
   
 }
+
 
 
 
