@@ -132,7 +132,7 @@ server <- function(input, output, session) {
             style = "font-size: 15px;",
             tags$li("Use the sidebar to select a built-in ecosystem map or upload your own."),
             tags$li("Once loaded, explore summary statistics and spatial outputs."),
-            tags$li("Navigate through the tab to explore different parts of the assessment."),
+            tags$li("Navigate through the tabs to explore different parts of the assessment."),
             tags$li("Criteria A is generated automatically. Criteria B requires the user to select the relevent buttons."),
             tags$li("A report and all the data can also be downloaded in the 'Report/Download' tab"),
           ),
@@ -382,6 +382,7 @@ server <- function(input, output, session) {
 
 # run the app -----------------------------------------------------------------
 shinyApp(ui, server)
+
 
 
 
