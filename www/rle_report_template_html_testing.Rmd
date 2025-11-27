@@ -254,7 +254,7 @@ abs(change_percent), "% from ", format(round(start_area,0), big.mark = ","), "km
  }`
 
 ```{r area_table_2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) > 1}
-area_change_data <- params$area_change_data()
+area_change_data <- params$area_change_data
 
 criteria_a_data <- area_change_data %>%
         mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
@@ -697,4 +697,5 @@ htmltools::tagList(
     map_title),
   m
   )
+
 ```
