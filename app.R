@@ -107,6 +107,50 @@ ui <- page_navbar(
 
 server <- function(input, output, session) {
   
+# show instruction modal on start -------------------------------------------  
+  showModal(
+    modalDialog(
+      title = div(
+        style = "font-size: 20px; font-weight: bold; text-align:center;",
+        "Welcome to the EcoCAT Tool"
+      ),
+      
+      tagList(
+        tags$div(
+          style = "padding: 10px;",
+          
+          tags$p(
+            style = "font-size: 16px;",
+            "This tool assists with IUCN Red List of Ecosystems assessments."
+          ),
+          
+          tags$hr(),
+          
+          tags$h4("To get started:", style = "text-align:left;"),
+          
+          tags$ul(
+            style = "font-size: 15px;",
+            tags$li("Use the sidebar to select a built-in ecosystem map or upload your own."),
+            tags$li("Once loaded, explore summary statistics and spatial outputs."),
+            tags$li("Navigate through the tab to explore different parts of the assessment."),
+            tags$li("Criteria A is generated automatically. Criteria B requires the user to select the relevent buttons."),
+            tags$li("A report and all the data can also be downloaded in the 'Report/Download' tab"),
+          ),
+          
+          tags$hr(),
+          
+          tags$p(
+            style = "font-size: 14px; font-style: italic; color: #666;",
+            "Tip: Hover over info icons throughout the app for additional guidance."
+          )
+        )
+      ),
+      
+      easyClose = FALSE,
+      footer = modalButton("Start")
+    )
+  )
+  
   # data module (for raster) --------------------------------------------------
   data_module <- data_module_server("data")
   
@@ -338,5 +382,6 @@ server <- function(input, output, session) {
 
 # run the app -----------------------------------------------------------------
 shinyApp(ui, server)
+
 
 
