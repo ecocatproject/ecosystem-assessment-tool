@@ -68,34 +68,23 @@ report_module_server <- function(datasets,
             # Create a fresh temp Rmd on EVERY click ------------------------------
     report_path <- tempfile(fileext = ".Rmd")
     template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
- #   file.copy(template_path, report_path, overwrite = TRUE)
-
-
-          if (!file.exists(template_path)) {
-      stop("Template not found: ", template_path)
-    }
-
-    ok <- file.copy(template_path, report_path, overwrite = TRUE)
-    if (!ok || !file.exists(report_path)) {
-      stop("Failed to create temporary Rmd at: ", report_path)
-    }
-
+    file.copy(template_path, report_path, overwrite = TRUE)
 
         # Show modal popup while rendering ------------------------------------
-       # showModal(modalDialog(
-       #   title = "Generating report...",
-       #   tagList(
-       #     div(
-       #       style = "text-align:center;",
-       #       tags$h4("Please wait while your RLE assessment report is being generated."),
-       #       tags$p("This process usually takes approximately 10 seconds."),
-       #       tags$p(tags$em("Rendering the HTML report...")),
-       #       withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
-       #     )
-       #   ),
-       #   easyClose = FALSE,
-       #   footer = NULL
-       # ))
+        showModal(modalDialog(
+          title = "Generating report...",
+          tagList(
+            div(
+              style = "text-align:center;",
+              tags$h4("Please wait while your RLE assessment report is being generated."),
+              tags$p("This process usually takes approximately 10 seconds."),
+              tags$p(tags$em("Rendering the HTML report...")),
+              withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
+            )
+          ),
+          easyClose = FALSE,
+          footer = NULL
+        ))
         
         # Create temporary directory for large objects ------------------------
         tmpdir <- tempdir()
@@ -139,12 +128,9 @@ report_module_server <- function(datasets,
         )
 
         str(params_list)
-
-print("params list created")
-print(report_path)
         
       # --- Render the report ----------------------------------------------
-       # tryCatch({
+       tryCatch({
           rmarkdown::render(
             #input = "rle_report_template_html_testing.rmd", # for local app testing
             input = report_path, # safe for deployed app # for deployed app
@@ -153,22 +139,22 @@ print(report_path)
             envir = new.env(parent = globalenv())
           )
           
-   #    },
-    #   error = function(e) {
-     #    removeModal()
-      #   showModal(modalDialog(
-       #    title = "Error",
-        #   tags$p("An error occurred while generating the report:"),
-         #  tags$pre(conditionMessage(e)),
-          # easyClose = TRUE,
-           #footer = modalButton("Close")
-         #))
-         #stop(e)
-      # }
-      # )
+       },
+       error = function(e) {
+         removeModal()
+         showModal(modalDialog(
+           title = "Error",
+           tags$p("An error occurred while generating the report:"),
+           tags$pre(conditionMessage(e)),
+           easyClose = TRUE,
+           footer = modalButton("Close")
+         ))
+         stop(e)
+       }
+       )
         
-        # # Remove modal after successful render --------------------------------
-       #  removeModal()
+      # Remove modal after successful render --------------------------------
+         removeModal()
 
       }
     )
@@ -260,6 +246,7 @@ print(report_path)
   
   
 }
+
 
 
 
