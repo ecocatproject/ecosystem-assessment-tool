@@ -150,23 +150,9 @@ server <- function(input, output, session) {
                                                   rasters_original = data_module$rasters_original
                                           )
 
-  # # Run report module -------------------------------------------------------
-  # report_module_server(
-  #   "report",
-  #                       ecosystem_name = input$ecosystem_name,
-  #                       author = input$author,
-  #                       organisation = input$organisation,
-  #                       email = input$email,
-  #   rasters = data_module$rasters,
-  #   areas = data_module$areas,
-  #   years = data_module$years,
-  #   roi_vec = description_module$roi,
-  #   # roi_wgs = description_module$roi_wgs,
-  #   countries = description_module$countries,
-  #   rainfall = description_module$rainfall
-  # )
-  
-  available_datasets <- reactive({
+# Run report module -------------------------------------------------------
+# Firstly provide list of potential datasets for download 
+    available_datasets <- reactive({
     all <- list(
       "Criterion A - area change data" = criterion_a_module$area_change_data,
       "Criterion A - area prediction data" = criterion_a_module$area_prediction_data,
@@ -181,7 +167,8 @@ server <- function(input, output, session) {
       !is.null(r())  # run reactive to check if data exists
     }, all)
   })
-  
+
+  # report module server
    report_module_server("report",
                         datasets = available_datasets,
                        ecosystem_name = input$ecosystem_name,
@@ -215,17 +202,137 @@ server <- function(input, output, session) {
   # )
   
     # # Run about module --------------------------------------------------------
-  # criterion_A_module_server("about")
+  # about_module_server("about")
   
     # Dynamic year inputs -----------------------------------------------------
-  output$year_inputs <- renderUI({
-    req(input$tifs)
-    lapply(seq_along(input$tifs$name), function(i) {
-      selectInput(paste0("year_", i), paste("Year for", input$tifs$name[i]), choices = seq(1985, 2025, by = 1), selected = 2025
-      )
-    })
-  })
+   extract_year <- function(filename) {
+     # Look for a 4-digit number that looks like a year
+     m <- regmatches(filename, regexpr("(19|20)\\d{2}", filename))
+     if (length(m) == 0) return(NULL)
+     as.numeric(m)
+   }
+   
+   extract_year <- function(filename) {
+     m <- regexpr("(?<!\\d)(19|20)\\d{2}(?!\\d)", filename, perl = TRUE)
+     if (m[1] == -1) return(NULL)
+     as.numeric(regmatches(filename, m))
+   }
+   
+   
+  # output$year_inputs <- renderUI({
+  #   req(input$tifs)
+  #   
+  #   fnames <- input$tifs$name
+  #   auto_years <- sapply(fnames, extract_year)
+  #   
+  #   # --- Create a list to show inside modal ---
+  #   year_messages <- mapply(
+  #     function(f, y) {
+  #       if (!is.null(y)) paste(f, "→", y) else paste(f, "→ no year detected")
+  #     },
+  #     fnames, auto_years
+  #   )
+  #   
+  #   # --- Show modal ONCE per upload ---
+  #   showModal(
+  #     modalDialog(
+  #       title = "Auto-Detected Years",
+  #       easyClose = TRUE,
+  #       footer = modalButton("OK"),
+  #       paste("The following auto-detected year assignments were found:"),
+  #       tags$ul(
+  #         lapply(year_messages, function(msg) tags$li(msg))
+  #       )
+  #     )
+  #   )
+  #       
+  #       
+  #   # --- Build the year selection UI ---
+  #   lapply(seq_along(fnames), function(i) {
+  #     selectInput(
+  #       paste0("year_", i),
+  #       paste("Year for", fnames[i]),
+  #       choices = seq(1900, 2025, by = 1),
+  #       selected = if (!is.null(auto_years[i]) &&
+  #                      auto_years[i] %in% 1900:2025) auto_years[i] else 2025
+  #     )
+  #   })
+  # })
   
+   output$year_inputs <- renderUI({
+     req(input$tifs)
+     
+     fnames <- input$tifs$name
+     auto_years <- sapply(fnames, extract_year)
+     
+     # Build HTML rows for modal
+     file_rows <- mapply(function(f, y) {
+       
+       if (is.null(y)) {
+         # RED for missing year
+         htmltools::tags$tr(
+           htmltools::tags$td(f),
+           htmltools::tags$td(style = "color:#c0392b; font-weight:bold;", "No year detected")
+         )
+       } else {
+         # GREEN for detected year
+         htmltools::tags$tr(
+           htmltools::tags$td(f),
+           htmltools::tags$td(style = "color:#27ae60; font-weight:bold;", y)
+         )
+       }
+       
+     }, fnames, auto_years, SIMPLIFY = FALSE)
+     
+     # Show modal
+     showModal(
+       modalDialog(
+         title = htmltools::tags$div(
+           style="font-size:20px; font-weight:bold; color:#2c3e50;",
+           "Auto-Detected Years"
+         ),
+         easyClose = TRUE,
+         footer = modalButton("OK"),
+         
+         # Modal body
+         htmltools::tags$div(
+           style="margin-bottom:10px; color:#34495e;",
+           "Years were automatically extracted from filenames. You may adjust them in the selection boxes below."
+         ),
+         
+         # Styled table
+         htmltools::tags$table(
+           style="
+          width:100%;
+          border-collapse: collapse;
+          margin-top:10px;
+          font-size:14px;
+        ",
+           htmltools::tags$thead(
+             htmltools::tags$tr(
+               htmltools::tags$th("Filename", style="text-align:left; border-bottom:2px solid #bdc3c7; padding:6px;"),
+               htmltools::tags$th("Detected Year", style="text-align:left; border-bottom:2px solid #bdc3c7; padding:6px;")
+             )
+           ),
+           htmltools::tags$tbody(
+             lapply(file_rows, identity)
+           )
+         )
+       )
+     )
+     
+     # Generate year dropdowns
+     lapply(seq_along(fnames), function(i) {
+       selectInput(
+         paste0("year_", i),
+         paste("Year for", fnames[i]),
+         choices = seq(1985, 2025, by = 1),
+         selected = if (!is.null(auto_years[i]) &&
+                        auto_years[i] %in% 1985:2025) auto_years[i] else 2025
+       )
+     })
+   })
+   
 }
 
 
