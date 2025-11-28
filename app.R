@@ -134,7 +134,7 @@ server <- function(input, output, session) {
             tags$li("Once loaded, explore summary statistics and spatial outputs."),
             tags$li("Navigate through the tabs to explore different parts of the assessment."),
             tags$li("Criteria A is generated automatically. Criteria B requires the user to select the relevent buttons."),
-            tags$li("A report and all the data can be downloaded in the 'Report/Download' tab"),
+            tags$li("A report and all the data can be downloaded in the 'Report/Data download' tab"),
           ),
           
           tags$hr(),
@@ -382,6 +382,7 @@ server <- function(input, output, session) {
 
 # run the app -----------------------------------------------------------------
 shinyApp(ui, server)
+
 
 
 
