@@ -84,11 +84,19 @@ criterion_A_module_server <- function(id, data_module) {
         mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
                area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
                proportional_rate_change = round(proportional_rate_change, 2),
-               absolute_rate_change = round(absolute_rate_change, 2))
+               absolute_rate_change = round(absolute_rate_change, 2)) %>%
+        # dplyr::arrange(desc(perc_roi)) %>%
+        # dplyr::select(zone, area_km2, perc_roi) %>%
+        dplyr::rename(
+          `Area (km²)` = area,
+          `Area change (km²)` = area_change,
+          `Proportional rate of change (%/year)` = proportional_rate_change,
+          `Absolute rate of change (km²/year)` = absolute_rate_change
+        )
       
-      DT::datatable(df,,
-        colnames = c("Year", "Area (km2)", "Area change (km2)",
-                     "Proportional rate of change (%)", "Absolute rate of change (km2)"),
+      DT::datatable(df,
+        # colnames = c("Year", "Area (km2)", "Area change (km2)",
+        #              "Proportional rate of change (%/year)", "Absolute rate of change (km2/year)"),
         options = list(
           paging = FALSE,
           searching = FALSE,
@@ -469,4 +477,5 @@ criterion_A_module_server <- function(id, data_module) {
       
     })
 }
+
 
