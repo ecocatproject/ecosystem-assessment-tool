@@ -396,8 +396,8 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       rv$elevation <- compute_elevation(latest)
 
       # 4. global ecosystem typology (get)
-     # progress$inc(5/6, detail = "global ecosystem typology")
-     # rv$typology <- compute_typology(latest, efg_lookup)
+      progress$inc(5/6, detail = "global ecosystem typology")
+      rv$typology <- compute_typology(latest, efg_lookup)
 
       # 5. precipitation
       progress$inc(6/6, detail = "monthly rainfall") # update progress
@@ -453,10 +453,11 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
       roi_wgs = reactive({ rv$roi_wgs }),
       countries = reactive({rv$countries}),
       rainfall = reactive({rv$rainfall}),
-     # typology = reactive({rv$typology}),
+      typology = reactive({rv$typology}),
       temperature = reactive({rv$temperature}),
       elevation = reactive({rv$elevation})
     ))
     
   })
 }
+
