@@ -313,7 +313,7 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
         layout(
           # title = "Monthly Rainfall (average since 2010)",
           xaxis = list(title = "Month"),
-          yaxis = list(title = "Rainfall (mm)")
+          yaxis = list(title = "Temperature (°C)")
         )
     })
     
@@ -460,4 +460,5 @@ description_module_server <- function(id, data_module, tifs_input, year_inputs,
     
   })
 }
+
 
