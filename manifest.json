@@ -509,6 +509,45 @@
         "RemoteSha": "0.0.8"
       }
     },
+    "bookdown": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "bookdown",
+        "Type": "Package",
+        "Title": "Authoring Books and Technical Documents with R Markdown",
+        "Version": "0.45",
+        "Authors@R": "c(\n    person(\"Yihui\", \"Xie\", role = c(\"aut\", \"cre\"), email = \"xie@yihui.name\", comment = c(ORCID = \"0000-0003-0645-5666\")),\n    person(\"Christophe\", \"Dervieux\", , \"cderv@posit.co\", role = c(\"ctb\"),\n           comment = c(ORCID = \"0000-0003-4474-2498\")),\n    person(\"JJ\", \"Allaire\", role = \"ctb\"),\n    person(\"Albert\", \"Kim\", role = \"ctb\"),\n    person(\"Alessandro\", \"Samuel-Rosa\", role = \"ctb\"),\n    person(\"Andrzej\", \"Oles\", role = \"ctb\"),\n    person(\"Atsushi\", \"Yasumoto\", role = \"ctb\", comment = c(ORCID = \"0000-0002-8335-495X\")),\n    person(\"Aust\", \"Frederik\", role = \"ctb\", comment = c(ORCID = \"0000-0003-4900-788X\")),\n    person(\"Bastiaan\", \"Quast\", role = \"ctb\"),\n    person(\"Ben\", \"Marwick\", role = \"ctb\"),\n    person(\"Chester\", \"Ismay\", role = \"ctb\"),\n    person(\"Clifton\", \"Franklund\", role = \"ctb\"),\n    person(\"Daniel\", \"Emaasit\", role = \"ctb\"),\n    person(\"David\", \"Shuman\", role = \"ctb\"),\n    person(\"Dean\", \"Attali\", role = \"ctb\"),\n    person(\"Drew\", \"Tyre\", role = \"ctb\"),\n    person(\"Ellis\", \"Valentiner\", role = \"ctb\"),\n    person(\"Frans\", \"van Dunne\", role = \"ctb\"),\n    person(\"Hadley\", \"Wickham\", role = \"ctb\"),\n    person(\"Jeff\", \"Allen\", role = \"ctb\"),\n    person(\"Jennifer\", \"Bryan\", role = \"ctb\"),\n    person(\"Jonathan\", \"McPhers\", role = \"ctb\"),\n    person(\"JooYoung\", \"Seo\", role=\"ctb\", comment = c(ORCID = \"0000-0002-4064-6012\")),\n    person(\"Joyce\", \"Robbins\", role = \"ctb\"),\n    person(\"Junwen\", \"Huang\", role = \"ctb\"),\n    person(\"Kevin\", \"Cheung\", role = \"ctb\"),\n    person(\"Kevin\", \"Ushey\", role = \"ctb\"),\n    person(\"Kim\", \"Seonghyun\", role = \"ctb\"),\n    person(\"Kirill\", \"Muller\", role = \"ctb\"),\n    person(\"Luciano\", \"Selzer\", role = \"ctb\"),\n    person(\"Matthew\", \"Lincoln\", role = \"ctb\"),\n    person(\"Maximilian\", \"Held\", role = \"ctb\"),\n    person(\"Michael\", \"Sachs\", role = \"ctb\"),\n    person(\"Michal\", \"Bojanowski\", role = \"ctb\"),\n    person(\"Nathan\", \"Werth\", role = \"ctb\"),\n    person(\"Noam\", \"Ross\", role = \"ctb\"),\n    person(\"Peter\", \"Hickey\", role = \"ctb\"),\n    person(\"Pedro Rafael D.\", \"Marinho\", role=\"ctb\", comment = c(ORCID = \"0000-0003-1591-8300\")),\n    person(\"Romain\", \"Lesur\", role = \"ctb\", comment = c(ORCID = \"0000-0002-0721-5595\")),\n    person(\"Sahir\", \"Bhatnagar\", role = \"ctb\"),\n    person(\"Shir\", \"Dekel\", role = \"ctb\", comment = c(ORCID = \"0000-0003-1773-2446\")),\n    person(\"Steve\", \"Simpson\", role = \"ctb\"),\n    person(\"Thierry\", \"Onkelinx\", role = \"ctb\", comment = c(ORCID = \"0000-0001-8804-4216\")),\n    person(\"Vincent\", \"Fulco\", role = \"ctb\"),\n    person(\"Yixuan\", \"Qiu\", role = \"ctb\"),\n    person(\"Zhuoer\", \"Dong\", role = \"ctb\"),\n    person(given = \"Posit Software, PBC\", role = c(\"cph\", \"fnd\")),\n    person(\"Bartek\", \"Szopka\", role = \"ctb\", comment = \"The jQuery Highlight plugin\"),\n    person(\"Zeno\", \"Rocha\", role = \"cph\", comment = \"clipboard.js library\"),\n    person(family = \"MathQuill contributors\", role = \"ctb\", comment = \"The MathQuill library; authors listed in inst/resources/AUTHORS\"),\n    person(family = \"FriendCode Inc\", role = c(\"cph\", \"ctb\"), comment = \"The gitbook style, with modifications\")\n    )",
+        "Maintainer": "Yihui Xie <xie@yihui.name>",
+        "Description": "Output formats and utilities for authoring books and technical documents with R Markdown.",
+        "License": "GPL-3",
+        "Depends": "R (>= 3.5.0)",
+        "Imports": "htmltools (>= 0.3.6), knitr (>= 1.38), rmarkdown (>= 2.14),\njquerylib, xfun (>= 0.48), tinytex (>= 0.12), yaml (>= 2.1.19)",
+        "Suggests": "bslib (>= 0.2.4), downlit (>= 0.4.0), htmlwidgets, jsonlite,\ncurl, rstudioapi, miniUI, rsconnect (>= 0.4.3), servr (>=\n0.13), shiny, tibble, testit (>= 0.9), tufte, xml2, webshot,\ntestthat (>= 3.1.0), withr (>= 2.3.0)",
+        "URL": "https://github.com/rstudio/bookdown,\nhttps://pkgs.rstudio.com/bookdown/",
+        "BugReports": "https://github.com/rstudio/bookdown/issues",
+        "SystemRequirements": "Pandoc (>= 1.17.2)",
+        "RoxygenNote": "7.3.2",
+        "Encoding": "UTF-8",
+        "Config/Needs/book": "remotes, webshot, svglite",
+        "Config/Needs/website": "pkgdown, tidyverse/tidytemplate, rstudio/quillt",
+        "Config/testthat/edition": "3",
+        "VignetteBuilder": "knitr",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-10-02 17:11:39 UTC; yihui",
+        "Author": "Yihui Xie [aut, cre] (ORCID: <https://orcid.org/0000-0003-0645-5666>),\n  Christophe Dervieux [ctb] (ORCID:\n    <https://orcid.org/0000-0003-4474-2498>),\n  JJ Allaire [ctb],\n  Albert Kim [ctb],\n  Alessandro Samuel-Rosa [ctb],\n  Andrzej Oles [ctb],\n  Atsushi Yasumoto [ctb] (ORCID: <https://orcid.org/0000-0002-8335-495X>),\n  Aust Frederik [ctb] (ORCID: <https://orcid.org/0000-0003-4900-788X>),\n  Bastiaan Quast [ctb],\n  Ben Marwick [ctb],\n  Chester Ismay [ctb],\n  Clifton Franklund [ctb],\n  Daniel Emaasit [ctb],\n  David Shuman [ctb],\n  Dean Attali [ctb],\n  Drew Tyre [ctb],\n  Ellis Valentiner [ctb],\n  Frans van Dunne [ctb],\n  Hadley Wickham [ctb],\n  Jeff Allen [ctb],\n  Jennifer Bryan [ctb],\n  Jonathan McPhers [ctb],\n  JooYoung Seo [ctb] (ORCID: <https://orcid.org/0000-0002-4064-6012>),\n  Joyce Robbins [ctb],\n  Junwen Huang [ctb],\n  Kevin Cheung [ctb],\n  Kevin Ushey [ctb],\n  Kim Seonghyun [ctb],\n  Kirill Muller [ctb],\n  Luciano Selzer [ctb],\n  Matthew Lincoln [ctb],\n  Maximilian Held [ctb],\n  Michael Sachs [ctb],\n  Michal Bojanowski [ctb],\n  Nathan Werth [ctb],\n  Noam Ross [ctb],\n  Peter Hickey [ctb],\n  Pedro Rafael D. Marinho [ctb] (ORCID:\n    <https://orcid.org/0000-0003-1591-8300>),\n  Romain Lesur [ctb] (ORCID: <https://orcid.org/0000-0002-0721-5595>),\n  Sahir Bhatnagar [ctb],\n  Shir Dekel [ctb] (ORCID: <https://orcid.org/0000-0003-1773-2446>),\n  Steve Simpson [ctb],\n  Thierry Onkelinx [ctb] (ORCID: <https://orcid.org/0000-0001-8804-4216>),\n  Vincent Fulco [ctb],\n  Yixuan Qiu [ctb],\n  Zhuoer Dong [ctb],\n  Posit Software, PBC [cph, fnd],\n  Bartek Szopka [ctb] (The jQuery Highlight plugin),\n  Zeno Rocha [cph] (clipboard.js library),\n  MathQuill contributors [ctb] (The MathQuill library; authors listed in\n    inst/resources/AUTHORS),\n  FriendCode Inc [cph, ctb] (The gitbook style, with modifications)",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-10-03 05:20:19 UTC",
+        "Built": "R 4.4.3; ; 2025-12-03 03:48:14 UTC; windows",
+        "RemoteType": "standard",
+        "RemoteRef": "bookdown",
+        "RemotePkgRef": "bookdown",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "0.45"
+      }
+    },
     "bsicons": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3516,6 +3555,39 @@
         "RemoteSha": "2.30"
       }
     },
+    "rmdformats": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "rmdformats",
+        "Maintainer": "Julien Barnier <julien.barnier@cnrs.fr>",
+        "Authors@R": "c(person(\"Julien\", \"Barnier\", email=\"julien.barnier@cnrs.fr\",\n    role=c(\"aut\",\"cre\")))",
+        "Version": "1.0.4",
+        "Date": "2022-05-10",
+        "License": "GPL (>= 2)",
+        "Encoding": "UTF-8",
+        "Title": "HTML Output Formats and Templates for 'rmarkdown' Documents",
+        "Description": "HTML formats and templates for 'rmarkdown' documents, with some extra\n    features such as automatic table of contents, lightboxed figures, dynamic\n    crosstab helper.",
+        "Imports": "knitr, rmarkdown, bookdown, htmltools",
+        "Suggests": "questionr, DT, palmerpenguins, ggplot2",
+        "URL": "https://github.com/juba/rmdformats",
+        "BugReports": "https://github.com/juba/rmdformats/issues",
+        "RoxygenNote": "7.1.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2022-05-17 08:05:52 UTC; julien",
+        "Author": "Julien Barnier [aut, cre]",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-05-17 08:50:03 UTC",
+        "Built": "R 4.4.3; ; 2025-12-03 03:51:56 UTC; windows",
+        "RemoteType": "standard",
+        "RemoteRef": "rmdformats",
+        "RemotePkgRef": "rmdformats",
+        "RemoteRepos": "https://cran.rstudio.com",
+        "RemoteReposName": "CRAN",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "1.0.4"
+      }
+    },
     "rnaturalearth": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -4875,11 +4947,83 @@
     }
   },
   "files": {
+    ".RData": {
+      "checksum": "c86225877261b5e460fcb8564e08a5c7"
+    },
     ".Rprofile": {
-      "checksum": "4b9351da39a9cdd84a8881495fa681a8"
+      "checksum": "81a100b33d3e006807391698f4c17864"
     },
     "app.R": {
-      "checksum": "4a09012c404a27d08fd0022c7a47d73a"
+      "checksum": "68c07854883ceadc912ab53675eb65c1"
+    },
+    "country_overlap_testing.R": {
+      "checksum": "8b2b8543150881900e32071a04b5e85d"
+    },
+    "data/data/get_geotiff/F3.2.web.orig_v1.0.tif": {
+      "checksum": "12106700175518b8fdf6dd93aa22c4ac"
+    },
+    "data/data/get_geotiff/M1.2.web.orig_v2.2.tif": {
+      "checksum": "6bc89d64684a310f30011dd164706f74"
+    },
+    "data/data/get_geotiff/M2.3.web.orig_v1.0.tif": {
+      "checksum": "d9c33f34f9eb674d12ff74665ff7c21c"
+    },
+    "data/data/get_geotiff/MT1.1.web.map_v1.0.tif": {
+      "checksum": "3d886a6f60e9fa95b700d70733d4b388"
+    },
+    "data/data/get_geotiff/MT1.3.web.map_v1.0.tif": {
+      "checksum": "d04e8a923d05a8d5bd9b8138045118c2"
+    },
+    "data/data/get_geotiff/S1.1.web.orig_v1.0.tif": {
+      "checksum": "58c58ccc681b0c1463140053d91445af"
+    },
+    "data/data/get_geotiff/SF1.1.web.orig_v1.0.tif": {
+      "checksum": "a8505554a104831746ad6d7d590b5b6a"
+    },
+    "data/data/get_geotiff/SM1.3.web.grid_v3.0.tif": {
+      "checksum": "173783afb49e9b635a77b273112bec19"
+    },
+    "data/data/get_geotiff/T5.1.web.mix_v1.0.tif": {
+      "checksum": "8584d5d97345baa2da2c1f2ca1aa6321"
+    },
+    "data/data/get_geotiff/TF1.4.web.map_v1.0.tif": {
+      "checksum": "c718105003cd1dd8bbec0e28521bb546"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_01.tif": {
+      "checksum": "659f522fc74624c16869a474e7ba9f26"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_02.tif": {
+      "checksum": "01986c0017f289d544cb85196a93ab28"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_03.tif": {
+      "checksum": "d5a1a0b9ed0503f4189a802ee8e325a4"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_04.tif": {
+      "checksum": "29e9d01c95a77eb4e51c5155bbe087c9"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_05.tif": {
+      "checksum": "8bc669e6f2f36dcca682674355a19a32"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_06.tif": {
+      "checksum": "db3bba457ac3cbf046efc7f9b3e618ff"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_07.tif": {
+      "checksum": "7671f730f8c9570f6414cc0b65ac824c"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_08.tif": {
+      "checksum": "f9083839d486b5d55f55fe8c83dd98a9"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_09.tif": {
+      "checksum": "639166af5bde865c3cf967f08d62cdaa"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_10.tif": {
+      "checksum": "ad65cc1ce37f374f3a541e886ff1938f"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_11.tif": {
+      "checksum": "b296b61cbdbf1266f14a59e2c7814b92"
+    },
+    "data/data/precipitation/wc2.1_10m_prec_12.tif": {
+      "checksum": "20b51aebd1631c934b4b280f462446fa"
     },
     "data/data/realms/RL_Realms.cpg": {
       "checksum": "ae3b3df9970b49b6523e608759bc957d"
@@ -4952,6 +5096,12 @@
     },
     "data/ecosystem_typology_lookup_table2.csv": {
       "checksum": "39ab90ac54bfa333e757a225f6285a7a"
+    },
+    "data/example/ItigiThicketRF3_L8_15_17_Zambia_240924.tif": {
+      "checksum": "4c2277d625d239060e3a717fa32c3066"
+    },
+    "data/example/ItigiThicketRF3_L8_22_24_Zambia_240924.tif": {
+      "checksum": "4f02b9ca6355b23e84763b4851573357"
     },
     "data/get_geotiff/F1.1.web.mix_v2.0.tif": {
       "checksum": "f30ff1197f5424aebb8432bf7b4979fe"
@@ -5280,6 +5430,42 @@
     "data/get_geotiff/TF1.7.web.orig_v1.0.tif": {
       "checksum": "66acc9198ce5fd4e9a2f8ca712f28b45"
     },
+    "data/precipitation/wc2.1_10m_prec_01.tif": {
+      "checksum": "659f522fc74624c16869a474e7ba9f26"
+    },
+    "data/precipitation/wc2.1_10m_prec_02.tif": {
+      "checksum": "01986c0017f289d544cb85196a93ab28"
+    },
+    "data/precipitation/wc2.1_10m_prec_03.tif": {
+      "checksum": "d5a1a0b9ed0503f4189a802ee8e325a4"
+    },
+    "data/precipitation/wc2.1_10m_prec_04.tif": {
+      "checksum": "29e9d01c95a77eb4e51c5155bbe087c9"
+    },
+    "data/precipitation/wc2.1_10m_prec_05.tif": {
+      "checksum": "8bc669e6f2f36dcca682674355a19a32"
+    },
+    "data/precipitation/wc2.1_10m_prec_06.tif": {
+      "checksum": "db3bba457ac3cbf046efc7f9b3e618ff"
+    },
+    "data/precipitation/wc2.1_10m_prec_07.tif": {
+      "checksum": "7671f730f8c9570f6414cc0b65ac824c"
+    },
+    "data/precipitation/wc2.1_10m_prec_08.tif": {
+      "checksum": "f9083839d486b5d55f55fe8c83dd98a9"
+    },
+    "data/precipitation/wc2.1_10m_prec_09.tif": {
+      "checksum": "639166af5bde865c3cf967f08d62cdaa"
+    },
+    "data/precipitation/wc2.1_10m_prec_10.tif": {
+      "checksum": "ad65cc1ce37f374f3a541e886ff1938f"
+    },
+    "data/precipitation/wc2.1_10m_prec_11.tif": {
+      "checksum": "b296b61cbdbf1266f14a59e2c7814b92"
+    },
+    "data/precipitation/wc2.1_10m_prec_12.tif": {
+      "checksum": "20b51aebd1631c934b4b280f462446fa"
+    },
     "data/realms/RL_Realms.cpg": {
       "checksum": "ae3b3df9970b49b6523e608759bc957d"
     },
@@ -5337,29 +5523,32 @@
     "data/World_Cylindrical_Equal_Area_WKT.txt": {
       "checksum": "1b58b3e2480a90e277dc2bfc75514261"
     },
-    "esa-worldcover/v200/2021/map/ESA_WorldCover_10m_2021_v200_S06E033_Map.tif": {
-      "checksum": "43738f890556b1e0b6d7c1999b29aefc"
-    },
-    "esa-worldcover/v200/2021/map/ESA_WorldCover_10m_2021_v200_S06E036_Map.tif": {
-      "checksum": "12b49c1328621742ae5d9fb347f85e25"
-    },
-    "esa-worldcover/v200/2021/map/ESA_WorldCover_10m_2021_v200_S09E033_Map.tif": {
-      "checksum": "7668fc92649faeab36987594a239084e"
-    },
-    "esa-worldcover/v200/2021/map/ESA_WorldCover_10m_2021_v200_S09E036_Map.tif": {
-      "checksum": "305515b622f23104d231abab36642997"
-    },
     "global.R": {
-      "checksum": "5d8002f0d201339913f22724faa386ff"
+      "checksum": "62759ddd347a3a1a973d4399444c9ac2"
     },
     "helpers/analysis_functions.R": {
-      "checksum": "ed4c03e208648cbcedd84cae78a1a599"
+      "checksum": "57e9fed46044714745edd034bc1e1824"
+    },
+    "helpers/country_overlap.R": {
+      "checksum": "3fc7fe747e001545796df6fbae05e2d3"
+    },
+    "helpers/elevation.R": {
+      "checksum": "4246c1e61216149b43b98f2b6e0c030c"
     },
     "helpers/helper_functions.R": {
       "checksum": "aa8adff8a14a53c56b55faf43e3c4aa7"
     },
     "helpers/helpers.R": {
-      "checksum": "9ca0445c0d6f3baa5ba8699e4e8326b5"
+      "checksum": "02427b8decb3b4ddb85580f8120fc723"
+    },
+    "helpers/precipitation.R": {
+      "checksum": "055f4707c415f9337b15c76a2a04dc8d"
+    },
+    "helpers/temperature.R": {
+      "checksum": "3d19410faa84fcd70d01ffb5a45a051c"
+    },
+    "helpers/typology.R": {
+      "checksum": "5557d27c6d1a710baae0fd1a9d844df5"
     },
     "items.json": {
       "checksum": "4161e740a010ea02696a3dcd0e052ebf"
@@ -5373,47 +5562,62 @@
     "modules/classification_processing.R": {
       "checksum": "26ab8e8daf528e45735ad5776671a4a1"
     },
+    "modules/classification_upload.R": {
+      "checksum": "90d92d57c87d5b6fd342f420274f7d96"
+    },
     "modules/code to potentially add.R": {
       "checksum": "a9f0ddd4a2d2de4e455f372c72fd5242"
     },
     "modules/criterion_a.R": {
-      "checksum": "1237316e848e7734faac44b0e6045e51"
+      "checksum": "8a876075ed0623df0fc3fb8d60d7414c"
     },
     "modules/criterion_a_with_tables.R": {
       "checksum": "5e4a8fb5bc2c8c42cef0aaf144ec9b84"
     },
     "modules/criterion_b.R": {
-      "checksum": "44cea2826e884ef02b3eda08faa5b4fe"
+      "checksum": "7c480769a84f4248b6d69ebde86441ef"
     },
     "modules/data.R": {
-      "checksum": "0bdde4ac7faf7fec86812a299764cfb0"
+      "checksum": "3fa40c2ee4177645892f2b633e2798ee"
     },
     "modules/data_download.R": {
-      "checksum": "0689ea583a155ea942b360077890b029"
+      "checksum": "b599ab5d528abf5384ae09ff3b601fb7"
+    },
+    "modules/data_multilayer.R": {
+      "checksum": "de774e754e8964087664f61fff9e546a"
     },
     "modules/description.R": {
       "checksum": "a9689f8a51087a3204f9a82ffce28e06"
     },
+    "modules/description_eu.R": {
+      "checksum": "be6580f52dfea9dad9b0be6a73b2dda4"
+    },
     "modules/description_v2.R": {
-      "checksum": "f47472a45c148ca627f3ac5d5eb6173e"
+      "checksum": "2c62ac1e6fbe8cded4d4e2b61b281411"
     },
     "modules/drivers_of_change.R": {
-      "checksum": "4b98a0235fe6ad3c3bc8c7f0d532b354"
+      "checksum": "42f04dba290813e6403ff78ae5548da9"
     },
     "modules/helpers.R": {
       "checksum": "4e95c4f2b28614f67628d0d98fd0592a"
     },
     "modules/report.R": {
-      "checksum": "096ad30db815d75bd737e54c766e1e1c"
+      "checksum": "b19759ab9bb2456df7f704c6090299f1"
     },
     "renv.lock": {
-      "checksum": "fe347472ce866be5373107f223206c4b"
+      "checksum": "51b1534812485f5c296b03aba8a7eb1c"
     },
     "rle_report_template_html.Rmd": {
       "checksum": "e2e0af18c2484f2149c14a603e8d515e"
     },
     "rle_report_template_html_testing.Rmd": {
-      "checksum": "16e7d5a099d35bd4855a1747db26927a"
+      "checksum": "901451c2ad3f35819e13032e915bfe9c"
+    },
+    "rle_report_template_html_testing_stoppedworking.Rmd": {
+      "checksum": "ff4f94ca07a4c5fa30585f11736731ff"
+    },
+    "rle_report_template_html_testing2.Rmd": {
+      "checksum": "996e6edd8b311cfc39e3666f64b2f50e"
     },
     "simplified.R": {
       "checksum": "43d44f852f044566ff60f94af812bc72"
