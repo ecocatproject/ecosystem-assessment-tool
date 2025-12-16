@@ -57,7 +57,7 @@ get_box_status <- function(values) {
   } else if ("VU" %in% vals) {
     list(text = "VU", color = "yellow")
   } else {
-    list(text = "LC", color = "lightgreen")
+    list(text = "LC", color = "darkgreen")
   }
 }
 
@@ -277,3 +277,4 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
     )
   })
 }
+
