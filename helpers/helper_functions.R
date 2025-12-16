@@ -24,7 +24,7 @@ get_box_status <- function(values) {
   } else if ("VU" %in% vals) {
     list(text = "VU", color = "yellow")
   } else {
-    list(text = "LC", color = "lightgreen")
+    list(text = "LC", color = "darkgreen")
   }
 }
 
@@ -53,4 +53,5 @@ empty_assess_table <- function() {
       backgroundColor = "white",
       textAlign = "center"
     )
+
 }
