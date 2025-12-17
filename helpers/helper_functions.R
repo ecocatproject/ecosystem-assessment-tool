@@ -17,14 +17,18 @@ info_icon <- function(text) {
 # Helper function to determine status
 get_box_status <- function(values) {
   vals <- unique(values)
-  if ("CR" %in% vals) {
-    list(text = "CR", color = "red")
+  if ("CO" %in% vals) {
+    list(text = "CO", color = "#000000")
+  } else if ("CR" %in% vals) {
+    list(text = "CR", color = "#FF0000")
   } else if ("EN" %in% vals) {
-    list(text = "EN", color = "orange")
+    list(text = "EN", color = "#FFA500")
   } else if ("VU" %in% vals) {
-    list(text = "VU", color = "yellow")
+    list(text = "VU", color = "#FFFF00")
+  } else if ("NT" %in% vals) {
+    list(text = "NT", color = "#ADFF2F")
   } else {
-    list(text = "LC", color = "darkgreen")
+    list(text = "LC", color = "#008000")
   }
 }
 
@@ -55,3 +59,4 @@ empty_assess_table <- function() {
     )
 
 }
+
