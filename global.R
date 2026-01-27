@@ -1,14 +1,13 @@
 # global.R
 
-# renv::snapshot(exclude=c("climateR", "RNetCDF", "rnz", "ncmeta")) # creates lockfile
-# renv::snapshot() # creates lockfile
-# renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
-# rsconnect::writeManifest() #captures dependencies from lockfile
-# manifest <- jsonlite::fromJSON("manifest.json")
-# names(manifest$packages)
-# renv::install("DT")
-# # # renv::snapshot()
-# # #remove.packages("tidyterra")
+# # renv::snapshot(exclude=c("climateR", "RNetCDF", "rnz", "ncmeta")) # creates lockfile
+#  renv::snapshot() # creates lockfile
+# # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
+#  rsconnect::writeManifest() #captures dependencies from lockfile
+#  manifest <- jsonlite::fromJSON("manifest.json")
+#  names(manifest$packages)
+#  renv::install("DT")
+# # # #remove.packages("tidyterra")
 
 library(shiny)
 library(shinythemes)
@@ -44,29 +43,28 @@ library(progress)
 library(promises)
 library(future)
 library(rstac)
+library(rmdformats)
+library(flextable)
+library(mapview)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
+
 
 # logos
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
 get_logo <- dataURI(file = "www/logo_GET.png", mime = "image/png")
 # kew_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
+#default_files <- list.files("www/data/example", full.names = TRUE)
 
 # links
-link_get <- tags$a(div(img(src=get_logo, height = "40px")),
-                   "GET", href = "https://global-ecosystems.org/page/typology", target = "_blank"
-)
+get_url <- tags$a(div(img(src=get_logo, height = "40px")), "GET", href = "https://global-ecosystems.org/page/typology", target = "_blank")
+rle_url <- tags$a(div(img(src=rle_logo, height = "40px")), "IUCN Red List", href = "https://www.iucnrle.org/", target = "_blank")
 
-link_rle <- tags$a(div(img(src=rle_logo, height = "40px")),
-                   "IUCN Red List", href = "https://www.iucnrle.org/", target = "_blank"
-)
-
-
-# Load static data
+# # Load static data
 efg_lookup <- read.csv("data/ecosystem_typology_lookup_table.csv")
-#ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
-realms <- terra::vect("data/realms/RL_Realms.shp")
+# #ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
+# realms <- terra::vect("data/realms/RL_Realms.shp")
 countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
 # theme
