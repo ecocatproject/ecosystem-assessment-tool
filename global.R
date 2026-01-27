@@ -43,9 +43,9 @@ library(progress)
 library(promises)
 library(future)
 library(rstac)
-library(rmdformats)
-library(flextable)
-library(mapview)
+#library(rmdformats)
+#library(flextable)
+#library(mapview)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
@@ -75,3 +75,4 @@ custom_theme <- bs_theme(
   fg = "#333333",
   base_font = font_google("Roboto")
 )
+
