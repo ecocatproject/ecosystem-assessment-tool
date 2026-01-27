@@ -1,7 +1,10 @@
 ---
 title: "IUCN Red List of Ecosystem Assessment: `r params$ecosystem_name`"
 output: 
-  rmdformats::robobook
+  rmdformats::robobook: default
+  word_document: default          # Word
+  pdf_document: default           # PDF
+always_allow_html: true
 fontsize: 12pt
 mainfont: "Arial"
 params:
@@ -12,10 +15,11 @@ params:
   raster_files: NA
   years: NA
   areas: NA
-  #roi_vec_file: NA
   countries: NA
   rainfall: NA
- # typology: NA
+  temperature: NA
+  elevation: NA
+  typology: NA
   area_change_data: NA
   area_prediction_data: NA
   mcp_data: NA
@@ -27,24 +31,8 @@ params:
 ---
   
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
-library(terra)
-library(ggplot2)
-library(gridExtra)
-library(basemaps)
-library(ggthemes)
-library(DT)
-library(sf)
-library(RColorBrewer)
-library(leaflet)
-library(knitr)
-library(plotly)
-library(dplyr)
-library(mgcv)
-
-
 # evaluate some parameters
 rasters <- if (!is.null(params$raster_files)) lapply(params$raster_files, terra::rast) else NULL
-#roi_vec <- readRDS(params$roi_vec_file)
 years <- params$years %||% numeric(0)
 n <- length(rasters)
 ```
@@ -68,7 +56,7 @@ Assessed on `r format(Sys.Date(), "%d %B %Y")` `r
     ""
 }`
 
-# Report summary
+# **Report summary**
 
 This report documents an ecosystem assessment, as part of the IUCN Red List of Ecosystems, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. The data behind this ecosystem assessment report has been generated machine learning models of remote sensing data as part of the EcoCAT (Ecosystem Classification Assessment Tool) project from RBG Kew.
 
@@ -79,98 +67,143 @@ This report documents an ecosystem assessment, as part of the IUCN Red List of E
 
 ------------------------------------------------------------------------
   
-# Ecosystem description
+# **Ecosystem description**
   
 ### Classification
 
-[Global Ecosystem Typology](https://global-ecosystems.org/):
+To summarise the [IUCN Global Ecosystem Typology (GET)](https://global-ecosystems.org/) of the ecosystem, the most recent (`r max(params$years)`) classification map was overlayed on the global GET maps and the percentage of each ecosystem functional group (EFG) (both major and minor occurrence) intersecting with the ecosystem was calculated.  The summary of EFGs in the mapped ecosystem is presented in the table below with '`r params$typology[1,2]`' the most prevalent major EFG. Any EFG with <1% occurrence coverage in the ecosystem is not displayed in this table. 
 
 ```{r typology, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$typology)}
 typology_df <- params$typology
+title_text <- "Percentage of Global Ecosystem Typology across the ecosystem"
 
+if (knitr::is_html_output()) {
 htmltools::tagList(
   # centered Title
   htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Percentage of Global Ecosystem Typology across the ecosystem"
-  ),
+    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
   DT::datatable(typology_df, rownames=F,
                 escape = FALSE,
                 options = list(
-                  paging = FALSE,
+                  pageLength = 5,
                   searching = FALSE,
                   info = FALSE,
-                  dom = 't',
+                  #dom = 't',
                   autoWidth = TRUE,
                   scrollX = FALSE)) %>%
     DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
 )
+
+}else{
+    # flextable
+  set_flextable_defaults(font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent")
+  
+  get_tab <- flextable(typology_df) %>%
+    set_caption(caption = as_paragraph(as_b(title_text))) %>%
+    autofit() %>%
+    flextable::theme_booktabs(bold_header = TRUE) %>%
+    # colformat_num(j="Year", big.mark = "") %>%
+    set_table_properties(layout="autofit")
+  
+  get_tab
+  
+}
+
+
+
 ```
 
-### Distribution
-
-**System:** `r #unique(params$typology_data$REALM) # REALM in the GET is the same as 'system' used in sRL`
-
-**Biome:** `r #params$typology_data$BIOME`
-
-**Biogeographic Realm:**
-
-**Geographic Region:**
+### Geographic distribution
 
 **Countries:** `r params$countries$Country`
 
-```{r coo, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$countries)}
-coo_df <- params$countries
+From the most recent (`r max(params$years)`) classification, the ecosystem is found in the following countries: `r params$countries$Country`. The area and percentage of the ecosystem within each country as measured in `r max(params$years)` is summarised in the table and map below:
 
-htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Percentage of ROI occurrance per country"
-  ),
-  DT::datatable(coo_df, rownames=F,
-                escape = FALSE,
-                options = list(
+```{r coo, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$countries), results='asis'}
+coo_df <- params$countries
+title_text <- "Percentage of ROI occurrence per country"
+
+# display the table
+if (knitr::is_html_output()) 
+{
+  htmltools::tagList(
+    # centered Title
+    htmltools::div(
+      style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
+    DT::datatable(coo_df, rownames=F,
+                  escape = FALSE,
+                  options = list(
                   paging = FALSE,
                   searching = FALSE,
                   info = FALSE,
                   dom = 't',
                   autoWidth = TRUE,
                   scrollX = FALSE)) %>%
-    DT::formatStyle(columns = c(1:ncol(coo_df)), fontSize = '100%')
+      DT::formatStyle(columns = c(1:ncol(coo_df)), fontSize = '100%')
 )
+  
+  } else {
+
+  # flextable
+  set_flextable_defaults(
+    font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent"
+  )
+  
+  coo_tab <- flextable(coo_df) %>%
+    set_caption(caption = as_paragraph(as_b(title_text))) %>%
+    autofit() %>%
+    flextable::theme_booktabs(bold_header = TRUE) %>%
+    # colformat_num(j="Year", big.mark = "") %>%
+    set_table_properties(layout="autofit")
+  
+  coo_tab
+  
+  }
 ```
 
-**Spatial distribution of ecosystem**
   
-```{r roi, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%'}
+```{r eu_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%'}
+map_title <- paste0("Distribution of the ecosystem in ", max(years))
+
 #if (!is.null(params$rasters)) {
- # roi_wgs <- terra::project(roi_vec, "EPSG:4326")            # convert to wgs
- # map_data <- sf::st_as_sf(roi_wgs)                          # convert to sf
-  #roi_ext <- st_bbox(map_data)                               # get extent
   r_recent <- try(rasters[[length(rasters)]], silent = TRUE) # get the most recent raster for plotting
   
   # the map - recent raster only
   pal <- colorNumeric(palette = c("white", "black"), domain = c(1, 0), na.color = "transparent")
-  m <- leaflet() %>%
+  
+   m <- leaflet() %>%
     addTiles() %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
-    addRasterImage(r_recent, group = "EAU", colors = pal, method = "ngb", project = TRUE) %>% 
-    #addPolygons(data = map_data, fillColor = "grey80", fillOpacity = 0.2,
-    #            color = "darkblue", weight = 2, group="ROI") %>%
+    addRasterImage(r_recent, group = paste0(max(years), " classification"), colors = pal, method = "ngb", project = TRUE) %>% 
     addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
-                     overlayGroups = c("ROI"),
+                     overlayGroups = c(paste0(max(years), " classification")),
                      options = layersControlOptions(collapsed = FALSE))
   
   # plot the map
-  m
+  if (knitr::is_html_output()) {
+  
+     # Wrap the map with title
+    htmltools::tagList(
+      tags$div(
+        style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
+      m)
+    
+  } else{
+    htmlwidgets::saveWidget(m, "map.html")
+webshot("map.html", file = "map.png", vwidth = 800, vheight = 600)
+knitr::include_graphics("map.png")
+  }
+
   
 #} else {
 #  cat("No ROI shapefile was uploaded, so no ROI map is available.\n")
 #}
 ```
 
-**Rainfall:** The average annual rainfall patterns are shown below:
+### Abiotic variables {.tabset .tabset-pills}
+
+#### Rainfall {.active}
+**Rainfall:** Historical rainfall data was taken from [WorldClim version 2.1](https://www.worldclim.org/data/worldclim21.html). The average annual precipitation with the ecosystem between 1970 and 2000 was `r round(mean(params$rainfall$mean), 0)`mm. The average monthly rainfall patterns are shown in the graph below:
 
 ```{r rainfall_2, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', fig.height=3, eval = !is.null(params$rainfall)}
 monthly_avg <- params$rainfall
@@ -178,7 +211,7 @@ monthly_avg <- params$rainfall
 if (knitr::is_html_output()) {
   # --- Interactive Plotly ---
   library(plotly)
-  p2 <- plot_ly(monthly_avg, x = ~month) %>%
+  p_plot <- plot_ly(monthly_avg, x = ~month) %>%
   add_ribbons(
     ymin = ~min_smooth,
     ymax = ~max_smooth,
@@ -198,10 +231,10 @@ if (knitr::is_html_output()) {
     yaxis = list(title = "Rainfall (mm)")
   )
 
-  p2
+  p_plot
 } else {
   # --- Static ggplot for PDF/Word ---
-   p2 <- ggplot(smooth_df, aes(x = month, group=1)) +
+   p_plot <- ggplot(monthly_avg, aes(x = month, group=1)) +
   # smoothed ribbon
     geom_ribbon(aes(ymin = min_smooth, ymax = max_smooth),
               fill = "lightblue", alpha = 0.4) +
@@ -214,12 +247,93 @@ if (knitr::is_html_output()) {
     theme_classic() +
     theme(panel.grid.major.y = element_line(linetype=5, linewidth=0.5, color="grey50"))
 
-   p2
+   p_plot
+}
+```
+
+#### Temperature
+**Temperature:** Historical temperature data was taken from [WorldClim version 2.1](https://www.worldclim.org/data/worldclim21.html). The average annual temperature with the ecosystem between 1970 and 2000 was `r round(mean(params$temperature$mean), 1)`°C. The average monthly temperature patterns are shown in the graph below:
+
+```{r temperature, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', fig.height=3, eval = !is.null(params$temperature)}
+temp_avg <- params$temperature
+
+if (knitr::is_html_output()) {
+  # --- Interactive Plotly ---
+  t_plot <- plot_ly(temp_avg, x = ~month) %>%
+        add_ribbons(
+          ymin = ~min_smooth,
+          ymax = ~max_smooth,
+          line = list(color = 'transparent'),
+          fillcolor = 'firebrick',
+          opacity = 0.1,
+          name = "95% range"
+        ) %>%
+        add_lines(
+          y = ~mean_smooth,
+          line = list(color = 'red', width = 2),
+          name = "Mean"
+        ) %>%
+        layout(
+          xaxis = list(title = "Month"),
+          yaxis = list(title = "Temperature (°C)")
+        )
+
+  t_plot
+
+} else {
+  # --- Static ggplot for PDF/Word ---
+   t_plot <- ggplot(temp_avg, aes(x = month, group=1)) +
+  # smoothed ribbon
+    geom_ribbon(aes(ymin = min_smooth, ymax = max_smooth),
+              fill = "lightblue", alpha = 0.4) +
+
+  # smoothed mean line
+    geom_line(aes(y = mean_smooth), color = "blue", size = 1) +
+    labs(title = "Average Monthly Temperature",
+       x = "Month",
+       y = "Temperature (°C)")+
+    theme_classic() +
+    theme(panel.grid.major.y = element_line(linetype=5, linewidth=0.5, color="grey50"))
+
+   t_plot
+}
+```
+
+#### Elevation
+**Elevation:** The elevation of the mapped ecosystem in `r max(params$years)` ranged from `r as.numeric(min(values(params$elevation, na.rm = TRUE)))`m to `r as.numeric(max(values(params$elevation, na.rm = TRUE)))`m, with 95% of the ecosystem elevation between `r global(params$elevation, quantile, probs=c(0.05, .95), na.rm=T)[1]`m and `r  global(params$elevation, quantile, probs=c(0.05, .95), na.rm=T)[2]`m. The elevation distribution across the ecosystem is shown in the graph below:
+
+```{r elevation, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', fig.height=3, eval = !is.null(params$elevation)}
+elev_values <- as.numeric(values(params$elevation, na.rm = TRUE))  # get numeric vector without NAs
+
+if (knitr::is_html_output()) {
+  # --- Interactive Plotly ---
+  e_plot <- plot_ly(x = elev_values, type = "histogram", marker=list(color="#669900")) %>%
+        layout(xaxis = list(title = "Elevation (m)"),
+               yaxis = list(title = "Number of mapped pixels"),
+               bargap = 0.1)
+  e_plot
+
+} else {
+  # --- Static ggplot for PDF/Word ---
+   e_plot <- ggplot(temp_avg, aes(x = month, group=1)) +
+  # smoothed ribbon
+    geom_ribbon(aes(ymin = min_smooth, ymax = max_smooth),
+              fill = "lightblue", alpha = 0.4) +
+
+  # smoothed mean line
+    geom_line(aes(y = mean_smooth), color = "blue", size = 1) +
+    labs(title = "Average Monthly Temperature",
+       x = "Month",
+       y = "Temperature (°C)")+
+    theme_classic() +
+    theme(panel.grid.major.y = element_line(linetype=5, linewidth=0.5, color="grey50"))
+
+   e_plot
 }
 ```
 
 ------------------------------------------------------------------------
-
+## {-}
 # **Risk Assessment**
 
 ### Criterion A: Reduction in geographic distribution
@@ -253,46 +367,70 @@ abs(change_percent), "% from ", format(round(start_area,0), big.mark = ","), "km
  }`
 
 ```{r area_table_2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) > 1}
+# This is conditional for when there is > 1 year
+title_text <- "Summary of ecosystem area change"
 area_change_data <- params$area_change_data
+
 criteria_a_data <- area_change_data %>%
         mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
                area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
                proportional_rate_change = round(proportional_rate_change, 2),
-               absolute_rate_change = round(absolute_rate_change, 2))
+               absolute_rate_change = round(absolute_rate_change, 2)) %>%
+   dplyr::rename(
+          'Year' = year,
+          `Area (km²)` = area,
+          `Area change (km²)` = area_change,
+          `Proportional rate of change (%/year)` = proportional_rate_change,
+          `Absolute rate of change (km²/year)` = absolute_rate_change
+        )
 
-
-a_tab <- htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Ecosystem area change"
-  ),
-  # centrered table too
-htmltools::div(
-  style = "text-align:center;",
-  htmltools::div(
-    style = "display:inline-block; width:auto;",  # shrink to fit content
-      DT::datatable(criteria_a_data,,
-        colnames = c("Year", "Area (km2)", "Area change (km2)",
-                     "Proportional rate of change (%)", "Absolute rate of change (km2)"),
-        options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
-        rownames = FALSE
+if (knitr::is_html_output()) {
+  a_tab <- htmltools::tagList(
+    # centered Title
+    htmltools::div(
+      style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
+    # centered table too
+    htmltools::div(
+      style = "text-align:center;",
+      htmltools::div(
+        style = "display:inline-block; width:auto;",  # shrink to fit content
+        DT::datatable(criteria_a_data,,
+                      colnames = c("Year", "Area (km2)", "Area change (km2)",
+                                   "Proportional rate of change (%)", "Absolute rate of change (km2)"),
+                      options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
+                      rownames = FALSE
+        )
       )
+    )
   )
-)
-)
-a_tab
+  
+  a_tab
+  
+} else {
+  # flextable
+  set_flextable_defaults(
+    font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent"
+  )
+  
+  a_tab <- flextable(criteria_a_data) %>%
+    set_caption( caption = as_paragraph(as_b(title_text))) %>%
+    autofit() %>%
+    flextable::theme_booktabs(bold_header = TRUE) %>%
+    colformat_num(j="Year", big.mark = "") %>%
+    set_table_properties(layout="autofit")
+  
+  a_tab
+}
+
 ```
 
 ```{r area_table_3, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) == 1}
 area_data <- params$areas
 
-# criteria_a_data <- area_change_data %>%
-#         mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
-#                area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
-#                proportional_rate_change = round(proportional_rate_change, 2),
-#                absolute_rate_change = round(absolute_rate_change, 2))
-
+criteria_a_data <- area_data %>%
+        mutate(Area_km2  = format(round(Area_km2), big.mark = ",", trim = TRUE)) %>%
+  dplyr::select(Year, Area_km2) %>%
+  dplyr::rename(`Area (km²)` = Area_km2,)
 
 a_tab <- htmltools::tagList(
   # centered Title
@@ -305,21 +443,17 @@ htmltools::div(
   style = "text-align:center;",
   htmltools::div(
     style = "display:inline-block; width:auto;",  # shrink to fit content
-      DT::datatable(area_data,
-        # colnames = c("Year", "Area (km2)", "Area change (km2)",
-        #              "Proportional rate of change (%)", "Absolute rate of change (km2)"),
+      DT::datatable(criteria_a_data,
         options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
         rownames = FALSE
-      )
-  )
-)
-)
+      ))))
+
 a_tab
 ```
 
 
 `r if (!is.null(params$area_prediction_data)) {
-  paste0("To assess the subcriteria of Criterion A, the changes in ecosystem area can be estimated for both past and present using various of methods depending on data availability. This includes quantifying the absolute change area (ARC), proportional change in area (PRC). Some of these trends are presenting the the interactive graph below.."
+  paste0("To assess the subcriteria of Criterion A, the changes in ecosystem area can be estimated for both past and present using various of methods depending on data availability. This includes quantifying the absolute change area (ARC), proportional change in area (PRC). Some of these trends are presenting the the interactive graph below."
   )
 }` 
 
@@ -444,7 +578,8 @@ assessment_map <- c(
   "VU" = "Vulnerable",
   "EN" = "Endangered",
   "LC" = "Least Concern",
-  "CR" = "Critically Endangered"
+  "CR" = "Critically Endangered",
+  "NT" = "Near Threatened"
 )
 
  if (!is.null(params$mcp_data)) {
@@ -506,8 +641,8 @@ htmltools::div(
       formatStyle(
         "assessment",
         backgroundColor = styleEqual(
-          c("CR", "EN", "VU", "LC"),
-          c("red", "orange", "yellow", "lightgreen")),
+          c("CR", "EN", "VU", "NT", "LC"),
+          c("#FF0000", "#FFA500", "#FFFF00", "#ADFF2F", "#008000")),
         color = "black",
         fontWeight = "bold"
       )
@@ -524,6 +659,7 @@ map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
 # label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2,2), " km²")
 mcp_list <- params$mcp_poly %||% list()
 
+
 if (length(mcp_list) > 0) {
   mcp_all <- try(vect(mcp_list), silent = TRUE)
   latest_year <- max(mcp_all$year, na.rm = TRUE)
@@ -537,11 +673,20 @@ if (length(mcp_list) > 0) {
                    group = paste0(latest_year, " MCP"),
                    label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2, 2), " km²"),
                    highlightOptions = highlightOptions(bringToFront = TRUE, color = "white", weight = 3)) %>%
-       addRasterImage(r_recent, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
-       addLayersControl(overlayGroups = c(paste0(latest_year, " MCP"),paste0(latest_year, " classification")) ,
+        addRasterImage(r_recent, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
+        addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
+        addLayersControl(baseGroups = c("OSM", "ESRI Satellite"), 
+                         overlayGroups = c(paste0(latest_year, " MCP"),paste0(latest_year, " classification")) ,
             options = layersControlOptions(collapsed = FALSE))
-      # return he map
-      map
+      # # return the map
+      # map
+      
+      # Wrap the map with title
+      htmltools::tagList(
+        tags$div(
+          style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
+        map)
+      
       
       # # Add title above map
       # htmltools::tagList(
@@ -555,8 +700,9 @@ if (length(mcp_list) > 0) {
     } else {
       #  PDF / Word (static map) ----------------------------------------------
       ggplot() +
-        geom_sf(data = hulls_sf, aes(fill = factor(year)), alpha = 0.3) +
-        scale_fill_manual(values = pal_colors) +
+        geom_sf(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
+                                    aes(fill = factor(year)), alpha = 0.3) +
+        #scale_fill_manual(values = pal_colors) +
         theme_minimal() +
         ggtitle(map_title) +
         theme(legend.position = "bottom")
@@ -580,7 +726,7 @@ b2_tab <- htmltools::tagList(
   # centered Title
   htmltools::div(
     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Table of AOO for Subcriterion B2: Restricted Extent of Occurrence"
+    "Table of Area of Occupancy (AOO) for Subcriterion B2: Restricted Extent of Occurrence"
   ),
 
   # centrered table too
@@ -603,8 +749,8 @@ htmltools::div(
       formatStyle(
         "assessment",
         backgroundColor = styleEqual(
-          c("CR", "EN", "VU", "LC"),
-          c("red", "orange", "yellow", "lightgreen")),
+          c("CR", "EN", "VU", "NT", "LC"),
+          c("#FF0000", "#FFA500", "#FFFF00", "#ADFF2F", "#008000")),
         color = "black",
         fontWeight = "bold"
       )
@@ -649,31 +795,23 @@ b2_tab
 ```
 
 ```{r b2_map, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$b2_poly)}
-map_title <- paste0("Area of Occupancy (including grid cells exceeding 1% cumulative proportion) in ", max(years))
+map_title <- paste0("Area of Occupancy (AOO) including grid cells exceeding 1% cumulative proportion in ", max(years))
 
 # Defensive extraction of parameters
 grid_sf <- try(params$b2_poly, silent = TRUE)   # sf polygons with cell_id
 
-# # Pick most recent raster if available
-# if (length(rasters) > 0) {
-#   r_recent <- try(rasters[[length(rasters)]], silent = TRUE) # get the most recent raster for plotting
-#   } else {
-#     r_recent <- NULL
-#   }
-# 
 #colour palette
 pal <- colorNumeric(palette = c("white", "black"), domain = c(1, 0), na.color = "transparent")
 
 # Interactive Leaflet --------------------------------------------------------
-m <- leaflet() %>% addTiles() %>%
-  addRasterImage(r_recent, group = "eau", colors = pal, method = "ngb", project = TRUE)
-
 # data selection of the most recent data
 dat_all <- grid_sf[grid_sf$cell_id %in% all_ids$cell_ids[[1]], ]
 dat_sel <- grid_sf[grid_sf$cell_id %in% sel_ids$cell_ids[[1]], ]
 
 # map the most recent data
-m <- m  %>%
+m <- leaflet() %>% 
+  addTiles() %>%
+  addRasterImage(r_recent, group = paste0(max(years), " classification"), colors = pal, method = "ngb", project = TRUE)  %>%
   addPolygons(data = dat_all, group = "10x10 km grid",
                     fillColor = "black",
                     fillOpacity = 0.2,
@@ -684,11 +822,14 @@ m <- m  %>%
                     fillOpacity = 0.5,
                     color = "black",
                     weight = .5) %>%
-  addLayersControl(overlayGroups = c('eau', '10x10 km grid', 'AOO (>1% occupancy)'),
+  addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
+  addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
+                   overlayGroups = c(paste0(max(years), " classification"), '10x10 km grid', 'AOO (>1% occupancy)'),
           options = layersControlOptions(collapsed = FALSE)
         )
 
-# Wrap with title
+
+# Wrap the map with title
 htmltools::tagList(
   tags$div(
     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
