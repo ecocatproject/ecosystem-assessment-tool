@@ -14,13 +14,22 @@ calc_area_change <- function(area.data) {
     dplyr::mutate(year = round(as.numeric(Year),0), area = Area_km2, Year = NULL, Area_km2 = NULL) %>%
     dplyr::arrange(year)
   
+  
   obsv_change <- area.data %>%
     dplyr::mutate(
-      area_change = lag(area) - area,
-      proportional_rate_change = (1 - (lag(area)/area)^(1/(lag(year)-year))) * 100,
-      absolute_rate_change = (lag(area) - area) / (lag(year)-year)#,
-      #annual_rate_change = (1 / (lag(year)-year)) * log(lag(area)/area) * 100
+      dt = year - lag(year),
+      area_change = area - lag(area),   # later - earlier (signed correctly)
+      proportional_rate_change = ((area / lag(area))^(1 / dt) - 1) * 100,
+      absolute_rate_change = area_change / dt,
     )
+# 
+#   obsv_change <- area.data %>%
+#     dplyr::mutate(
+#       area_change =area - lag(area),
+#       proportional_rate_change = (1 - (lag(area)/area)^(1/(lag(year)-year))) * 100,
+#       absolute_rate_change = (lag(area) - area) / (lag(year)-year)#,
+#     )
+#   
   return(obsv_change)
 }
 
@@ -30,8 +39,10 @@ calc_area_change <- function(area.data) {
 predict_area_change <- function(obsv_change, horizon = 50) {
   
   # helper data for projections
-  oldest <- cbind((obsv_change %>% slice(1))[c(1:2)],                       # select the 1st row of year and area data, but need the next decline stat
-                  (obsv_change %>% slice(2))[c(3:5)])                       # select the  1st set of decline stats
+  oldest <- cbind(
+    obsv_change %>% slice(1) %>% dplyr::select(year, area),                        # select the 1st row of year and area data, but need the next decline stat
+    obsv_change %>% slice(2) %>% dplyr::select(absolute_rate_change, proportional_rate_change) # # select the  1st set of decline stats
+  )
   recent <- obsv_change %>% slice(n())                                      # choose the most recent row
   nYearsPast <- (horizon - (max(obsv_change$year) - min(obsv_change$year))) # oldest data
   if (nYearsPast < 0) nYearsPast <- 0                                       # safeguard if there happens to be early estimates?
@@ -39,19 +50,24 @@ predict_area_change <- function(obsv_change, horizon = 50) {
   # projection function
   # this is used separately for future and past projections
   # and is applied to future projections using imap (purrr package)
-  project_seq <- function(start_area, rate, type, years, direction = "future") {
+  # project_seq <- function(start_area, rate, type, years, direction = "future") {
+    project_seq <- function(start_area, rate, type, years, direction = c("future", "past")) {
+      direction <- match.arg(direction)
+      
     seq_df <- data.frame(i = 0:years) %>%
       mutate(
         area = case_when(
-          # type == "ARC" ~ start_area * exp((rate/100) * i),
-          type == "PRC" ~ start_area * (1 - (rate/100))^i,
-          type == "ARC" ~ start_area + rate * i,
+          type == "PRC" & direction == "future" ~ start_area * (1 + rate/100)^i,
+          type == "PRC" & direction == "past"   ~ start_area * (1 + rate/100)^(-i),
+          type == "ARC" & direction == "future" ~ start_area + rate * i,
+          type == "ARC" & direction == "past"   ~ start_area - rate * i,
           TRUE ~ NA_real_
         ),
-        area = pmax(area, 0),   # this prevents negative values
+      area = pmax(area, 0),   # this prevents negative values
+      #  area = area,
         year = if (direction == "future") recent$year + i else oldest$year - i,
-        ptype = "projected",
-        method = type
+      ptype = "projected",
+      method = type
       ) 
     return(seq_df)
   }
@@ -59,28 +75,25 @@ predict_area_change <- function(obsv_change, horizon = 50) {
   # Past extrapolation (using oldest rate)
   past_proj <- bind_rows(
     # project_seq(oldest$area, -oldest$annual_rate_change, "ARC", nYearsPast, "past"),
-    project_seq(oldest$area, -oldest$proportional_rate_change, "PRC", nYearsPast, "past"),
-    project_seq(oldest$area, -oldest$absolute_rate_change, "ARC", nYearsPast, "past")
+    project_seq(oldest$area, oldest$proportional_rate_change, "PRC", nYearsPast, "past"),
+    project_seq(oldest$area, oldest$absolute_rate_change, "ARC", nYearsPast, "past")
   ) %>% mutate(scenario = "past") %>%
-    dplyr::select(year, area, type = ptype, method, scenario) %>%
+    dplyr::select(year, area,  type = ptype, method, scenario) %>%
     dplyr::arrange(year)
   
   # Future projections
   scenarios <- list(
     median = list(
-      # ARC = median(area$annual_rate_change, na.rm = TRUE),
       PRC = median(obsv_change$proportional_rate_change, na.rm = TRUE),
       ARC = median(obsv_change$absolute_rate_change, na.rm = TRUE)
     ),
     recent = list(
-      # ARC = recent$annual_rate_change,
       PRC = recent$proportional_rate_change,
       ARC = recent$absolute_rate_change
     ),
     worst = list(
-      # ARC = min(area$annual_rate_change, na.rm = TRUE),
-      PRC = max(obsv_change$proportional_rate_change, na.rm = TRUE),
-      ARC = min(obsv_change$absolute_rate_change, na.rm = TRUE)
+      PRC = min(0, min(obsv_change$proportional_rate_change, na.rm = TRUE)), # clamped to 0 to prevent increases
+      ARC = min(0, min(obsv_change$absolute_rate_change, na.rm = TRUE))
     )
   )
   
@@ -92,13 +105,12 @@ predict_area_change <- function(obsv_change, horizon = 50) {
     scenarios$worst <- NULL
   }
   
-  future_proj <- imap_dfr(scenarios, function(rates, scen) { # this iterates over 2 arguements at a time (a bit like seq_along...)
+  future_proj <- imap_dfr(scenarios, function(rates, scen) { # this iterates over 2 arguments at a time (a bit like seq_along...)
     bind_rows(
-      # project_seq(recent$area, rates$ARC, "ARC", horizon),
-      project_seq(recent$area, rates$PRC, "PRC", horizon),
-      project_seq(recent$area, rates$ARC, "ARC", horizon)
+      project_seq(recent$area, rates$PRC, "PRC", horizon, "future"),
+      project_seq(recent$area, rates$ARC, "ARC", horizon, "future")
     ) %>% mutate(scenario = scen) %>%
-      dplyr::select(year, area, type = ptype, method, scenario) %>%
+      dplyr::select(year, area,  type = ptype, method, scenario) %>%
       arrange(year)
   })
   

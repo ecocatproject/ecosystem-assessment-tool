@@ -190,12 +190,15 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
                             method_names[method],
                             method),
       perc_label = paste0(round(abs(.data[[data_col]]) * 100, 2), "%"),
-      direction = ifelse(.data[[data_col]] > 0, "decrease", "increase")
+      # direction = ifelse(.data[[data_col]] > 0, "decrease", "increase")
+      direction = ifelse(.data[[data_col]] > 0, "increase", "decrease")
     )
   
   # only want PRC in output
   data <- data %>%
     dplyr::filter(method == "PRC")
+  
+  #print(data)
   
   # Only keep one row if scenario values are identical
   if ("scenario" %in% names(data)) {
@@ -247,6 +250,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
       "CR" = "Critically Endangered",
       "EN" = "Endangered",
       "VU" = "Vulnerable",
+      "NT" = "Near Threatened",
       "LC" = "Least Concern"
     )
     
@@ -281,5 +285,3 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
     )
   })
 }
-
-

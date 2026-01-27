@@ -65,10 +65,12 @@ compute_precipitation <- function(x,
 
 # 
 # eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
-# system.time({result_eau <- compute_temperature(x=eau)})
+# eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
+# system.time({result_eau <- compute_precipitation(x=eau)})
 # result_eau
 
-# t_10 <- list.files("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/EcoCat/Code/R/modularised/data/temperature/wc2.1_10m_tavg", full.names = TRUE) |>
+# # t_10 <- list.files("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/EcoCat/Code/R/modularised/data/temperature/wc2.1_10m_tavg", full.names = TRUE) |>
+# t_10 <- list.files("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/EcoCat/Code/R/modularised_testing/data/precipitation", full.names = TRUE) |>
 #   rast(win = terra::ext(eau))
 # pts <- spatSample(eau, n_sample, method = "random",
 #                   as.points = TRUE, na.rm = TRUE)
