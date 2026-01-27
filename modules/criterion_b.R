@@ -20,8 +20,8 @@ criterion_b_module_ui <- function(id) {
     layout_column_wrap(
       width = "250px",
       fill = FALSE,
-      actionButton(ns("get_mcp"), "Click here to Calculate EOO - Subcriteria B1", width = "100%"),
-      actionButton(ns("get_AOO"), "Click here to Calculate AOO - Subcriteria B2", width = "100%")),
+      actionButton(ns("get_mcp"), "Calculate EOO - Subcriteria B1", width = "100%"),
+      actionButton(ns("get_AOO"), "Calculate AOO - Subcriteria B2", width = "100%")),
       
     # subcriterion value boxes -----------------------------------------------
     layout_column_wrap(
@@ -31,17 +31,40 @@ criterion_b_module_ui <- function(id) {
       uiOutput(ns("criterion_boxes_b2"))  # placeholder for the dynamic box
     )
   )
-  
 }
 
 # -----------------------------------------------------------------------------
 # server
 # -----------------------------------------------------------------------------
-criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters, areas, data_module, years, main_tab) {
+criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters, areas,
+                                      upload_module, main_tab) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # ---- declare reactives up front ----
+    # modal to provide some user info -----------------------------------------
+    # 1) prevent the modal from popping up multiple times per session
+    modal_shown <- reactiveVal(FALSE)
+                               
+    # 2) model pop up on tab opening 
+    observeEvent(main_tab(), {
+      # Only fire when Criterion B is selected
+      if (identical(main_tab(), "Criterion B")) {
+        # If you want it every time, remove the guard:
+        if (!modal_shown()) {
+          showModal(b_quick_modal)
+          modal_shown(TRUE)
+        }
+      }
+    }, ignoreInit = TRUE)
+    
+    
+    # 3) additional help button inside the modal footer
+    observeEvent(input$open_help, {
+      showModal(b_help_modal)
+    })
+    
+    
+    # reactive values to store data --------------------------------------------
     shown_once   <- reactiveVal(FALSE)
     mcp_vectors  <- reactiveVal(NULL)   # stores all MCP SpatVector (projected)
     mcp_table    <- reactiveVal(NULL)   # df summary for B1
@@ -51,48 +74,12 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
     aoo_sel_ids  <- reactiveVal(NULL)
     aoo_all_ids  <- reactiveVal(NULL)
     
-    
-    criterion_b_module_ui <- function(id) {
-      ns <- NS(id)
-      fluidPage(
-        tabsetPanel(
-          id = "main_nav",       # creates input$main_nav
-          tabPanel(
-            "Criterion B",
-            # Map for both criterion -------------------------------------------------
-            card(
-              full_screen = TRUE,
-              # card_header("Criterion B1 and B2"),
-              card_body(
-                leafletOutput(ns("map_B"), height = 300),
-                class = "p-0" # remove padding
-              )
-            ),
-            # buttons ----------------------------------------------------------
-            layout_column_wrap(
-              width = "250px",
-              fill = FALSE,
-              actionButton(ns("get_mcp"), "Click here to Calculate EOO - Subcriteria B1", width = "100%"),
-              actionButton(ns("get_AOO"), "Click here to Calculate AOO - Subcriteria B2", width = "100%")),
-            
-            # subcriterion value boxes -----------------------------------------
-            layout_column_wrap(
-              width = "250px",
-              fill = FALSE,
-              uiOutput(ns("criterion_boxes_b1")),  # placeholder for the dynamic box, 
-              uiOutput(ns("criterion_boxes_b2"))  # placeholder for the dynamic box
-            )
-          )
-        )
-      )
-    }
-    
     # reset when new rasters uploaded ------------------------------------------
     observeEvent(rasters(), {
-      # reset UI and reactive holders
+      
+      # reset UI and reactive holders -----------------------------------------
       output$criterion_boxes_b1 <- renderUI({ NULL })
       output$criterion_boxes_b2 <- renderUI({ NULL })
-      
       mcp_vectors(NULL)
       mcp_poly(NULL)
       mcp_table(NULL)
@@ -101,19 +88,18 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       aoo_sel_ids(NULL)
       aoo_all_ids(NULL)
       
-      # clear map
+      # clear map -------------------------------------------------------------
       leafletProxy(ns("map_B")) %>%
         clearShapes() %>%
         clearControls()
     }, ignoreNULL = TRUE)
     
-    # ---- initialize map ----
+    # initialize map ----------------------------------------------------------
     output$map_B <- renderLeaflet({
       if (is.null(rasters()) || length(rasters()) < 1) {
         leaflet() %>% addTiles()
       } else {
-        r <- rasters()[[1]]
-        ctr <- crds(centroids(vect(ext(r))))
+        ctr <- crds(centroids(vect(ext(rasters()[[length(rasters())]]))))
         leaflet() %>% addTiles() %>% setView(lng = ctr[1], lat = ctr[2], zoom = 7) %>%
           addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
           addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
@@ -121,7 +107,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       }
     })
     
-    # ---- Subcriterion B1 (EOO) ----
+    # Subcriterion B1 (EOO) ---------------------------------------------------
     observeEvent(input$get_mcp, {
       req(rasters())
       yrs <- year_inputs()
@@ -133,13 +119,14 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         removeModal()
       }, add = TRUE)
       
-      # show a simple modal (no module-scoped spinner)
-      showModal(modalDialog(
-        title = "Calculating MCP for EOO",
-        tagList(p("Please wait...")),
-        easyClose = FALSE,
-        footer = NULL
-      ))
+      # show a simple modal (no module-scoped spinner) ----------------------
+      # showModal(modalDialog(
+      #   title = "Calculating MCP for EOO",
+      #   tagList(p("Please wait...")),
+      #   easyClose = FALSE,
+      #   footer = NULL
+      # ))
+      showModal(b1_modal)
       
       for (i in seq_along(rasters_original())) {
         progress$set(message = "Calculating MCP...", value = i)
@@ -150,7 +137,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         }
       }
       
-      # store list and combined SpatVector
+      # store list and combined SpatVector -----------------------------------
       mcp_poly(mcp_list)
       if (length(mcp_list) > 0) {
         mcp_all <- do.call(rbind, mcp_list)
@@ -161,12 +148,13 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
           df$area_km2 < 2000  ~ "CR",
           df$area_km2 < 20000 ~ "EN",
           df$area_km2 < 50000 ~ "VU",
+          df$area_km2 < 55000 ~ "NT", # hard coded currently, could be related to a user input easily.
           TRUE                ~ "LC"
         )
         mcp_table(df)
       }
       
-      # update map layers only if mcp_vectors available
+      # update map layers only if mcp_vectors available ----------------------
       if (!is.null(mcp_vectors())) {
         latest_year <- max(mcp_vectors()$year, na.rm = TRUE)
         r_list <- rasters()
@@ -191,7 +179,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
           )
       }
       
-      # show value box
+      # show value box -------------------------------------------------------
       if (!is.null(mcp_table())) {
         b1_box <- make_b_value_boxes(
           title = "Subcriterion B1",
@@ -208,7 +196,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       }
     })
     
-    # ---- Subcriterion B2 (AOO) ----
+    # Subcriterion B2 (AOO) ---------------------------------------------------
     observeEvent(input$get_AOO, {
       progress <- shiny::Progress$new(min = 0, max = 3)
       on.exit({
@@ -216,12 +204,13 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         removeModal()
       }, add = TRUE)
       
-      showModal(modalDialog(
-        title = "Calculating grids for AOO",
-        tagList(p("Please wait...")),
-        easyClose = FALSE,
-        footer = NULL
-      ))
+      # showModal(modalDialog(
+      #   title = "Calculating grids for AOO",
+      #   tagList(p("Please wait...")),
+      #   easyClose = FALSE,
+      #   footer = NULL
+      # ))
+      showModal(b2_modal)
       
       req(rasters_original(), length(rasters_original()) > 0)
       progress$set(message = "projecting", value = 1)
@@ -262,6 +251,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         df.eoo$n_exceed < 2  ~ "CR",
         df.eoo$n_exceed < 20 ~ "EN",
         df.eoo$n_exceed < 50 ~ "VU",
+        df.eoo$n_exceed < 55 ~ "NT", # hard coded currently, could be related to a user input easily.
         TRUE                 ~ "LC"
       )
       b2_table(df.eoo)
@@ -321,9 +311,8 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
           )
       }
       
-        
 
-      # show value boxes
+      # show value boxes ----------------------------------------------------
       b2_box <- make_b_value_boxes(
         title = "Subcriterion B2",
         reactive_data = reactive(b2_table()),
@@ -338,7 +327,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       })
     })
     
-    # ---- return reactiveVals (expose them) ----
+    # return reactiveVals ----------------------------------------------------
     return(list(
       mcp_table   = mcp_table,
       mcp_poly    = mcp_poly,

@@ -16,9 +16,10 @@ criterion_a_module_ui <- function(id) {
       card_header("Ecosystem area change data",
                   tooltip(
                     bs_icon("info-circle"),
-                    "Ecosystem area unit (EAU) area per assessment period"
+                    "Ecosystem area per assessment period"
                   )),
-      DTOutput(ns("area_change_table"))
+      # DTOutput(ns("area_change_table"), width = "100%")
+      uiOutput(ns("area_change_table"))
     ),
     
     # Graph of temporal change ------------------------------------------------ 
@@ -47,10 +48,86 @@ criterion_a_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # server
 # -----------------------------------------------------------------------------
-criterion_A_module_server <- function(id, data_module) {
+criterion_A_module_server <- function(id, upload_module, main_tab) {
   moduleServer(id, function(input, output, session) {
         ns <- session$ns
+        
+        # modal to provide some user info -----------------------------------------
+        # 1) prevent the modal from popping up multiple times per session
+        modal_a_shown <- reactiveVal(FALSE)
+        
+        # 2) model pop up on tab opening 
+        observeEvent(main_tab(), {
+          # Only fire when Criterion A is selected
+          if (identical(main_tab(), "Criterion A")) {
+            # If you want it every time, remove the guard:
+            if (!modal_a_shown()) {
+              showModal(a_quick_modal)
+              modal_a_shown(TRUE)
+            }
+          }
+        }, ignoreInit = TRUE)
+        
 
+       # Render table --------------------------------------------------------
+       # this was a DT but now static as DT was sometimes not updating 
+       # static table has same formatting - doesn't need to be an interactive table anyway
+        output$area_change_table <- renderUI({
+          req(area_change_data())
+          
+          act <- area_change_data() %>%
+            mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
+                   area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
+                   proportional_rate_change = round(proportional_rate_change, 2),
+                   absolute_rate_change = round(absolute_rate_change, 2)) %>%
+            # dplyr::arrange(desc(perc_roi)) %>%
+            dplyr::select(!dt) %>%
+            dplyr::rename(
+              `Year` = year,
+              `Area (km²)` = area,
+              `Area change (km²)` = area_change,
+              `Proportional rate of change (%/year)` = proportional_rate_change,
+              `Absolute rate of change (km²/year)` = absolute_rate_change
+            )
+          
+          shiny::tags$table(
+            class = "table table-sm table-striped",
+            tags$thead(
+              tags$tr(
+                lapply(colnames(act), tags$th)
+              )
+            ),
+            tags$tbody(
+              apply(act, 1, function(row) {
+                tags$tr(lapply(row, tags$td))
+              })
+            )
+          )
+          
+        }
+        )
+        
+        
+        
+        
+        # Make outputs render even when tab is hidden
+        outputOptions(output, "area_change_table", suspendWhenHidden = FALSE)
+        # outputOptions(output, "area_change_graph", suspendWhenHidden = FALSE)
+        
+        # output$area_change_table <- bindEvent(output$area_change_table, upload_module$rasters(), ignoreInit = TRUE)
+        
+        
+  # reset when new rasters uploaded ------------------------------------------
+    observeEvent(upload_module$rasters(), {
+      # reset UI and reactive holders
+      # output$criterion_boxes_a <- renderUI({ NULL })
+      output$criterion_boxes_a <- NULL   # better than renderUI(NULL)
+      # output$area_change_table <- NULL   # better than renderUI(NULL)
+      
+      #rv$area_prediction_data(NULL)
+    }, ignoreNULL = TRUE)
+    
+        
         # -------------------------------------------------------------------------
         # Reactive values container
         rv <- reactiveValues(
@@ -60,56 +137,17 @@ criterion_A_module_server <- function(id, data_module) {
         
     # Reactive expression for area change
     area_change_data <- reactive({
-      req(data_module$rasters())
+      req(upload_module$rasters())
       cat("area_change_data recalculated\n")
-      df <- calc_area_change(data_module$areas()) 
+      df <- calc_area_change(upload_module$areas())
       df          # <-- MUST return df
+      # 
+      print(df)
     })
 
     rv$area_change_data <- area_change_data 
     
-    # reset when new rasters uploaded ------------------------------------------
-    observeEvent(data_module$rasters(), {
-      # reset UI and reactive holders
-      # output$criterion_boxes_a <- renderUI({ NULL })
-      output$criterion_boxes_a <- NULL   # better than renderUI(NULL)
-
-      #rv$area_prediction_data(NULL)
-    }, ignoreNULL = TRUE)
-    
-    # Render DT table --------------------------------------------------------
-    output$area_change_table <- DT::renderDataTable({
-      req(area_change_data())
-      df <- area_change_data() %>%
-        mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
-               area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
-               proportional_rate_change = round(proportional_rate_change, 2),
-               absolute_rate_change = round(absolute_rate_change, 2)) %>%
-        # dplyr::arrange(desc(perc_roi)) %>%
-        # dplyr::select(zone, area_km2, perc_roi) %>%
-        dplyr::rename(
-          `Area (km²)` = area,
-          `Area change (km²)` = area_change,
-          `Proportional rate of change (%/year)` = proportional_rate_change,
-          `Absolute rate of change (km²/year)` = absolute_rate_change
-        )
-      
-      DT::datatable(df,
-        # colnames = c("Year", "Area (km2)", "Area change (km2)",
-        #              "Proportional rate of change (%/year)", "Absolute rate of change (km2/year)"),
-        options = list(
-          paging = FALSE,
-          searching = FALSE,
-          info = FALSE,
-          dom = 't'
-        ),
-        rownames = FALSE
-      )
-    })
-
-    # Make outputs render even when tab is hidden
-    outputOptions(output, "area_change_table", suspendWhenHidden = FALSE)
-    # outputOptions(output, "area_change_graph", suspendWhenHidden = FALSE)
+  
 
     #--------------------------------------------------------------------
     # calculate past and future predictions using the above function
@@ -142,9 +180,9 @@ criterion_A_module_server <- function(id, data_module) {
         })
         
         # empty tables with message
-        output$a1_assess_table <- DT::renderDataTable({empty_assess_table()})
-        output$a2a_assess_table <- DT::renderDataTable({empty_assess_table()})
-        output$a2b_assess_table <- DT::renderDataTable({empty_assess_table()})
+        output$a1_assess_table <- DT::renderDT({empty_assess_table()})
+        output$a2a_assess_table <- DT::renderDT({empty_assess_table()})
+        output$a2b_assess_table <- DT::renderDT({empty_assess_table()})
       }
     })
     
@@ -282,11 +320,10 @@ criterion_A_module_server <- function(id, data_module) {
     #-----------------------------------------------------------
     # Assessments
     #-----------------------------------------------------------
-    # observe({
-    #   req(data_module$rasters())   # <-- NEW: force observer to re-run on raster upload
     #   req(area_change_data(), NROW(area_change_data()) > 1)
-      observeEvent(data_module$rasters(), ignoreInit = FALSE, {
+      observeEvent(upload_module$rasters(), ignoreInit = FALSE, {
         req(area_change_data(), NROW(area_change_data()) > 1)
+        
       # actually lets do the assessment tables separately
       results <- rv$area_prediction_data
       obsv.fut <- results %>%
@@ -316,17 +353,18 @@ criterion_A_module_server <- function(id, data_module) {
         mutate(
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
           # perc_change = 1-abs((latest_observed_area - area) / latest_observed_area)
-          perc_change = ((area - latest_observed_area) / area)
+          # perc_change = ((area - latest_observed_area) / area)
+          perc_change = (latest_observed_area/area) -1
+          
         ) %>%
         dplyr::select(method, area, latest_observed_area, perc_change) %>%
         mutate(A1 = dplyr::case_when(
-          perc_change > 0.8 ~ "CR",
-          perc_change > 0.5 ~ "EN",
-          perc_change > 0.3 ~ "VU",
+          abs(perc_change) > 0.8 ~ "CR",
+          abs(perc_change) > 0.5 ~ "EN",
+          abs(perc_change) > 0.3 ~ "VU",
+          abs(perc_change) > 0.27 ~ "NT",
           TRUE ~ "LC"
         ))
-      
-      # print(a1_result)
       
       #-----------------------------------------------------------
       # A2a assessment
@@ -337,17 +375,17 @@ criterion_A_module_server <- function(id, data_module) {
         ungroup() %>%
         mutate(
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
-          perc_change = ((latest_observed_area-area) / latest_observed_area)
+          # perc_change = ((latest_observed_area-area) / latest_observed_area)
+          perc_change = (area/latest_observed_area) -1
         ) %>%
         dplyr::select(method, scenario, area, latest_observed_area, perc_change) %>%
         mutate(A2a = dplyr::case_when(
-          perc_change > 0.8 ~ "CR",
-          perc_change > 0.5 ~ "EN",
-          perc_change > 0.3 ~ "VU",
+          abs(perc_change) > 0.8 ~ "CR",
+          abs(perc_change) > 0.5 ~ "EN",
+          abs(perc_change) > 0.3 ~ "VU",
+          abs(perc_change) > 0.27 ~ "NT",
           TRUE ~ "LC"
         ))
-      
-      # print(a2a_result)
       
       #-----------------------------------------------------------
       # A2b assessment
@@ -375,9 +413,8 @@ criterion_A_module_server <- function(id, data_module) {
             year_end <- year_start + 50
             df %>%
               filter(year %in% c(year_start, year_end)) %>%
-              summarise(perc_change = ((area[which.min(year)]-area[which.max(year)]) / area[which.min(year)]),
-                        perc_change2 = ((area[which.max(year)]-area[which.min(year)]) / area[which.max(year)])* 100,
-                        direction2 =  ifelse(perc_change2 > 0, "increase", "decrease")
+              summarise(perc_change = (area[which.max(year)]/area[which.min(year)])-1 , # (recent/oldest)-1
+                        direction =  ifelse(perc_change > 0, "increase", "decrease")
               )
           })
         }
@@ -391,9 +428,10 @@ criterion_A_module_server <- function(id, data_module) {
               method = method_name,
               scenario = scenario_name,
               A2b = case_when(
-                perc_change > 0.8 ~ "CR",
-                perc_change > 0.5 ~ "EN",
-                perc_change > 0.3 ~ "VU",
+                abs(perc_change) > 0.8 ~ "CR",
+                abs(perc_change) > 0.5 ~ "EN",
+                abs(perc_change) > 0.3 ~ "VU",
+                abs(perc_change) > 0.27 ~ "NT", # hard coded currently
                 TRUE ~ "LC"
               )
             )
@@ -410,25 +448,18 @@ criterion_A_module_server <- function(id, data_module) {
         slice_max(perc_change, n = 1, with_ties = FALSE) %>%
         ungroup() %>%
         dplyr::select(method, scenario, perc_change, A2b)
-      
-      # print(worst_cases)
 
       
       
-      
       #  create value boxes --------------------------------------------------
-      # # 1. filter data for PRC only
-      # a2a_result_vb <- a2a_result %>%
-      # 
       
-      #  source("helpers/helpers.R") # info_icon, get_box_status, format_assessment_lines, make_value_box
       a1_box  <- make_value_box(
         title = "Subcriterion A1",
         reactive_data = reactive(a1_result),
         status_col = "A1",
         data_col = "perc_change",
         method_col = "method",
-        hover_text = "Past reduction in geographic distribution (past 50 years)",
+        hover_text = "Past predicted change in geographic distribution (past 50 years)",
         year_data = rv$area_prediction_data
       )
       
@@ -439,7 +470,7 @@ criterion_A_module_server <- function(id, data_module) {
         data_col = "perc_change",
         method_col = "method",
         scenario_col = "scenario",
-        hover_text = "Future reduction in geographic distribution (next 50 years)" 
+        hover_text = "Future predicted change in geographic distribution (next 50 years)" 
       )
       
       a2b_box <- make_value_box(
@@ -449,7 +480,7 @@ criterion_A_module_server <- function(id, data_module) {
         data_col = "perc_change",
         method_col = "method",
         scenario_col = "scenario" ,
-        hover_text = "Reduction in geographic distribution over any 50 year period (including the past, present and future)"
+        hover_text = "Predicted change in geographic distribution over any 50 year period (including the past, present and future)"
       )
       
       # combine the value boxes for ui rendering ------------------------------
@@ -469,13 +500,9 @@ criterion_A_module_server <- function(id, data_module) {
     return(list(
       area_change_data = reactive({rv$area_change_data()}),
       area_prediction_data = reactive({rv$area_prediction_data})
-      # should these be: (i.e. above once are returning a function?)
-      # area_change_data = reactive(area_change_data()),
-      # area_prediction_data = reactive(rv$area_prediction_data)
     ))
     
       
     })
 }
-
 

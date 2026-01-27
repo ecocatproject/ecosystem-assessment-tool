@@ -17,8 +17,13 @@ report_module_ui <- function(id) {
             textInput(ns("organisation"), "Organisation(s)"),
             textInput(ns("author"), "Author"),
             textInput(ns("email"), "Email address"),
+            selectInput(
+              ns("report_format"),
+              "Choose report format:",
+              choices = c("HTML" = "html", "Word" = "docx") # "PDF" = "pdf"
+            ),
             downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
-          ),
+            ),
           column(
             width = 6,
             checkboxGroupInput(ns("dataset_choice"), "Choose datasets:", choices = NULL),
@@ -33,11 +38,6 @@ report_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # server
 # -----------------------------------------------------------------------------
-#report_path <- tempfile(fileext = ".Rmd")
-#template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
-#file.copy(template_path, report_path, overwrite=T)
-
-
 report_module_server <- function(datasets,
                                  id,
                                  ecosystem_name, author, organisation, email,
@@ -47,7 +47,9 @@ report_module_server <- function(datasets,
                                 # roi_vec,
                                  countries,
                                  rainfall,
-                                 #typology,
+                                temperature,
+                                elevation,
+                                 typology,
                                   area_change_data,
                                   area_prediction_data,
                                   mcp_data,
@@ -61,16 +63,18 @@ report_module_server <- function(datasets,
 
     output$generate_report <- downloadHandler(
       filename = function() {
-        paste0("RLE_Assessment_", gsub(" ", "_", input$ecosystem_name), ".html")
+        ext <- input$report_format
+        paste0("RLE_Assessment_", gsub(" ", "_", input$ecosystem_name), ".", ext)
       },
       content = function(file) {
 
-            # Create a fresh temp Rmd on EVERY click ------------------------------
-    report_path <- tempfile(fileext = ".Rmd")
-    template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
-    file.copy(template_path, report_path, overwrite = TRUE)
-
+        # Create a fresh temp Rmd on EVERY click ------------------------------
+        report_path <- tempfile(fileext = ".Rmd")
+        template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
+        file.copy(template_path, report_path, overwrite = TRUE)
+        
         # Show modal popup while rendering ------------------------------------
+        # showModal(report_modal)
         showModal(modalDialog(
           title = "Generating report...",
           tagList(
@@ -78,11 +82,11 @@ report_module_server <- function(datasets,
               style = "text-align:center;",
               tags$h4("Please wait while your RLE assessment report is being generated."),
               tags$p("This process usually takes approximately 10 seconds."),
-              tags$p(tags$em("Rendering the HTML report...")),
+              tags$p(tags$em(paste0("Rendering the ", input$report_format, " report..."))),
               withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
             )
           ),
-          easyClose = FALSE,
+          easyClose = TRUE,
           footer = NULL
         ))
         
@@ -116,7 +120,9 @@ report_module_server <- function(datasets,
          # roi_vec_file = roi_vec_path,
           countries = (countries()),
           rainfall = (rainfall()),
-         # typology = (typology()),
+          temperature = (temperature()),
+          elevation = (elevation()),
+          typology = (typology()),
           area_change_data = (area_change_data()),
           area_prediction_data = (area_prediction_data()),
           mcp_data = (mcp_data()),
@@ -128,12 +134,18 @@ report_module_server <- function(datasets,
         )
 
         str(params_list)
+
+        # Choose output format  ----------------------------------------------
+        fmt <- switch(input$report_format,
+                      html = "html_document",
+                      docx = "word_document")
         
-      # --- Render the report ----------------------------------------------
-       tryCatch({
+        # --- Render the report ----------------------------------------------
+        tryCatch({
           rmarkdown::render(
-            #input = "rle_report_template_html_testing.rmd", # for local app testing
+           # input = "rle_report_template_html_testing.rmd", # for local app testing
             input = report_path, # safe for deployed app # for deployed app
+            output_format = fmt,
             output_file = file,
             params = params_list,
             envir = new.env(parent = globalenv())
@@ -153,7 +165,7 @@ report_module_server <- function(datasets,
        }
        )
         
-      # Remove modal after successful render --------------------------------
+        # # Remove modal after successful render --------------------------------
          removeModal()
 
       }
@@ -246,11 +258,3 @@ report_module_server <- function(datasets,
   
   
 }
-
-
-
-
-
-
-
-
