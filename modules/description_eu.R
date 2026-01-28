@@ -290,19 +290,19 @@ description_module_server <- function(id, upload_module, countries,
 
       # 2. temperature
       progress$inc(3/6,detail = "monthly temperature") # update progress
-      #rv$temperature <- compute_temperature(latest)
+      rv$temperature <- compute_temperature(latest)
 
       # 3. elevation
       progress$inc(4/6, detail = "elevation")
-      #rv$elevation <- compute_elevation(latest)
+      rv$elevation <- compute_elevation(latest)
 
       # 4. global ecosystem typology (get)
       progress$inc(5/6, detail = "global ecosystem typology")
-      #rv$typology <- compute_typology(latest, efg_lookup)
+      rv$typology <- compute_typology(latest, efg_lookup)
 
       # 5. precipitation
       progress$inc(6/6, detail = "monthly rainfall") # update progress
-      #rv$rainfall <- compute_precipitation(latest)
+      rv$rainfall <- compute_precipitation(latest)
     
       # hide modal once done
       # removeModal()
@@ -359,4 +359,5 @@ description_module_server <- function(id, upload_module, countries,
     
   })
 }
+
 
