@@ -70,7 +70,10 @@ a_quick_modal <- modalDialog(
   tagList(
     tags$p("Criterion A Assessement"),
     tags$ul(
-      tags$li(tags$b("A1 (past 50 years): "), "text here")
+      tags$li(tags$b("A1 - Past predicted change in geographic distribution (past 50 years")),
+      tags$li(tags$b("A2 - Future predicted change in geographic distribution (next 50 years)")),
+      tags$li(tags$b("A3 - Predicted change in geographic distribution over any 50 year period (including the past, present and future)"))
+      
     ),
     tags$p("Tip: The lines of each graph can be turn on and off by selecting them")
   ),
@@ -149,9 +152,8 @@ b1_modal <- modalDialog(
         # tags$p("This will take approximately 15 seconds per classification map"),
         # tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
         tags$p("Computing the minimum convex polygon (MCP) area to measure the ecosystem Extent of Occurrence (EOO)"),
-        tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab."),
-        
-        withSpinner(uiOutput("dummy_spinner"), type = 5)  # CSS spinner
+        withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
+        tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
     )
   ),
   easyClose = FALSE,
@@ -160,21 +162,37 @@ b1_modal <- modalDialog(
 
 # -----------------------------------------------------------------------------
 # subcriterion b2 
+# b2_modal <- modalDialog(
+#   title = "Criterion B – quick guide",
+#   tagList(
+#     tags$p("Area of Occurrence (AOO)"),
+#     tags$ul(
+#       tags$li(tags$b("B2 (AOO): "), "Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occurrence (AOO)")),
+#   tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab."),
+#   tagList(p("Please wait..."))
+#   ),
+#   easyClose = FALSE,
+#   footer = tagList(
+#     modalButton("Close")#,
+#     #actionButton(("open_help"), "More help")
+#   ),
+#   size = "m"
+# )
+
 b2_modal <- modalDialog(
-  title = "Criterion B – quick guide",
+  title = "Subcriteria B2 Assessment",
   tagList(
-    tags$p("Area of Occurrence (AOO)"),
-    tags$ul(
-      tags$li(tags$b("B2 (AOO): "), "Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occurrence (AOO)")),
-  tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab."),
-  tagList(p("Please wait..."))
+    div(style = "text-align:center;",
+        tags$h4("Please wait... "),
+        tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occurrence (AOO)"),
+        withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
+        tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
+        
+
+    )
   ),
   easyClose = FALSE,
-  footer = tagList(
-    modalButton("Close")#,
-    #actionButton(("open_help"), "More help")
-  ),
-  size = "m"
+  footer = NULL
 )
 
 # # -----------------------------------------------------------------------------
