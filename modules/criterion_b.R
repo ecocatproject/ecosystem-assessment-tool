@@ -99,8 +99,13 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       if (is.null(rasters()) || length(rasters()) < 1) {
         leaflet() %>% addTiles()
       } else {
-        ctr <- crds(centroids(vect(ext(rasters()[[length(rasters())]]))))
-        leaflet() %>% addTiles() %>% setView(lng = ctr[1], lat = ctr[2], zoom = 7) %>%
+        ext_r <- as.vector(ext(rasters()[[length(rasters())]])) # get eau extent for mapping zoom
+        
+        leaflet() %>% addTiles() %>% 
+          fitBounds(unname(ext_r["xmin"]),
+                    unname(ext_r["ymin"]),
+                    unname(ext_r["xmax"]),
+                    unname(ext_r["ymax"])) %>%
           addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
           addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
                            options = layersControlOptions(collapsed = FALSE))
@@ -112,6 +117,12 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       req(rasters())
       yrs <- year_inputs()
       mcp_list <- list()
+      
+      print(yrs)
+      str(rasters_original())
+      str(rasters())
+      print(rasters())
+      print(rasters_original())
       
       progress <- shiny::Progress$new(min = 0, max = length(yrs))
       on.exit({
@@ -128,14 +139,14 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       # ))
       showModal(b1_modal)
       
-      for (i in seq_along(rasters_original())) {
-        progress$set(message = "Calculating MCP...", value = i)
-        r <- rasters_original()[[i]]
-        eau_poly <- makeEOO.SpatRaster(r, yrs[i])
+     # for (i in seq_along(rasters_original())) {
+        progress$set(message = "Calculating MCP...", value = 1)
+       # r <- rasters_original()[[i]]
+        eau_poly <- makeEOO.SpatRaster(rasters_original(), max(yrs))
         if (!is.null(eau_poly)) {
-          mcp_list[[i]] <- eau_poly
+          mcp_list[[1]] <- eau_poly
         }
-      }
+     # }
       
       # store list and combined SpatVector -----------------------------------
       mcp_poly(mcp_list)

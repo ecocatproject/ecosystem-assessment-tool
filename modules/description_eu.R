@@ -282,7 +282,7 @@ description_module_server <- function(id, upload_module, countries,
                                       max = 2)
       progress$set(message = "extacting data...", value = 0)
       
-      latest <- upload_module$rasters_original()[[length(years)]]
+      latest <- upload_module$rasters_original()#[[length(years)]]
 
       # 1. country overlap
       progress$inc(2/6, detail = "countries") # update progress
@@ -305,7 +305,6 @@ description_module_server <- function(id, upload_module, countries,
       rv$rainfall <- compute_precipitation(latest)
     
       # hide modal once done
-      # removeModal()
       progress$close()
     })
     
@@ -327,6 +326,9 @@ description_module_server <- function(id, upload_module, countries,
       # overlay groups
       overlay_groups <- display_label  # always include the raster
       
+      # get eau extent for mapping zoom
+      ext_r <- as.vector(ext(r_list[[length(r_list)]]))
+      
       # replot 
       leafletProxy(ns("eu_map")) %>%
         # clearGroup("classification") %>%  # remove any existing classification rasters
@@ -341,9 +343,10 @@ description_module_server <- function(id, upload_module, countries,
           baseGroups = c("OSM", "ESRI Satellite"),
           overlayGroups = overlay_groups,
           options = layersControlOptions(collapsed = FALSE)) %>%
-        setView(lng = crds(centroids(vect(ext(r_list[[length(r_list)]]))))[1],
-                lat = crds(centroids(vect(ext(r_list[[length(r_list)]]))))[2],
-                zoom= 7)
+        fitBounds(unname(ext_r["xmin"]),
+                  unname(ext_r["ymin"]),
+                  unname(ext_r["xmax"]),
+                  unname(ext_r["ymax"]))
       
       removeModal()
    })
@@ -359,5 +362,3 @@ description_module_server <- function(id, upload_module, countries,
     
   })
 }
-
-

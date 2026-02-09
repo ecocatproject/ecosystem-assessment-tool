@@ -7,21 +7,22 @@
 
 # UI  - sidebar only
 
-  classification_module_ui <- function(id) {
-    ns <- NS(id)
-    sidebar(
-      width = 300,
-      fileInput(ns("tifs"), "1) Upload Ecosystem classification file(s)",
-                multiple = TRUE, accept = ".tif"),
-      hr(),
-      uiOutput(ns("part2")),
-      uiOutput(ns("year_inputs")),
-      uiOutput(ns("hr_after_years")),
-      uiOutput(ns("ecosystem_dropdown")),
-      uiOutput(ns("process_btn_text")),
-      uiOutput(ns("process_btn_ui"))
-    )
-  }
+classification_module_ui <- function(id) {
+  ns <- NS(id)
+  sidebar(
+    width = 300,
+    fileInput(ns("tifs"), "1) Upload Ecosystem classification file(s)",
+              multiple = TRUE, accept = ".tif"),
+    hr(),
+    uiOutput(ns("part2")),
+    uiOutput(ns("year_inputs")),
+    uiOutput(ns("hr_after_years")),
+    uiOutput("category_ui"),   # Placeholder for category inputs (appear only if needed)
+    uiOutput(ns("ecosystem_dropdown")),
+    uiOutput(ns("process_btn_text")),
+    uiOutput(ns("process_btn_ui"))
+  )
+}
 
 
 # -----------------------------------------------------------------------------
@@ -30,7 +31,7 @@
 classification_module_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-
+    
     # reactive variables to store data ----------------------------------------
     rasters          <- reactiveVal(NULL)
     rasters_original <- reactiveVal(NULL)
@@ -49,7 +50,7 @@ classification_module_server <- function(id) {
              function(i) input[[paste0("year_", i)]])
     })
     
-
+    
     # Reactive selected layer -------------------------------------------------
     selected_layer <- reactive({
       input$selected_layer
@@ -79,36 +80,44 @@ classification_module_server <- function(id) {
       
       # Load the first tif to inspect its layers
       if (inherits(r_rast(), "try-error")) return(NULL)
-
+      
       if (NROW(r_freq()) > 1) {
-      # Only proceed if >1 layer
-      if (nlyr(r_rast()) > 1) {
-        # Check that all year inputs are filled in
-        years <- sapply(seq_along(input$tifs$name),
-                        function(i) input[[paste0("year_", i)]])
-        tagList(
-        selectInput(ns("selected_layer"),
-                    "3) Multiple data layers detected - select the layer/ecosystem required:",
-                    choices = lyr_names(),
-                    selected = lyr_names()[1]),
-        hr()
-        )
-      } else {
-        vals_chr <- as.character(r_freq()$value)
-
-        tagList(
-        selectInput(
-          ns("selected_layer"),
-          "3) Multiple categories detected — select the class/ecosystem required:",
-          choices  = vals_chr,
-          selected = vals_chr[1]
-        ),
-        hr()
-        )
-
-      }
+        # Only proceed if >1 layer
+        if (nlyr(r_rast()) > 1) {
+          # Check that all year inputs are filled in
+          years <- sapply(seq_along(input$tifs$name),
+                          function(i) input[[paste0("year_", i)]])
+          tagList(
+            selectInput(ns("selected_layer"),
+                        "3) Multiple data layers detected - select the layer/ecosystem required:",
+                        choices = lyr_names(),
+                        selected = lyr_names()[1]),
+            hr()
+          )
+        } else {
+          
+          # vals_chr <- levels(r_rast())
+          # if (is.null(vals_chr)) {
+          vals_chr <- as.character(r_freq()$value)
+          # }
+          
+          
+          tagList(
+            selectInput(
+              ns("selected_layer"),
+              "3) Multiple categories detected — select the class/ecosystem required:",
+              choices  = vals_chr,
+              selected = vals_chr[1]
+            ),
+            hr()
+          )
+          
+        }
       }
     })
+    
+    
+    
     
     # Dynamic year inputs -----------------------------------------------------
     extract_year <- function(filename) {
@@ -182,7 +191,7 @@ classification_module_server <- function(id) {
       
       # Generate year dropdowns
       dropdowns <-lapply(seq_along(fnames), function(i) {
-          selectInput(
+        selectInput(
           ns(paste0("year_", i)),   # <-- use ns() here
           paste(fnames[i]),
           choices = c("Not found", rev(seq(1900, 2025, by = 1))),
@@ -190,7 +199,7 @@ classification_module_server <- function(id) {
                          auto_years[i] %in% 1900:2025) auto_years[i] else "Not found"
         )
       })
-    
+      
       # Append a single hr() after all dropdowns
       tagList(dropdowns, hr())
       
@@ -253,28 +262,18 @@ classification_module_server <- function(id) {
       if (!more_than_one_file) {
         # Single file: valid year is enough
         actionButton(ns("process"), "Process ecosystem maps")      } else {
-        # Multiple files: require distinct years
-        if (more_than_one_unique) {
-          actionButton(ns("process"), "Process ecosystem maps")        } else {
-          return(NULL)
+          # Multiple files: require distinct years
+          if (more_than_one_unique) {
+            actionButton(ns("process"), "Process ecosystem maps")        } else {
+              return(NULL)
+            }
         }
-      }
     })
     
     
     # -----------------------------------------------------------------------------
     # process rasters 
     # -----------------------------------------------------------------------------
-    
-    
-    # observeEvent(input$tifs, {
-    #   updateSelectInput(
-    #     session,
-    #     "selected_layer",
-    #     choices = character(0),
-    #     selected = character(0)
-    #   )
-    # }, ignoreInit = TRUE)
     
     #--------------------------------------------------------------------------
     # Process uploaded TIFs when the process_button is clicked
@@ -288,34 +287,26 @@ classification_module_server <- function(id) {
       # show modal popup
       showModal(upload_modal)
       
-      # # Call the data module function (see data.R) to process rasters
-      # outputs <- process_rasters(files, years, selected_layer)
       
-      # str(outputs)
       # Description data ------------------------------------------------------
+      
       # Create a Progress object
-      # progress <- shiny::Progress$new(min = 0,
-                                      # max = 2)
-      # progress$set(message = "extacting data...", value = 0)
       progress <- shiny::Progress$new(min = 0, max = length(files))
       progress$set(message = "Processing classification maps...", value = 0)
-
+      
       # reset previous data
       areas(NULL)
-      
       rasters(NULL)         
       rasters_original(NULL) 
       areas(NULL)           
       
-      ras_list <- list(NULL)
-      ras_list_original <- list(NULL)
+      # create some variables for use bewow
       area_vals <- numeric(length(files))
-      
       order_idx <- order(as.numeric(year_inputs()))
       files <- files[order_idx]
       year_inputs <- year_inputs()[order_idx]
-    
       
+      # layer selection or mask  ----------------------------------------------
       select_layer_or_mask <- function(r_all, sel_name) {
         # If no selection provided, return first layer or whole raster
         if (is.null(sel_name) || !nzchar(sel_name)) {
@@ -366,24 +357,18 @@ classification_module_server <- function(id) {
         return(r_all[[1]])
       }
       
-      
+      # identify selected layer
       sel_name <- selected_layer()
       
-      
-      
-      
+      # loop through each file to calculate areas ------------------------------
       for (i in seq_along(files)) {
         r_all <- rast(files[i])
         r_orig <- select_layer_or_mask(r_all, sel_name)
         
-
-        # r_orig <- select_spatraster(files[i], sel_name, fallback_multi = "first")
-        print(r_orig)
-          
-
         if (global(r_orig, "isNA") == 0) {
           r_orig <- classify(r_orig, matrix(c(0, NA), ncol = 2))
         }
+        
         mask <- r_orig == 1
         if (!is.na(crs(r_orig)) && !is.lonlat(r_orig)) {
           cell_area <- prod(res(r_orig))
@@ -391,6 +376,7 @@ classification_module_server <- function(id) {
         } else {
           area_vals[i] <- sum(expanse(mask, unit = "m"), na.rm=T)
         }
+        
         area_df <- data.frame(
           Year = year_inputs[i],
           Area_ha = area_vals[i] / 10000,
@@ -404,60 +390,34 @@ classification_module_server <- function(id) {
           areas(rbind(areas(), area_df))
         }
         
-        print(areas())
 
-        # r_map <- tryCatch({
-        #   project(r_orig, "EPSG:4326")
-        # }, error = function(e) { crs(r_orig) <- "EPSG:4326"; r_orig })
-        names(r_orig) <- year_inputs[i]
-        # names(r_orig) <- names(r_map) <- year_inputs[i]
-        ras_list_original[[i]] <- r_orig
-        
-        
         # Only sample the most recent raster (last in sequence)
         if (i == length(files)) {
+          names(r_orig) <- year_inputs[i]
           r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE, na.rm=T)
           r_map <- tryCatch({
             project(r_orig, "EPSG:4326")
           }, error = function(e) { crs(r_orig) <- "EPSG:4326"; r_orig })
-          ras_list[[i]] <- r_map
           
         }
-        
-        r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE, na.rm=T)
-        r_map <- tryCatch({
-          project(r_orig, "EPSG:4326")
-        }, error = function(e) { crs(r_orig) <- "EPSG:4326"; r_orig })
-        ras_list[[i]] <- r_map
-        
       } # end of for loop
       
-      # store data in relevant reactive variables -----------------------------
-      rasters(ras_list)
-      rasters_original(ras_list_original)
+      
+      # store data in relevant reactive variables ------------------------------
+      rasters(r_map)
+      rasters_original(r_orig)
       years(year_inputs)
       
-      
-      # hide progress once done
+      # hide progress once done ------------------------------------------------
       progress$close()
-
-
-      })
+    })
     
-    # -----------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # return data
-    # -----------------------------------------------------------------------------
-    
-    # Return a list of reactives
     return(list(
-      
       rasters = rasters,
       rasters_original = rasters_original,
       areas = areas,
-      # years = years,
-      # process_rasters = process_rasters
-      #latest = latest,
-      #tifs = reactive(input$tifs),   # raw fileInput object this was used by description module in the process_btn
       years = year_inputs,
       process = process_btn, 
       selected_layer = selected_layer,
@@ -466,4 +426,4 @@ classification_module_server <- function(id) {
     
     
   })
-    }
+}

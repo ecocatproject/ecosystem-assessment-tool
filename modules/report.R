@@ -27,7 +27,7 @@ report_module_ui <- function(id) {
           column(
             width = 6,
             checkboxGroupInput(ns("dataset_choice"), "Choose datasets:", choices = NULL),
-            downloadButton(ns("download_file"), "Download")
+            downloadButton(ns("download_file"), "Download data")
         )
         )
       )
@@ -81,7 +81,7 @@ report_module_server <- function(datasets,
             div(
               style = "text-align:center;",
               tags$h4("Please wait while your RLE assessment report is being generated."),
-              tags$p("This process usually takes approximately 10 seconds."),
+              # tags$p("This process usually takes approximately 10 seconds."),
               tags$p(tags$em(paste0("Rendering the ", input$report_format, " report..."))),
               withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
             )

@@ -81,7 +81,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
                    proportional_rate_change = round(proportional_rate_change, 2),
                    absolute_rate_change = round(absolute_rate_change, 2)) %>%
             # dplyr::arrange(desc(perc_roi)) %>%
-            dplyr::select(!dt) %>%
+            dplyr::select(!dt) %>% # remove this column
             dplyr::rename(
               `Year` = year,
               `Area (km²)` = area,
@@ -107,15 +107,9 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         }
         )
         
-        
-        
-        
         # Make outputs render even when tab is hidden
         outputOptions(output, "area_change_table", suspendWhenHidden = FALSE)
-        # outputOptions(output, "area_change_graph", suspendWhenHidden = FALSE)
-        
-        # output$area_change_table <- bindEvent(output$area_change_table, upload_module$rasters(), ignoreInit = TRUE)
-        
+
         
   # reset when new rasters uploaded ------------------------------------------
     observeEvent(upload_module$rasters(), {
@@ -123,7 +117,6 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       # output$criterion_boxes_a <- renderUI({ NULL })
       output$criterion_boxes_a <- NULL   # better than renderUI(NULL)
       # output$area_change_table <- NULL   # better than renderUI(NULL)
-      
       #rv$area_prediction_data(NULL)
     }, ignoreNULL = TRUE)
     
@@ -148,16 +141,12 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
     rv$area_change_data <- area_change_data 
     
   
-
     #--------------------------------------------------------------------
     # calculate past and future predictions using the above function
     # If no or insufficient data, show single-row message --------------------
     observe({
       req(area_change_data())
       if (NROW(area_change_data()) == 0) return()   # no data yet, do nothing
-      # validate(
-      #   need(NROW(area_change_data()) > 1, "Not enough data to create assessment")
-      # )
       
       if (NROW(area_change_data()) < 2) {
         output$area_change_graph <- renderPlotly({
@@ -254,7 +243,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         # GAM smoother (only if enough points)
         # ---------------------------------------------------------------------
         n_points <- nrow(area_change_data())
-        # print(n_points)
+     
         if (n_points > 3) {
           dat <- area_change_data()
           
@@ -352,10 +341,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         ungroup() %>%
         mutate(
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
-          # perc_change = 1-abs((latest_observed_area - area) / latest_observed_area)
-          # perc_change = ((area - latest_observed_area) / area)
           perc_change = (latest_observed_area/area) -1
-          
         ) %>%
         dplyr::select(method, area, latest_observed_area, perc_change) %>%
         mutate(A1 = dplyr::case_when(
@@ -375,7 +361,6 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         ungroup() %>%
         mutate(
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
-          # perc_change = ((latest_observed_area-area) / latest_observed_area)
           perc_change = (area/latest_observed_area) -1
         ) %>%
         dplyr::select(method, scenario, area, latest_observed_area, perc_change) %>%
@@ -438,6 +423,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         })
       })
       
+      # merge results --------------------------------------------------------
       combined_results <- bind_rows(
         purrr::flatten(a2b_results_labeled)
       )
