@@ -35,6 +35,9 @@ params:
 rasters <- if (!is.null(params$raster_files)) lapply(params$raster_files, terra::rast) else NULL
 years <- params$years %||% numeric(0)
 n <- length(rasters)
+
+terraOptions(progress = 0)
+
 ```
 
 Assessed on `r format(Sys.Date(), "%d %B %Y")` `r 
@@ -58,11 +61,11 @@ Assessed on `r format(Sys.Date(), "%d %B %Y")` `r
 
 # **Report summary**
 
-This report documents an ecosystem assessment, as part of the IUCN Red List of Ecosystems, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. The data behind this ecosystem assessment report has been generated machine learning models of remote sensing data as part of the EcoCAT (Ecosystem Classification Assessment Tool) project from RBG Kew.
+This report documents an ecosystem assessment, as part of the IUCN Red List of Ecosystems, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
 
- - The graphs can be downloaded from this report by selecting the 'download as png' icon at the top of each plot.
+ - The graphs in this report can be downloaded by selecting the 'download as png' icon at the top of each graph.
  - Watch this space to be able to download the maps too ......
- - To download the data and mapping files as part of this assessment, please revisit the download tab and select the required data files for download.
+ - To download the data and mapping files as part of this assessment, please revisit the 'Report/Data download' tab in the tool, select the required data files for download and select the 'Download data' button.
   
 
 ------------------------------------------------------------------------
@@ -171,8 +174,15 @@ map_title <- paste0("Distribution of the ecosystem in ", max(years))
   # the map - recent raster only
   pal <- colorNumeric(palette = c("white", "black"), domain = c(1, 0), na.color = "transparent")
   
+  # get eau extent for mapping zoom
+  ext_r <- as.vector(ext(r_recent)) 
+   
    m <- leaflet() %>%
     addTiles() %>%
+      fitBounds(unname(ext_r["xmin"]),
+                    unname(ext_r["ymin"]),
+                    unname(ext_r["xmax"]),
+                    unname(ext_r["ymax"])) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
     addRasterImage(r_recent, group = paste0(max(years), " classification"), colors = pal, method = "ngb", project = TRUE) %>% 
     addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
@@ -376,8 +386,9 @@ criteria_a_data <- area_change_data %>%
                area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
                proportional_rate_change = round(proportional_rate_change, 2),
                absolute_rate_change = round(absolute_rate_change, 2)) %>%
+   dplyr::select(!dt) %>% # remove this column
    dplyr::rename(
-          'Year' = year,
+          `Year` = year,
           `Area (km²)` = area,
           `Area change (km²)` = area_change,
           `Proportional rate of change (%/year)` = proportional_rate_change,
@@ -600,9 +611,7 @@ Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) – t
     format = "f", big.mark = ",", digits = 0
   )
   paste0(
-    "A minimum convex polygon – the smallest polygon that encompasses all known occurrences of the ecosystem type – ",
-    "was applied to estimate the extent of occurrence (EOO) for assessment under subcriterion B1 (B). ",
-    "The area of the minimum convex polygon encompassing the most recent ecosystem map from ",
+    "The area of the minimum convex polygon (MCP) encompassing the most recent ecosystem map from ",
     b1_year, " was **", b1_area, " km²**. ",
     "This classes the ecosystem as **", assessment_map[b1_code],
     "** under subcriterion B1."
@@ -654,6 +663,7 @@ b1_tab
 
 ```
 
+
 ```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly)}
 map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
 # label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2,2), " km²")
@@ -668,6 +678,10 @@ if (length(mcp_list) > 0) {
     if (knitr::is_html_output()) {
       # HTML Leaflet map ------------------------------------------------------
       map <- leaflet() %>% addTiles() %>%
+          fitBounds(unname(ext_r["xmin"]), # ext_r created earlier
+                    unname(ext_r["ymin"]),
+                    unname(ext_r["xmax"]),
+                    unname(ext_r["ymax"])) %>%
        addPolygons(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
                    fillOpacity = 0.3, color = "black", weight = 2,
                    group = paste0(latest_year, " MCP"),
@@ -680,7 +694,7 @@ if (length(mcp_list) > 0) {
             options = layersControlOptions(collapsed = FALSE))
       # # return the map
       # map
-      
+
       # Wrap the map with title
       htmltools::tagList(
         tags$div(
@@ -737,7 +751,7 @@ htmltools::div(
     DT::datatable(
       b2_data,
       colnames=c("Year", "Number of occupied cells",
-               "Number of cells exluding smallest 1%", "Category"),
+               "Number of cells excluding smallest 1%", "Category"),
       rownames = FALSE,
       options = list(
         paging = FALSE,
@@ -811,6 +825,10 @@ dat_sel <- grid_sf[grid_sf$cell_id %in% sel_ids$cell_ids[[1]], ]
 # map the most recent data
 m <- leaflet() %>% 
   addTiles() %>%
+   fitBounds(unname(ext_r["xmin"]), # ext_r created earlier
+                    unname(ext_r["ymin"]),
+                    unname(ext_r["xmax"]),
+                    unname(ext_r["ymax"])) %>%
   addRasterImage(r_recent, group = paste0(max(years), " classification"), colors = pal, method = "ngb", project = TRUE)  %>%
   addPolygons(data = dat_all, group = "10x10 km grid",
                     fillColor = "black",
