@@ -5,10 +5,14 @@
 compute_typology <- function(eau, efg_lookup) {
   validate(need(!is.null(eau), "Ecosystem map not loaded."))
   
+  get_files <- list.files("data/get_geotiff", pattern = "\\.tif$", full.names = TRUE)[c(1:26, 28:70, 72:109)]
+  
+  if(crs(rast(get_files[1])) != crs(eau)){
+    eau <- project(eau, crs(rast(get_files[1])), method="mode")
+  }
+  
   # Load typology rasters ----------------------------------------------------
-  get_data <- rast(list.files("data/get_geotiff",
-                              pattern = "\\.tif$", full.names = TRUE)[c(1:26, 28:70, 72:109)],
-                   win = ext(eau))
+  get_data <- rast(get_files, win = ext(eau))
   
   # if (length(get_data) == 0) return(data.frame())
   validate(need(!is.null(get_data), "Could not load typology rasters."))

@@ -29,9 +29,14 @@ compute_precipitation <- function(x,
       dplyr::arrange(match(month, month.abb))
     
   } else if (inherits(x, "SpatRaster")) {
+    
     # -------------------------------------------------------------------------
     # spatraster
-    #x <- rast(x) # needed of use name an not already a terra object
+    
+    if(crs(rast(data_files)) != crs(x)){
+      x <- project(x, crs(rast(data_files)))
+    }
+
     data_10m <- data_files |> rast(win = terra::ext(x))
     
     pts <- spatSample(x, n_sample, method = "regular",

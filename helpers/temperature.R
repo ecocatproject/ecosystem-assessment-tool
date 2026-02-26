@@ -30,6 +30,11 @@ compute_temperature <- function(x,
       dplyr::arrange(match(month, month.abb))
     
   } else if (inherits(x, "SpatRaster")) {
+    
+    if(crs(rast(t_files)) != crs(x)){
+      x <- project(x, crs(rast(t_files)))
+    }
+
     # -------------------------------------------------------------------------
     # spatraster
     #x <- rast(x) # needed of use name an not already a terra object

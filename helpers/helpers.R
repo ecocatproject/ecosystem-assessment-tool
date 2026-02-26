@@ -176,7 +176,7 @@ make_b_value_boxes <- function(title, reactive_data, status_col,
 # nrow(rv$area_prediction_data$type) == 2
 
 
-format_assessment_lines <- function(data, status_col, data_col, method_col, scenario_col = NULL, year_data = NULL) {
+format_assessment_lines <- function(data, status_col, data_col, method_col, method_selected, scenario_col = NULL, year_data = NULL) {
   
   method_names <- c(
     ARC = "Absolute rate of change",
@@ -195,8 +195,9 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
     )
   
   # only want PRC in output
-  data <- data %>%
-    dplyr::filter(method == "PRC")
+  # data <- data %>%
+  #   dplyr::filter(method == "PRC")
+  data <- data %>% dplyr::filter(method == method_selected)
   
   #print(data)
   
@@ -208,18 +209,13 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
       data$scenario <- NULL                     # Remove scenario column entirely
     }
   }
-
-
-
-  
-  
   
   # Build the text per row
   if (!is.null(scenario_col) && scenario_col %in% names(data)) {
     data <- data %>%
       dplyr::mutate(
         line = paste0(
-          method, " (", .data[[scenario_col]], ") – ", # change method to method_label if want full name
+          method_selected, " (", .data[[scenario_col]], ") – ", # change method to method_label if want full name
           perc_label, " ", direction,
           " – ", .data[[status_col]])
       )
@@ -227,7 +223,7 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
     data <- data %>%
       dplyr::mutate(
         line = paste0(
-          method, " – ",                              # change method to method_label if want full name
+          method_selected, " – ",                              # change method to method_label if want full name
           perc_label, " ", direction,
           " – ", .data[[status_col]])
       )
@@ -238,13 +234,18 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, scen
 
 #------------------------------------------------------------------------------
 # Generalized helper to build a value_box for criteria A
-make_value_box <- function(title, reactive_data, status_col, data_col, method_col,
+make_value_box <- function(title, reactive_data, status_col, data_col, method_col, method_reactive,
                            scenario_col = NULL, hover_text = NULL, year_data = NULL) {
   reactive({
     data <- reactive_data()
-    data <- data %>% dplyr::filter(method == "PRC")
-    status <- get_box_status(data[[status_col]]) # THIS MIGTH NEED TO CHANGE IF ONLY PRESENTING PRC DATA?
+    # data <- data %>% dplyr::filter(method == "PRC")
     
+    # Use the current method() to filter
+    current_method <- method_reactive()
+    data <- data %>% dplyr::filter(.data[[method_col]] == current_method)
+    
+    status <- get_box_status(data[[status_col]]) # THIS MIGTH NEED TO CHANGE IF ONLY PRESENTING PRC DATA?
+
     # Map each status code to tooltip text
     status_tooltips <- list(
       "CR" = "Critically Endangered",
@@ -253,11 +254,11 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
       "NT" = "Near Threatened",
       "LC" = "Least Concern"
     )
-    
+
     hover_status_text <- status_tooltips[[status$text]]
-    
-    description_html <- format_assessment_lines(data, status_col, data_col, method_col, scenario_col,  year_data = year_data)
-    
+
+    description_html <- format_assessment_lines(data, status_col, data_col, method_col, method_selected = method_reactive(), scenario_col,  year_data = year_data)
+
     # Wrap status text in a small span and attach tooltip
     status_value <- tags$span(
       tooltip(
@@ -266,7 +267,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
         placement = "right"
       )
     )
-    
+
     value_box(
       # title = tagList(
       #   title,
@@ -285,3 +286,82 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
     )
   })
 }
+
+# make_value_box <- function(title, reactive_data, status_col, data_col, method_col,
+#                            scenario_col = NULL, hover_text = NULL, year_data = NULL,
+#                            selected_method = reactive("PRC")) {
+#   reactive({
+#    # # req(selected_method())
+#    #  # data <- reactive_data()
+#    #  # req(data)
+#    #  # selected_method_val <- selected_method()
+#    #  # data <- data %>% dplyr::filter(method == selected_method_val)
+#    #  # req(nrow(data) > 0)
+#    #  data <- reactive_data()
+#    #  if (is.null(data) || nrow(data) == 0) return(NULL)  # early exit if no data
+#    #  
+#    #  selected_method_val <- selected_method()
+#    #  if (is.null(selected_method_val)) selected_method_val <- "PRC"
+#    #  
+#    #  data <- data %>% dplyr::filter(method == selected_method_val)
+#    #  if (nrow(data) == 0) return(NULL)
+#    #  
+#    #  
+#    #  status <- get_box_status(data[[status_col]])
+#     
+#     # -------------------------
+#     # Grab data safely
+#     data <- reactive_data()
+#     if (is.null(data) || nrow(data) == 0) return(NULL)
+#     
+#     # -------------------------
+#     # Determine selected method
+#     selected_method_val <- selected_method()
+#     if (is.null(selected_method_val) || !selected_method_val %in% unique(data[[method_col]])) {
+#       selected_method_val <- unique(data[[method_col]])[1]  # fallback to first available
+#     }
+#     
+#     # Filter for selected method
+#     data <- data %>% dplyr::filter(.data[[method_col]] == selected_method_val)
+#     if (nrow(data) == 0) return(NULL)
+#     
+#     # -------------------------
+#     # Determine status
+#     status <- get_box_status(data[[status_col]])
+# 
+#     # Map each status code to tooltip text
+#     status_tooltips <- list(
+#       "CR" = "Critically Endangered",
+#       "EN" = "Endangered",
+#       "VU" = "Vulnerable",
+#       "NT" = "Near Threatened",
+#       "LC" = "Least Concern"
+#     )
+# 
+#     hover_status_text <- status_tooltips[[status$text]]
+# 
+#     description_html <- isolate({
+#       req(year_data)
+#       format_assessment_lines(data, status_col, data_col, method_col, scenario_col, year_data = year_data)
+#     })
+# 
+#     status_value <- tags$span(
+#       tooltip(
+#         tags$span(status$text, style = "font-weight: bold; font-size: 1.2em; display: inline-block;"),
+#         hover_status_text,
+#         placement = "right"
+#       )
+#     )
+# 
+#     value_box(
+#       title = div(style = "display: flex; align-items: center; justify-content: space-between;",
+#                   span(title, style = "display:inline-block;"),
+#                   info_icon(hover_text)
+#       ),
+#       value = status_value,
+#       p(HTML(description_html)),
+#       height = 200L,
+#       style = paste("background-color:", status$color, "; color: black;")
+#     )
+#   })
+# }
