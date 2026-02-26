@@ -12,6 +12,7 @@ criterion_a_module_ui <- function(id) {
     # Area change table (stats etc) -------------------------------------------
     card(
       height = 150,
+      fill = FALSE,
       full_screen = TRUE,
       card_header("Ecosystem area change data",
                   tooltip(
@@ -25,6 +26,7 @@ criterion_a_module_ui <- function(id) {
     # Graph of temporal change ------------------------------------------------ 
     card(
       full_screen = TRUE,
+      fill= FALSE,
       card_header("Ecosystem area change projections",
                   tooltip(
                     bs_icon("info-circle"),
@@ -33,6 +35,18 @@ criterion_a_module_ui <- function(id) {
       plotlyOutput(ns("area_change_graph")),
       class = "p-0"
     ),
+  
+    # button ----------------------------------------------------------------
+    layout_column_wrap(
+      width = "100%",
+      fill = FALSE,
+      class = "no-gap",
+      actionButton(
+        ns("switch_method"),
+        label = HTML('Switch between PRC and ARC assessments results here'),
+        width = "100%",
+        style = "background-color: white;color: black; border: 3px solid #696969;")
+      ),
     
     # Subcriterion results ----------------------------------------------------
     layout_column_wrap(
@@ -42,7 +56,6 @@ criterion_a_module_ui <- function(id) {
       )
     )
   )
-  
 }
 
 # -----------------------------------------------------------------------------
@@ -52,15 +65,13 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
   moduleServer(id, function(input, output, session) {
         ns <- session$ns
         
-        # modal to provide some user info -----------------------------------------
-        # 1) prevent the modal from popping up multiple times per session
-        modal_a_shown <- reactiveVal(FALSE)
+        # ----------------------------------------------------------------------
+        # modal to provide some user info
+        modal_a_shown <- reactiveVal(FALSE) # prevent the modal from popping up multiple times per session
         
-        # 2) model pop up on tab opening 
+        # model pop up on tab opening 
         observeEvent(main_tab(), {
-          # Only fire when Criterion A is selected
-          if (identical(main_tab(), "Criterion A")) {
-            # If you want it every time, remove the guard:
+          if (identical(main_tab(), "Criterion A")) { # Only fire when Criterion A is selected
             if (!modal_a_shown()) {
               showModal(a_quick_modal)
               modal_a_shown(TRUE)
@@ -68,20 +79,101 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           }
         }, ignoreInit = TRUE)
         
-
-       # Render table --------------------------------------------------------
-       # this was a DT but now static as DT was sometimes not updating 
-       # static table has same formatting - doesn't need to be an interactive table anyway
-        output$area_change_table <- renderUI({
-          req(area_change_data())
+        #-----------------------------------------------------------------------
+        # reset values        
+        observeEvent(upload_module$rasters(), {
+          rv$area_change_data <- NULL
+          rv$area_prediction_data <- NULL
           
-          act <- area_change_data() %>%
+          # Reset the boxes immediately
+          output$criterion_boxes_a <- renderUI({
+            div(class = "text-muted", "Upload at least two rasters to calculate Criterion A")
+          })
+        }, ignoreInit = TRUE)
+        
+        
+        # ----------------------------------------------------------------------
+        # Reactive values container to store data
+        rv <- reactiveValues(area_change_data = NULL,
+                             area_prediction_data = NULL)
+        
+        
+        # ----------------------------------------------------------------------
+        # calculate area change data for table
+        observeEvent(upload_module$rasters(), {
+          rv$area_change_data <- calc_area_change(upload_module$areas())
+        })
+        
+  
+        # ----------------------------------------------------------------------
+        # reactive value to store currently selected method
+        method <- reactiveVal("PRC")
+                              
+        
+        
+        # Button changes method
+        observeEvent(input$switch_method, {
+          method(ifelse(method() == "PRC", "ARC", "PRC"))
+        })
+        
+        
+# # update button label whenever the method changes
+#   observe({
+#     if (method() == "PRC") {
+#       updateActionButton(
+#         session, "switch_method",
+#         label = HTML(
+#           'Assessment result below is using <b>Proportional Rate of Change</b> - Click here to view assessment using <b>Absolute Rate of Change (ARC)</b>'
+#         )      )
+#     } else {
+#       updateActionButton(
+#         session, "switch_method",
+#         label = HTML(
+#           'Assessment result below is using <b>Absolute Rate of Change</b> - Click here to view assessment using <b>Proportional Rate of Change (PRC)</b>'
+#         )
+#       )
+#     }
+#   })
+#   
+  
+  # update button label whenever the method changes
+  observe({
+    if (method() == "PRC") {
+      updateActionButton(
+        session, "switch_method",
+        label = HTML(
+          'Assessment result below is using 
+         <b><span style="color:#D55E00;">Proportional Rate of Change (PRC)</span></b> 
+         - Click here to view assessment using 
+         <b><span style="color:#56B4E9;">Absolute Rate of Change (ARC)</span></b>'
+        )
+      )
+    } else {
+      updateActionButton(
+        session, "switch_method",
+        label = HTML(
+          'Assessment result below is using 
+         <b><span style="color:#56B4E9;">Absolute Rate of Change (ARC)</span></b> 
+         - Click here to view assessment using 
+         <b><span style="color:#D55E00;">Proportional Rate of Change (PRC)</span></b>'
+        )
+      )
+    }
+  })
+  
+  colors <- c("PRC" = "#D55E00",
+              "ARC" = "#56B4E9")
+        #-----------------------------------------------------------------------
+        # Render data table
+        output$area_change_table <- renderUI({
+          req( rv$area_change_data)
+          
+          act <-  rv$area_change_data %>%
             mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
                    area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
                    proportional_rate_change = round(proportional_rate_change, 2),
                    absolute_rate_change = round(absolute_rate_change, 2)) %>%
-            # dplyr::arrange(desc(perc_roi)) %>%
-            dplyr::select(!dt) %>% # remove this column
+            dplyr::select(!dt) %>%
             dplyr::rename(
               `Year` = year,
               `Area (km²)` = area,
@@ -103,91 +195,63 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
               })
             )
           )
-          
-        }
-        )
-        
-        # Make outputs render even when tab is hidden
-        outputOptions(output, "area_change_table", suspendWhenHidden = FALSE)
-
-        
-  # reset when new rasters uploaded ------------------------------------------
-    observeEvent(upload_module$rasters(), {
-      # reset UI and reactive holders
-      # output$criterion_boxes_a <- renderUI({ NULL })
-      output$criterion_boxes_a <- NULL   # better than renderUI(NULL)
-      # output$area_change_table <- NULL   # better than renderUI(NULL)
-      #rv$area_prediction_data(NULL)
-    }, ignoreNULL = TRUE)
-    
-        
-        # -------------------------------------------------------------------------
-        # Reactive values container
-        rv <- reactiveValues(
-          area_prediction_data = NULL,
-          area_change_data = NULL
-        )
-        
-    # Reactive expression for area change
-    area_change_data <- reactive({
-      req(upload_module$rasters())
-      cat("area_change_data recalculated\n")
-      df <- calc_area_change(upload_module$areas())
-      df          # <-- MUST return df
-      # 
-      print(df)
-    })
-
-    rv$area_change_data <- area_change_data 
-    
-  
-    #--------------------------------------------------------------------
-    # calculate past and future predictions using the above function
-    # If no or insufficient data, show single-row message --------------------
-    observe({
-      req(area_change_data())
-      if (NROW(area_change_data()) == 0) return()   # no data yet, do nothing
-      
-      if (NROW(area_change_data()) < 2) {
-        output$area_change_graph <- renderPlotly({
-          plotly::plot_ly() %>%
-            layout(
-              xaxis = list(visible = FALSE),
-              yaxis = list(visible = FALSE),
-              annotations = list(
-                list(
-                  x = 0.5,  # center horizontally
-                  y = 0.5,  # center vertically
-                  text = "Only 1 year of data - can't create assessment",
-                  showarrow = FALSE,
-                  xref = "paper",
-                  yref = "paper",
-                  font = list(size = 16, color = "black")
-                )
-              )
-            )
         })
         
-        # empty tables with message
-        output$a1_assess_table <- DT::renderDT({empty_assess_table()})
-        output$a2a_assess_table <- DT::renderDT({empty_assess_table()})
-        output$a2b_assess_table <- DT::renderDT({empty_assess_table()})
-      }
-    })
-    
-    # observe for the area change stats
-    observe({
-      req(area_change_data(), NROW(area_change_data()) > 1)
-      area_prediction_data <- predict_area_change(area_change_data())
-      rv$area_prediction_data <- area_prediction_data # store in reactive
-      cat("Updating rv$area_prediction_data\n")
-      
+        
+        # # Make outputs render even when tab is hidden
+        # outputOptions(output, "area_change_table", suspendWhenHidden = FALSE)
+        # # outputOptions(output, "area_change_graph", suspendWhenHidden = FALSE)
+        # 
+        # # output$area_change_table <- bindEvent(output$area_change_table, upload_module$rasters(), ignoreInit = TRUE)
+        
+
+    #--------------------------------------------------------------------------
+    # observe for the area prediction stats
+        observeEvent(rv$area_change_data, {
+          req(rv$area_change_data)
+          
+          if (NROW(rv$area_change_data) <= 1) {
+            rv$area_prediction_data <- NULL
+            return()
+          }
+
+          # Force a new object so reactive triggers
+          rv$area_prediction_data <- predict_area_change(rv$area_change_data) %>% dplyr::ungroup()
+         })
+        
+
       # ---------------------------------------------------------------------
-      # plot the data
+      # plot graph of the data
       # ---------------------------------------------------------------------
-      output$area_change_graph <- renderPlotly({
+          output$area_change_graph <- renderPlotly({
+            # req(rv$area_prediction_data)
+            
+            # If insufficient rows, show a message
+            if (NROW(rv$area_change_data) < 2) {
+              return(
+                plotly::plot_ly() %>%
+                  layout(
+                    xaxis = list(visible = FALSE),
+                    yaxis = list(visible = FALSE),
+                    annotations = list(
+                      list(
+                        x = 0.5,
+                        y = 0.5,
+                        text = "Only 1 year of data - can't create assessment",
+                        showarrow = FALSE,
+                        xref = "paper",
+                        yref = "paper",
+                        font = list(size = 16, color = "black")
+                      )
+                    )
+                  )
+              )
+            }
+            
+            
         # Prepare hover text
         results <- rv$area_prediction_data %>%
+          dplyr::ungroup() %>%   # ensures Shiny sees a new object
           mutate(
             hover_text = paste0(
               "Year: ", year, "<br>",
@@ -197,15 +261,57 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             )
           )
         
-        # Define line styles for methods
-        linetypes <- c("PRC" = "solid", "ARC" = "dot")
+        # # Define line styles for methods
+        # linetypes <- c("PRC" = "solid", "ARC" = "dot")
+        # 
+        # # Define colors for scenarios
+        # colors <- c("median" = "#ff7f00",
+        #             "recent" = "#e31a1c",
+        #             "worst" = "darkred",
+        #             "recent/worst" = "darkred",
+        #             "past" = "steelblue")
+        # 
+        # # Start Plotly
+        # p <- plot_ly()
+        # 
+        # # Add observed line + points
+        # p <- p %>%
+        #   add_trace(
+        #     data = filter(results, type == "observed"), # results is the rv$area_prediction_data
+        #     x = ~year, y = ~area, type = 'scatter', mode = 'lines+markers',
+        #     line = list(color = 'grey20', width = 3),
+        #     marker = list(color = 'grey10', size = 6),
+        #     hoverinfo = 'text',
+        #     text = ~hover_text,
+        #     name = 'Observed'
+        #   )
+        # 
+        # # Add projected lines
+        # proj_data <- filter(results, type == "projected")
+        # for(scen in unique(proj_data$scenario)) {
+        #   for(meth in unique(proj_data$method)) {
+        #     sub <- filter(proj_data, scenario == scen, method == meth)
+        #     p <- add_trace(
+        #       p,
+        #       data = sub,
+        #       x = ~year, y = ~area, type = 'scatter', mode = 'lines',
+        #       line = list(color = colors[scen], dash = linetypes[meth], width = 3),
+        #       hoverinfo = 'text',
+        #       text = ~hover_text,
+        #       name = paste(scen, meth, sep = "/")
+        #     )
+        #   }
+        # }
         
-        # Define colors for scenarios
-        colors <- c("median" = "#ff7f00",
-                    "recent" = "#e31a1c",
-                    "worst" = "darkred",
-                    "recent/worst" = "darkred",
-                    "past" = "steelblue")
+        # Define line styles for methods
+        colors <- c("PRC" = "#D55E00",
+                    "ARC" = "#56B4E9")
+        
+        linetypes <-  c("median" = "dot", 
+                        "recent" = "solid",
+                        "worst" = "dash",
+                        "recent/worst" = "dash",
+                        "past" = "longdashdot")
         
         # Start Plotly
         p <- plot_ly()
@@ -217,8 +323,6 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             x = ~year, y = ~area, type = 'scatter', mode = 'lines+markers',
             line = list(color = 'grey20', width = 3),
             marker = list(color = 'grey10', size = 6),
-            hoverinfo = 'text',
-            text = ~hover_text,
             name = 'Observed'
           )
         
@@ -231,9 +335,8 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
               p,
               data = sub,
               x = ~year, y = ~area, type = 'scatter', mode = 'lines',
-              line = list(color = colors[scen], dash = linetypes[meth], width = 3),
-              hoverinfo = 'text',
-              text = ~hover_text,
+              line = list(color = colors[meth], 
+                          dash = linetypes[scen], width = 3),
               name = paste(scen, meth, sep = "/")
             )
           }
@@ -241,11 +344,10 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         
         # ---------------------------------------------------------------------
         # GAM smoother (only if enough points)
-        # ---------------------------------------------------------------------
-        n_points <- nrow(area_change_data())
-     
+        n_points <- NROW(rv$area_change_data)
+
         if (n_points > 3) {
-          dat <- area_change_data()
+          dat <- rv$area_change_data
           
           # fit GAM with try()
           gam_model <- try(
@@ -269,28 +371,90 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             pred_gam_before <- filter(pred_gam, year < min(dat$year))
             pred_gam_after  <- filter(pred_gam, year > max(dat$year))
           
+            # pred_gam_before_after <- rbind(pred_gam_before, pred_gam_after)
+            
             # Add GAM traces
+            # p <- p %>%
+            #   add_trace(
+            #     data = pred_gam_before,
+            #     x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
+            #     line = list(color = 'blue', width = 3, dash = 'dash'),
+            #     showlegend = FALSE,
+            #     name="GAM"
+            #   ) %>%
+            #   add_trace(
+            #     data = pred_gam_after,
+            #     x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
+            #     line = list(color = 'blue', width = 3, dash = 'dash'),
+            #     name = 'GAM'
+            #   ) %>%
+            #   add_ribbons(
+            #     data = pred_gam,
+            #     x = ~year, ymin = ~lwr, ymax = ~upr,
+            #     fillcolor = 'rgba(0,0,255,0.2)',
+            #     line = list(color = 'transparent'),
+            #     name = '95% CI'
+            #   )
+            
+            # p <- p %>%
+            #   add_trace(
+            #     data = pred_gam_before,
+            #     x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
+            #     line = list(color = 'blue', width = 3, dash = 'dash'),
+            #     name = "GAM",
+            #     legendgroup = "GAM",
+            #     showlegend = TRUE
+            #   ) %>%
+            #   add_trace(
+            #     data = pred_gam_after,
+            #     x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
+            #     line = list(color = 'blue', width = 3, dash = 'dash'),
+            #     name = "GAM",
+            #     legendgroup = "GAM",
+            #     showlegend = FALSE
+            #   ) %>%
+            #   add_ribbons(
+            #     data = pred_gam,
+            #     x = ~year, ymin = ~lwr, ymax = ~upr,
+            #     fillcolor = 'rgba(0,0,255,0.2)',
+            #     line = list(color = 'transparent'),
+            #     name = '95% CI',
+            #     legendgroup = "GAM"
+            #   )
+            
             p <- p %>%
               add_trace(
                 data = pred_gam_before,
                 x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
                 line = list(color = 'blue', width = 3, dash = 'dash'),
-                showlegend = FALSE,
-                name="GAM"
+                name = "GAM",
+                legendgroup = "GAM",
+                showlegend = TRUE,
+                visible = "legendonly"   # hidden by default, but present in legend
               ) %>%
               add_trace(
                 data = pred_gam_after,
                 x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
                 line = list(color = 'blue', width = 3, dash = 'dash'),
-                name = 'GAM'
+                name = "GAM",
+                legendgroup = "GAM",
+                showlegend = FALSE       # not shown in legend, but grouped
+                # visible will follow the legend item above
               ) %>%
               add_ribbons(
                 data = pred_gam,
                 x = ~year, ymin = ~lwr, ymax = ~upr,
                 fillcolor = 'rgba(0,0,255,0.2)',
                 line = list(color = 'transparent'),
-                name = '95% CI'
+                name = '95% CI',
+                # If you want the CI to toggle with GAM as well, keep the next two lines.
+                legendgroup = "GAM",
+                showlegend = FALSE,
+                visible = "legendonly"   # start hidden too (even if not in legend)
               )
+            
+            
+            
           }
         } # end of if >3 points
         
@@ -304,21 +468,20 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         p
         
       })
-    })
-  
-    #-----------------------------------------------------------
-    # Assessments
-    #-----------------------------------------------------------
-    #   req(area_change_data(), NROW(area_change_data()) > 1)
-      observeEvent(upload_module$rasters(), ignoreInit = FALSE, {
-        req(area_change_data(), NROW(area_change_data()) > 1)
+
         
-      # actually lets do the assessment tables separately
-      results <- rv$area_prediction_data
-      obsv.fut <- results %>%
-        group_by(type, method, scenario) %>%
-        filter(scenario != "past") %>%
-        slice(n()) # this keeps the most recent observed only (certainly where there are just 2 data points...)
+    #---------------------------------------------------------------------------
+    # Assessments
+    #---------------------------------------------------------------------------
+        observeEvent(rv$area_prediction_data, {
+          req( rv$area_prediction_data)
+  
+          # actually lets do the assessment tables separately
+          results <- rv$area_prediction_data
+          obsv.fut <- results %>%
+            group_by(type, method, scenario) %>%
+            filter(scenario != "past") %>%
+            slice(n()) # this keeps the most recent observed only (certainly where there are just 2 data points...)
       
       # then get past
       past <- results %>%
@@ -333,22 +496,41 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       
       #-----------------------------------------------------------
       # A1 assessment calculation
+      # a1_result <- past.obsv.fut %>%
+      #   filter(scenario %in% "past", method %in% c("ARC", "PRC")) %>%
+      #   group_by(method) %>%
+      #   slice_min(year, n = 1) %>%           # earliest past
+      #   ungroup() %>%
+      #   mutate(
+      #     latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
+      #     perc_change = (latest_observed_area/area) -1
+      #     
+      #   ) %>%
+      #   dplyr::select(method, area, latest_observed_area, perc_change) %>%
+      #   mutate(A1 = dplyr::case_when(
+      #     abs(perc_change) > 0.8 ~ "CR",
+      #     abs(perc_change) > 0.5 ~ "EN",
+      #     abs(perc_change) > 0.3 ~ "VU",
+      #     abs(perc_change) > 0.27 ~ "NT",
+      #     TRUE ~ "LC"
+      #   ))
       a1_result <- past.obsv.fut %>%
         filter(scenario %in% "past", method %in% c("ARC", "PRC")) %>%
-        # filter(scenario %in% "past", method %in% c("PRC")) %>%
         group_by(method) %>%
         slice_min(year, n = 1) %>%           # earliest past
         ungroup() %>%
         mutate(
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
-          perc_change = (latest_observed_area/area) -1
+          perc_change = ((latest_observed_area-area) / area)
+          # perc_change = ((area-latest_observed_area) / latest_observed_area)
+          
         ) %>%
         dplyr::select(method, area, latest_observed_area, perc_change) %>%
         mutate(A1 = dplyr::case_when(
-          abs(perc_change) > 0.8 ~ "CR",
-          abs(perc_change) > 0.5 ~ "EN",
-          abs(perc_change) > 0.3 ~ "VU",
-          abs(perc_change) > 0.27 ~ "NT",
+          (perc_change) < -0.8 ~ "CR",
+          (perc_change) < -0.5 ~ "EN",
+          (perc_change) < -0.3 ~ "VU",
+          (perc_change) < -0.27 ~ "NT",
           TRUE ~ "LC"
         ))
       
@@ -361,14 +543,14 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         ungroup() %>%
         mutate(
           latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
-          perc_change = (area/latest_observed_area) -1
+          perc_change = ((area-latest_observed_area) / latest_observed_area)
         ) %>%
         dplyr::select(method, scenario, area, latest_observed_area, perc_change) %>%
         mutate(A2a = dplyr::case_when(
-          abs(perc_change) > 0.8 ~ "CR",
-          abs(perc_change) > 0.5 ~ "EN",
-          abs(perc_change) > 0.3 ~ "VU",
-          abs(perc_change) > 0.27 ~ "NT",
+          (perc_change) < -0.8 ~ "CR",
+          (perc_change) < -0.5 ~ "EN",
+          (perc_change) < -0.3 ~ "VU",
+          (perc_change) < -0.27 ~ "NT",
           TRUE ~ "LC"
         ))
       
@@ -378,32 +560,62 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       methods <- c("ARC", "PRC")
       scenarios <- setdiff(unique(results$scenario), c("past", "observed"))
       
-      for (m in methods) {
-        for (s in scenarios) {
-          
-          # Filter and prepare data
-          df <- results %>%
-            filter(method != m, scenario != s) %>%
-            arrange(year, desc(type == "observed")) %>%
-            distinct(year, .keep_all = TRUE)
-          
-          # Define start years
-          start_years <- df %>%
-            filter(year <= max(year) - 51) %>%  # -1 - 50 = -51
-            pull(year) %>%
-            unique()
-          
-          # Calculate percent changes
-          a2b_results[[m]][[s]] <- map_dfr(start_years, function(year_start) {
-            year_end <- year_start + 50
-            df %>%
-              filter(year %in% c(year_start, year_end)) %>%
-              summarise(perc_change = (area[which.max(year)]/area[which.min(year)])-1 , # (recent/oldest)-1
-                        direction =  ifelse(perc_change > 0, "increase", "decrease")
-              )
-          })
+      # for (m in methods) {
+      #   for (s in scenarios) {
+      #     
+      #     # Filter and prepare data
+      #     df <- results %>%
+      #       filter(method != m, scenario != s) %>%
+      #       arrange(year, desc(type == "observed")) %>%
+      #       distinct(year, .keep_all = TRUE)
+      #     
+      #     # Define start years
+      #     start_years <- df %>%
+      #       filter(year <= max(year) - 51) %>%  # -1 - 50 = -51
+      #       pull(year) %>%
+      #       unique()
+      #     
+      #     # Calculate percent changes
+      #     a2b_results[[m]][[s]] <- map_dfr(start_years, function(year_start) {
+      #       year_end <- year_start + 50
+      #       df %>%
+      #         filter(year %in% c(year_start, year_end)) %>%
+      #         summarise(#perc_change = (area[which.max(year)]/area[which.min(year)])-1 , # (recent/oldest)-1
+      #                   perc_change = (area[which.min(year)]-area[which.max(year)]) / area[which.min(year)],
+      #                   perc_change = (area[which.max(year)]-area[which.min(year)]) / area[which.max(year)],
+      #                   direction =  ifelse(perc_change > 0, "increase", "decrease")
+      #         )
+      #     })
+      #   }
+      # }
+        
+        for (m in methods) {
+          for (s in scenarios) {
+            
+            # Filter and prepare data
+            df <- results %>%
+              filter(method %in% c(m, "observed"), scenario %in% c(s, "past", "observed")) %>%
+              arrange(year, desc(type == "observed")) %>%
+              distinct(year, .keep_all = TRUE)
+            
+            # Define start years
+            start_years <- df %>%
+              filter(scenario %in% c("past", "observed")) %>%
+              filter(!(year %in% c(min(year), max(year)))) %>%
+              #filter(!(year %in%  max(year))) %>%
+              pull(year)
+            
+            
+            # Calculate percent changes
+            a2b_results[[m]][[s]] <- map_dfr(start_years, function(year_start) {
+              year_end <- year_start + 50
+              df %>%
+                filter(year %in% c(year_start, year_end)) %>%
+                summarise(perc_change = (area[year == year_end]-area[year == year_start]) / area[year == year_start],
+                          direction =  ifelse(perc_change > 0, "increase", "decrease"))
+            })
+          }
         }
-      }
       
       ##Apply case_when to each data frame in the nested list
       a2b_results_labeled <- imap(a2b_results, function(method_list, method_name) {
@@ -413,17 +625,16 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
               method = method_name,
               scenario = scenario_name,
               A2b = case_when(
-                abs(perc_change) > 0.8 ~ "CR",
-                abs(perc_change) > 0.5 ~ "EN",
-                abs(perc_change) > 0.3 ~ "VU",
-                abs(perc_change) > 0.27 ~ "NT", # hard coded currently
+                (perc_change) < -0.8 ~ "CR",
+                (perc_change) < -0.5 ~ "EN",
+                (perc_change) < -0.3 ~ "VU",
+                (perc_change) < -0.27 ~ "NT", # hard coded currently
                 TRUE ~ "LC"
               )
             )
         })
       })
       
-      # merge results --------------------------------------------------------
       combined_results <- bind_rows(
         purrr::flatten(a2b_results_labeled)
       )
@@ -431,40 +642,47 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       # below is the same result as above
       worst_cases <- combined_results %>%
         group_by(method, scenario) %>%
-        slice_max(perc_change, n = 1, with_ties = FALSE) %>%
+        slice_min(perc_change, n = 1, with_ties = FALSE) %>%
         ungroup() %>%
         dplyr::select(method, scenario, perc_change, A2b)
 
       
-      
-      #  create value boxes --------------------------------------------------
-      
+      #---------------------------------------------------------------------------
+      # create value boxes 
+      #---------------------------------------------------------------------------
       a1_box  <- make_value_box(
         title = "Subcriterion A1",
         reactive_data = reactive(a1_result),
         status_col = "A1",
         data_col = "perc_change",
         method_col = "method",
+        
+        method_reactive = method,      # <-- pass the reactive
+        
         hover_text = "Past predicted change in geographic distribution (past 50 years)",
         year_data = rv$area_prediction_data
       )
-      
+
       a2a_box <- make_value_box(
         title = "Subcriterion A2a",
         reactive_data = reactive(a2a_result),
         status_col = "A2a",
         data_col = "perc_change",
         method_col = "method",
+        method_reactive = method,      # <-- pass the reactive
+        
         scenario_col = "scenario",
-        hover_text = "Future predicted change in geographic distribution (next 50 years)" 
+        hover_text = "Future predicted change in geographic distribution (next 50 years)"
       )
-      
+
       a2b_box <- make_value_box(
         title = "Subcriterion A2b",
         reactive_data = reactive(worst_cases),
         status_col = "A2b",
         data_col = "perc_change",
         method_col = "method",
+        method_reactive = method,      # <-- pass the reactive
+        
         scenario_col = "scenario" ,
         hover_text = "Predicted change in geographic distribution over any 50 year period (including the past, present and future)"
       )
@@ -482,13 +700,15 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
     }) # end of Criterion A observe assessment
     
   
-      # Return reactive values for use outside the module
-    return(list(
-      area_change_data = reactive({rv$area_change_data()}),
-      area_prediction_data = reactive({rv$area_prediction_data})
-    ))
-    
-      
-    })
-}
+        #---------------------------------------------------------------------------
+        # Return data
+        #---------------------------------------------------------------------------
+        return(list(
+          area_change_data = reactive({ rv$area_change_data }),
+          area_prediction_data = reactive({ rv$area_prediction_data })
+          ))
+        
+  })
+  
+  }
 

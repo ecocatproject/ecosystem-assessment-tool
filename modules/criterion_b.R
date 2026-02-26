@@ -99,15 +99,21 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       if (is.null(rasters()) || length(rasters()) < 1) {
         leaflet() %>% addTiles()
       } else {
-        ext_r <- as.vector(ext(rasters()[[length(rasters())]])) # get eau extent for mapping zoom
+        # ext_r <- as.vector(ext(rasters()[[length(rasters())]])) # get eau extent for mapping zoom
+        yrs <- year_inputs()
+        latest_year <- max(yrs)
+        latest <- rasters()[[length(rasters())]]
+        ext_r  <- as.vector(ext(latest))   # get extent for zoom
         
         leaflet() %>% addTiles() %>% 
           fitBounds(unname(ext_r["xmin"]),
                     unname(ext_r["ymin"]),
                     unname(ext_r["xmax"]),
                     unname(ext_r["ymax"])) %>%
+          addRasterImage(latest, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
           addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
           addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
+                           overlayGroups = c(paste0(latest_year, " classification")),
                            options = layersControlOptions(collapsed = FALSE))
       }
     })
@@ -296,8 +302,9 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         latest_year <- max(mcp_vectors()$year, na.rm = TRUE)
         
         leafletProxy(ns("map_B")) %>%
-        clearGroup("10x10 km grid") %>%
-        clearGroup("AOO (>1% occupancy)") %>%
+          clearGroup("10x10 km grid") %>%
+          clearGroup("AOO (>1% occupancy)") %>%
+          clearControls() %>%
         addPolygons(data = dat_all, group = "10x10 km grid",
                     fillColor = "black", fillOpacity = 0.2, color = "black", weight = .5) %>%
         addPolygons(data = dat_sel, group = "AOO (>1% occupancy)",
@@ -306,7 +313,16 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
           baseGroups = c("OSM", "ESRI Satellite"),
           overlayGroups = c(paste0(latest_year, " MCP"), paste0(latest_year, " classification"), '10x10 km grid', 'AOO (>1% occupancy)'),
           options = layersControlOptions(collapsed = FALSE)
-        ) 
+        ) %>% 
+          
+          addLegend(
+            position = "bottomright",
+            colors = c("black", "orange"),
+            labels = c("10x10 km grid", "AOO (>1% occupancy)"),
+            opacity = 0.7,
+            title = "Polygon Layers"
+          )
+        
       } else {
         leafletProxy(ns("map_B")) %>%
           clearGroup("10x10 km grid") %>%
@@ -319,7 +335,16 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
             baseGroups = c("OSM", "ESRI Satellite"),
             overlayGroups = c( '10x10 km grid', 'AOO (>1% occupancy)'),
             options = layersControlOptions(collapsed = FALSE)
+          ) %>%
+          
+          addLegend(
+            position = "bottomright",
+            colors = c("black", "orange"),
+            labels = c("10x10 km grid", "AOO (>1% occupancy)"),
+            opacity = 0.7,
+            title = "Polygon Layers"
           )
+        
       }
       
 

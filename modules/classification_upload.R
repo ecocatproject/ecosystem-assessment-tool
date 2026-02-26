@@ -11,14 +11,19 @@ classification_module_ui <- function(id) {
   ns <- NS(id)
   sidebar(
     width = 300,
-    fileInput(ns("tifs"), "1) Upload Ecosystem classification file(s)",
-              multiple = TRUE, accept = ".tif"),
+    # fileInput(ns("tifs"), "1) Upload Ecosystem classification file(s)",
+    #           multiple = TRUE, accept = ".tif"),
+    # 
+    tags$span(
+      "1) Upload Ecosystem classification file(s)",
+      tooltip(bs_icon("info-circle"), "The file must be a raster format - e.g. .tif, it can be a single layer or multi-layer raster"),
+      fileInput(ns("tifs"), "", multiple = TRUE, accept = ".tif")),
     hr(),
     uiOutput(ns("part2")),
     uiOutput(ns("year_inputs")),
     uiOutput(ns("hr_after_years")),
-    uiOutput("category_ui"),   # Placeholder for category inputs (appear only if needed)
     uiOutput(ns("ecosystem_dropdown")),
+    uiOutput(ns("run_description")),
     uiOutput(ns("process_btn_text")),
     uiOutput(ns("process_btn_ui"))
   )
@@ -37,7 +42,7 @@ classification_module_server <- function(id) {
     rasters_original <- reactiveVal(NULL)
     areas            <- reactiveVal(NULL)
     
-    # reactive for layer namse --------- --------------------------------------
+    # reactive for layer names --------- --------------------------------------
     lyr_names <- reactive({
       req(input$tifs)
       names(rast(input$tifs$datapath))
@@ -50,7 +55,6 @@ classification_module_server <- function(id) {
              function(i) input[[paste0("year_", i)]])
     })
     
-    
     # Reactive selected layer -------------------------------------------------
     selected_layer <- reactive({
       input$selected_layer
@@ -60,7 +64,6 @@ classification_module_server <- function(id) {
     process_btn <- reactive({
       input$process
     })
-    
     
     # Helper reactives to avoid repeated work -------------------------------------
     r_rast <- reactive({
@@ -74,41 +77,50 @@ classification_module_server <- function(id) {
     })
     
     
-    # Conditionally render dropdown ------------------------------------------
+    # --------------------------------------------------------------------------
+    # Conditionally render dropdown
     output$ecosystem_dropdown <- renderUI({
       req(input$tifs)
       
-      # Load the first tif to inspect its layers
+      # Return NULL if raster loading failed
       if (inherits(r_rast(), "try-error")) return(NULL)
       
+      # Only proceed if >1 layer
       if (NROW(r_freq()) > 1) {
-        # Only proceed if >1 layer
         if (nlyr(r_rast()) > 1) {
-          # Check that all year inputs are filled in
+          # Multiple raster layers
           years <- sapply(seq_along(input$tifs$name),
                           function(i) input[[paste0("year_", i)]])
           tagList(
-            selectInput(ns("selected_layer"),
-                        "3) Multiple data layers detected - select the layer/ecosystem required:",
-                        choices = lyr_names(),
-                        selected = lyr_names()[1]),
-            hr()
-          )
-        } else {
-          
-          # vals_chr <- levels(r_rast())
-          # if (is.null(vals_chr)) {
-          vals_chr <- as.character(r_freq()$value)
-          # }
-          
-          
-          tagList(
             selectInput(
               ns("selected_layer"),
-              "3) Multiple categories detected — select the class/ecosystem required:",
-              choices  = vals_chr,
-              selected = vals_chr[1]
+              "3) Multiple data layers detected - select the layer/ecosystem required:",
+              choices = lyr_names(),
+              selected = lyr_names()[1]
             ),
+            hr()
+          )
+          
+        } else {
+          # Multiple categories detected
+          vals_chr <- as.character(r_freq()$value)
+          
+          tagList(
+            # 3) Category source choice
+            radioButtons(
+              ns("cat_source"),
+              "3a) Do you have a file describing the category levels?",
+              choices = c(
+                "Yes – I have a .aux.xml file" = "xml",
+                "Yes – I have a 2-column .csv file" = "csv",
+                "No – use raster values only"  = "raster"
+              ),
+              selected = "raster"
+            ),
+            
+            # 3b) Dynamic UI
+            uiOutput(ns("category_ui")),
+            
             hr()
           )
           
@@ -116,17 +128,227 @@ classification_module_server <- function(id) {
       }
     })
     
+    # --------------------------------------------------------------------------
+    # create category ui
+    output$category_ui <- renderUI({
+      req(input$cat_source)
+      
+      if (input$cat_source == "xml") {
+        tagList(
+          fileInput(
+            ns("aux"),  "3b) Upload corresponding .aux.xml file", accept = ".xml"),
+          uiOutput(ns("class_ui"))
+        )
+        
+      } else if (input$cat_source == "csv") {
+        tagList(
+          fileInput(
+            ns("cat_file"), "3b) Upload corresponding 2-column .csv file", accept = ".csv"),
+          #uiOutput(ns("column_preview_ui")),
+          uiOutput(ns("class_ui"))
+        )
+        
+      } else {
+        # Raster-only categories
+        vals_chr <- as.character(r_freq()$value)
+        
+        selectInput(
+          ns("selected_layer"),
+          "3b) Select the class/ecosystem required:",
+          choices  = vals_chr,
+          selected = vals_chr[1]
+        )
+      }
+    })
+    
+    # --------------------------------------------------------------------------
+    # Render the class dropdown if an auxiliary file is uploaded
+    output$class_ui <- renderUI({
+      req(cat_table())  # cat_table() should read/process the uploaded XML
+      selectInput(
+        ns("class"),
+        "Select class",
+        choices = setNames(cat_table()$value, cat_table()$label)
+      )
+    })
+    
+    # --------------------------------------------------------------------------
+    # Parse .aux.xml to get category table
+    # cat_table <- reactive({
+    #   req(input$aux)
+    #   
+    #   xml <- read_xml(input$aux$datapath)
+    #   rows <- xml_find_all(xml, ".//Row")
+    #   
+    #   value <- as.numeric(xml_text(xml_find_all(rows, ".//F[1]")))
+    #   label <- xml_text(xml_find_all(rows, ".//F[2]"))
+    #   
+    #   data.frame(value = value, label = label, stringsAsFactors = FALSE)
+    # })
     
     
+    cat_table <- reactive({
+      req(input$cat_source)
+      
+      # --------------------------
+      if (input$cat_source == "xml") {
+        req(input$aux)
+        
+        xml <- xml2::read_xml(input$aux$datapath)
+        
+        # --------------------------
+        # Try GDALRasterAttributeTable first
+        rows <- xml2::xml_find_all(xml, ".//GDALRasterAttributeTable//Row")
+        
+        if (length(rows) > 0) {
+          
+          value <- as.numeric(xml2::xml_text(xml2::xml_find_all(rows, ".//F[1]")))
+          label <- xml2::xml_text(xml2::xml_find_all(rows, ".//F[2]"))
+          
+          df <- data.frame(value = value,
+                           label = label,
+                           stringsAsFactors = FALSE)
+          
+        } else {
+          
+          # --------------------------
+          # Fallback: CategoryNames only
+          # categories <- xml2::xml_find_all(xml, ".//CategoryNames//Category")
+          # 
+          # if (length(categories) == 0) {
+          #   validate("No usable category information found in XML.")
+          # }
+          # 
+          # label <- xml2::xml_text(categories)
+          categories <- xml2::xml_find_all(xml, ".//CategoryNames//Category")
+          
+          # Extract text
+          label <- trimws(xml2::xml_text(categories))
+          
+          # Remove empty / blank entries
+          label <- label[nzchar(label)]
+          
+          # Optional: remove duplicates
+          label <- unique(label)
+          
+          raster_vals <- sort(unique(terra::values(r_rast())))
+          raster_vals <- raster_vals[!is.na(raster_vals)]
+          
+          if (length(label) != length(raster_vals)) {
+            validate(
+              paste(
+                "XML category count (", length(label),
+                ") does not match raster value count (",
+                length(raster_vals), ").",
+                "Manual matching required."
+              )
+            )
+          }
+        }
+      }
+      
+      # --------------------------
+      # CSV
+      else if (input$cat_source == "csv") {
+        
+        req(input$cat_file)
+        
+        df_raw <- read.csv(input$cat_file$datapath, stringsAsFactors = FALSE)
+        
+        if (ncol(df_raw) < 2) {
+          validate("File must contain at least two columns.")
+        }
+        
+        # ---- Auto-detect numeric/factor column (raster values)
+        numeric_col <- which(sapply(df_raw, function(x)
+          is.numeric(x) || is.integer(x) || is.factor(x)))
+        
+        # ---- Auto-detect character column (labels)
+        char_col <- which(sapply(df_raw, is.character))
+        
+        if (length(numeric_col) == 0 || length(char_col) == 0) {
+          validate("Could not detect numeric and character columns.")
+        }
+        
+        value_col <- numeric_col[1]
+        label_col <- char_col[1]
+        
+        df <- data.frame(
+          value = as.numeric(df_raw[[value_col]]),
+          label = as.character(df_raw[[label_col]]),
+          stringsAsFactors = FALSE
+        )
+      }
+      
+      else {
+        return(NULL)
+      }
+      
+      # Optional: remove NA rows
+      # df <- df[!is.na(df$value) & !is.na(df$label), ]
+      
+      df
+    })
     
-    # Dynamic year inputs -----------------------------------------------------
+    
+    # --------------------------------------------------------------------------
+    # resolved selection -  # was selected_class
+    # resolved_selection <- eventReactive(process_btn(), {
+    #   req(input$cat_source)
+    #   
+    #   if (input$cat_source %in% c("csv","xml")) {
+    #     req(input$class)
+    #     # numeric raster value from XML
+    #     as.numeric(input$class)
+    #     
+    #   } else {
+    #     req(input$selected_layer)
+    #     # already raster-based
+    #     input$selected_layer
+    #   }
+    # })
+    
+    resolved_selection <- eventReactive(process_btn(), {
+      # If single-value raster, just return the raster value or first layer
+      r <- r_rast()
+      if (nlyr(r) == 1 && length(unique(values(r))) <= 1) {
+        return(as.character(unique(values(r))[!is.na(unique(values(r)))][1]))
+      }
+      
+      # For categorical rasters or XML/CSV categories
+      if (!is.null(input$cat_source) && input$cat_source %in% c("csv","xml")) {
+        req(input$class)
+        return(as.numeric(input$class))
+      } else if (!is.null(input$selected_layer)) {
+        return(input$selected_layer)
+      } else {
+        return(names(r)[1]) # fallback
+      }
+    })
+    
+    # --------------------------------------------------------------------------
+    # part 2 ui sidebar
+    output$part2 <- renderUI({
+      # if (isTRUE(input$year_inputs)) 
+      req(input$tifs)
+      # paste("2) Check/select year for each classification map")
+      tags$span(
+        "2) Check/select year for each classification map",
+        tooltip(bs_icon("info-circle"), "Each must have a input before the 'process button' is available"))
+    })
+    
+
+    
+    # --------------------------------------------------------------------------
+    # Dynamic year inputs
     extract_year <- function(filename) {
       m <- regexpr("(?<!\\d)(19|20)\\d{2}(?!\\d)", filename, perl = TRUE)
       if (m[1] == -1) return(NULL)
       as.numeric(regmatches(filename, m))
     }
     
-    
+    # --------------------------------------------------------------------------
+    # render year ui
     output$year_inputs <- renderUI({
       req(input$tifs)
       
@@ -206,36 +428,100 @@ classification_module_server <- function(id) {
       
     })
     
-    output$part2 <- renderUI({
-      # if (isTRUE(input$year_inputs)) 
-      req(input$tifs)
-      paste("2) Check/select year for each classification map")
-    })
+ 
     
-    
+    # --------------------------------------------------------------------------
     # Conditional hr after year selection
     output$hr_after_years <- renderUI({
       if (isTRUE(input$year_inputs)) hr()
     })
     
-    
-    # conditional process button text  
+    # --------------------------------------------------------------------------
+    # checkbox for description calculation
+    output$run_description <- renderUI({
+      req(input$tifs)
+      tags$span(
+        ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
+               "4) Select here for calculation of descriptive variables",
+               "3) Select here for calculation of descriptive variables"),
+        tooltip(bs_icon("info-circle"),
+                "By checking this box, the descriptive variables will be calculated for most recent ecosystem map. This will slightly increasing the processing time"),
+        checkboxInput(ns("run_description"),label = NULL, value = FALSE),
+          hr()
+      )
+    })
+
     output$process_btn_text <- renderUI({
       # if (isTRUE(input$year_inputs)) 
       req(input$tifs)
       tags$span(
         ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
-               "4) Click the process button below to start the ecosystem assessment: ",
-               "3) Click the process button below to start the ecosystem assessment: "),
+               "5) Click the process button below to start the ecosystem assessment: ",
+               "4) Click the process button below to start the ecosystem assessment: "),
         tooltip(bs_icon("info-circle"),
                 "The 'process button' will only appear when the years are distinct and/or complete for each file"
         )
       )
     })
     
+    # output$run_description <- renderUI({
+    #   req(input$tifs)
+    #   tagList(
+    #     tags$label("3) Select here for calculation of descriptive variables", 
+    #                `for` = ns("run_description"), style = "margin:0;"),
+    #     tags$input(type = "checkbox", id = ns("run_description"), style = "margin:0; padding:0; display:inline-block;"),
+    #     hr()
+    #   )
+    # })
+    
+    # output$run_description <- renderUI({
+    #   req(input$tifs)
+    #   tagList(
+    #     div(
+    #       tags$span("3) Select here for calculation of descriptive variables"),
+    #        style = "display:flex; align-items:center; gap:10px; margin:0; padding:0;",
+    #       #style = "display:flex; gap:10px; margin:0; padding:0;",
+    #       checkboxInput(ns("run_description"), label = NULL, value = FALSE)
+    #       #,
+    #              #   style = "font-size:18px;")  # bigger text
+    #     ),
+    #     tags$style(HTML(paste0("
+    #   #", ns("run_description"), " {
+    #     width: 50px;    /* make checkbox bigger */
+    #     height: 30px;   /* make checkbox bigger */
+    #     cursor: pointer;
+    #   }
+    # "))),
+    #     hr()
+    #   )
+    # })
+    
+    # --------------------------------------------------------------------------
+    # conditional process button text  
+    output$process_btn_text <- renderUI({
+      # if (isTRUE(input$year_inputs)) 
+      req(input$tifs)
+      tags$span(
+        ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
+               "5) Click the process button below to start the ecosystem assessment: ",
+               "4) Click the process button below to start the ecosystem assessment: "),
+        tooltip(bs_icon("info-circle"),
+                "The 'process button' will only appear when the years are distinct and/or complete for each file"
+        )
+      )
+    })
+    
+    # --------------------------------------------------------------------------
     # Conditional process button
     output$process_btn_ui <- renderUI({
       req(input$tifs)
+      # # Hide if XML required but missing
+      # if (!is.null(input$cat_source) &&
+      #     input$cat_source %in% c("xml", "csv") &&
+      #     is.null(input$aux)) {
+      #   return(NULL)
+      # }
+      
       years_raw <- sapply(seq_along(input$tifs$name),
                           function(i) input[[paste0("year_", i)]])
       
@@ -282,7 +568,6 @@ classification_module_server <- function(id) {
       req(input$tifs)                    # see app.R server for tifs_inputs
       files <- input$tifs$datapath
       years <- year_inputs()               # see app.R server for year_inputs
-      # req(length(years) == length(files))  # sanity check
       
       # show modal popup
       showModal(upload_modal)
@@ -358,7 +643,9 @@ classification_module_server <- function(id) {
       }
       
       # identify selected layer
-      sel_name <- selected_layer()
+      # sel_name <- selected_layer()
+      sel_name <- resolved_selection()
+      
       
       # loop through each file to calculate areas ------------------------------
       for (i in seq_along(files)) {
@@ -390,7 +677,7 @@ classification_module_server <- function(id) {
           areas(rbind(areas(), area_df))
         }
         
-
+        
         # Only sample the most recent raster (last in sequence)
         if (i == length(files)) {
           names(r_orig) <- year_inputs[i]
@@ -421,7 +708,9 @@ classification_module_server <- function(id) {
       years = year_inputs,
       process = process_btn, 
       selected_layer = selected_layer,
-      lyr_names = lyr_names
+      lyr_names = lyr_names,
+      run_description = reactive({
+        input$run_description})
     ))
     
     

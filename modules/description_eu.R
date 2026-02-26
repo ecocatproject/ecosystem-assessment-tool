@@ -14,7 +14,6 @@
 # =============================================================================
 
 
-
 # -----------------------------------------------------------------------------
 # UI
 # -----------------------------------------------------------------------------
@@ -37,11 +36,11 @@ description_module_ui <- function(id) {
       layout_column_wrap(
         width = 1,
         heights_equal = "row",
+        
         # Rainfall ------------------------------------------------------------
         card(
           full_screen = TRUE,
           card_header(tagList( "Rainfall", uiOutput(ns("r_value"), inline = TRUE)),
-                    # tooltip(bs_icon("info-circle"),"Mean monthly rainfall (2010–2024 average)")),
                       tooltip(bs_icon("info-circle"),"Mean monthly rainfall across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")),
         
           card_body(plotlyOutput(ns("rain_graph")),  min_height = 150)
@@ -52,7 +51,6 @@ description_module_ui <- function(id) {
           full_screen = TRUE,
           card_header(
             tagList( "Temperature", uiOutput(ns("t_value"), inline = TRUE)),
-            # tooltip(bs_icon("info-circle"), "Mean monthly temperature (2010–2024 average
             tooltip(bs_icon("info-circle"), "Mean monthly temperture across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")),
           card_body(plotlyOutput(ns("temp_graph")),  min_height = 150)
         ),
@@ -97,12 +95,12 @@ description_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 description_module_server <- function(id, upload_module, countries,
                                       selected_layer, process_btn,
-                                      tifs_input, 
+                                      tifs_input,
                                       year_inputs
                                       ) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
+
     # -------------------------------------------------------------------------
     # Reactive values container
     rv <- reactiveValues(
@@ -112,7 +110,7 @@ description_module_server <- function(id, upload_module, countries,
       elevation = NULL,
       typology = NULL
     )
-    
+
     # -------------------------------------------------------------------------
     # Leaflet base map
     output$eu_map <- renderLeaflet({
@@ -125,57 +123,57 @@ description_module_server <- function(id, upload_module, countries,
           options = layersControlOptions(collapsed = FALSE)
         )
     })
-    
-    
+
+
     # -------------------------------------------------------------------------
     #                        Description variables
     # -------------------------------------------------------------------------
-    
+
     # -------------------------------------------------------------------------
     # Compute overlap with countries
     source("helpers/country_overlap.R") #compute_countries
-    
+
     # -------------------------------------------------------------------------
     # Compute temperature
     source("helpers/temperature.R") # compute_temperature
-    
+
     # -------------------------------------------------------------------------
     # Compute elevation
     source("helpers/typology.R") # compute_elevation
-    
+
     # -------------------------------------------------------------------------
     # Compute Global Ecosystem Typology
     source("helpers/elevation.R") # compute_typology
-    
+
     # -------------------------------------------------------------------------
     # Compute rainfall
     source("helpers/precipitation.R") # compute_precipitation
-    
-    
+
+
     # -------------------------------------------------------------------------
     #                     Outputs - plots and graphs
     # -------------------------------------------------------------------------
-   
+
     # country table ----------------------------------------------------------
     output$roi_country_table <- DT::renderDataTable({
       req(rv$countries)
       rv$countries
     }, options = list(pageLength = 5, dom = "t"))
-    
+
     # output rainfall value ------------------------------------------------
     output$r_value <- renderUI({
       if (is.null(rv$rainfall)) return(NULL)
-      
+
       span(
         paste0(" – (Annual average: ", round(sum(rv$rainfall$mean, na.rm=T),0), "mm)"),
         class = "text-muted ms-1"
       )
     })
-    
+
     # rainfall graph ---------------------------------------------------------
     output$rain_graph <- renderPlotly({
       req(rv$rainfall)
-      
+
       plot_ly(rv$rainfall, x = ~month) %>%
         add_ribbons(
           ymin = ~min_smooth,
@@ -196,21 +194,21 @@ description_module_server <- function(id, upload_module, countries,
           yaxis = list(title = "Rainfall (mm)")
         )
     })
-    
+
     # output temperature value ------------------------------------------------
     output$t_value <- renderUI({
       if (is.null(rv$temperature)) return(NULL)
-      
+
       span(
         paste0(" – (Annual average: ", sprintf("%.1f °C) ", mean(rv$temperature$mean, na.rm=T))),
         class = "text-muted ms-1"
       )
     })
-    
+
     # output temperature graph ------------------------------------------------
     output$temp_graph <- renderPlotly({
       req(rv$temperature)
-      
+
       plot_ly(rv$temperature, x = ~month) %>%
         add_ribbons(
           ymin = ~min_smooth,
@@ -230,7 +228,7 @@ description_module_server <- function(id, upload_module, countries,
           yaxis = list(title = "Temperature (°C)")
         )
     })
-    
+
     # output elevation value ------------------------------------------------
     output$e_value <- renderUI({
       if (is.null(rv$elevation)) return(NULL)
@@ -240,20 +238,20 @@ description_module_server <- function(id, upload_module, countries,
         class = "text-muted ms-1"
       )
     })
-    
+
     # elevation histogram ----------------------------------------------------
     output$elev_graph <- renderPlotly({
       req(rv$elevation)
-      
+
       elev_values <- values(rv$elevation, na.rm = TRUE)  # get numeric vector without NAs
       elev_values <- as.numeric(elev_values)             # ensure it's a vector, not matrix
-      
+
       plot_ly(x = elev_values, type = "histogram", marker=list(color="#669900")) %>%
         layout(xaxis = list(title = "Elevation (m)"),
                yaxis = list(title = "Number of mapped pixels"),
                bargap = 0.1)
     })
-    
+
     # typology table ---------------------------------------------------------
     output$get_table <- DT::renderDataTable({
       req(rv$typology)
@@ -264,24 +262,35 @@ description_module_server <- function(id, upload_module, countries,
       info = FALSE,          # no "Showing X of Y entries"
       dom = 't'              # only show table
     ), rownames = FALSE)
-    
-    
-    
-    
+
+
+
+
     # Process uploaded TIFs when the process_button is clicked
     observeEvent(process_btn(), {
+      
+      
+      # reset all reactive values to NULL first
+      rv$countries    <- NULL
+      rv$rainfall     <- NULL
+      rv$temperature  <- NULL
+      rv$elevation    <- NULL
+      rv$typology     <- NULL
+      
+      
+      req(upload_module$run_description())
       req(upload_module$rasters_original())                    # see app.R server for tifs_inputs
       #files <- tifs_input()$datapath
       years <- year_inputs()               # see app.R server for year_inputs
      # req(length(years) == length(files))  # sanity check
-      
-    
+
+
       # Description data ------------------------------------------------------
       # Create a Progress object
       progress <- shiny::Progress$new(min = 0,
                                       max = 2)
       progress$set(message = "extacting data...", value = 0)
-      
+
       latest <- upload_module$rasters_original()#[[length(years)]]
 
       # 1. country overlap
@@ -303,33 +312,33 @@ description_module_server <- function(id, upload_module, countries,
       # 5. precipitation
       progress$inc(6/6, detail = "monthly rainfall") # update progress
       rv$rainfall <- compute_precipitation(latest)
-    
+
       # hide modal once done
       progress$close()
     })
-    
-    
+
+
     # Render leaflet map ------------------------------------------------------
     observe({
       r_list <- upload_module$rasters()
       req(r_list)
-      
+
      # latest <- r_list[[length(r_list)]]
-      
+
       # extract name of the latest raster (should be the year, e.g. "2024")
       latest_year <- names(r_list[[length(r_list)]])
       if (is.null(latest_year) || latest_year == "") latest_year <- "Latest"
-      
+
       # Display label for users
       display_label <- paste0(latest_year, " classification")
-      
+
       # overlay groups
       overlay_groups <- display_label  # always include the raster
-      
+
       # get eau extent for mapping zoom
       ext_r <- as.vector(ext(r_list[[length(r_list)]]))
-      
-      # replot 
+
+      # replot
       leafletProxy(ns("eu_map")) %>%
         # clearGroup("classification") %>%  # remove any existing classification rasters
         # clearGroup(display_label) %>%  # remove any existing classification rasters
@@ -347,7 +356,7 @@ description_module_server <- function(id, upload_module, countries,
                   unname(ext_r["ymin"]),
                   unname(ext_r["xmax"]),
                   unname(ext_r["ymax"]))
-      
+
       removeModal()
    })
 
@@ -359,6 +368,6 @@ description_module_server <- function(id, upload_module, countries,
       temperature = reactive({rv$temperature}),
       elevation = reactive({rv$elevation})
     ))
-    
+
   })
 }
