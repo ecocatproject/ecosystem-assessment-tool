@@ -33,16 +33,6 @@ source("helpers/analysis_functions.R")   # calc_area_change, predict_area_change
 source("helpers/modals.R")
 
 # -------------------------------------------------------
-# theme
-custom_theme <- bs_theme(
-  bootswatch = "flatly",
-  primary = "#669900",
-  bg = "#f5f5f5",
-  fg = "#333333",
-  base_font = font_google("Roboto")
-)
-
-# -------------------------------------------------------
 # links menu
 links_menu <- nav_menu(
   title = "Links",
@@ -90,6 +80,9 @@ ui <- page_navbar(
 # -------------------------------------------------------
 #########################################################
 
+
+
+
 server <- function(input, output, session) {
   
   # show instruction modal on start -------------------------------------------  
@@ -104,8 +97,7 @@ server <- function(input, output, session) {
                                                   process_btn = upload_module$process,
                                                   tifs_input = upload_module$tifs,
                                                   year_inputs = upload_module$years,
-                                                  countries = countries
-  )
+                                                  countries = countries)
   
   # Run Criterion A module ----------------------------------------------------
   main_tab <- reactive(input$main_tab)  # or whatever your navbar id is
@@ -122,7 +114,6 @@ server <- function(input, output, session) {
                                                   rasters_original = upload_module$rasters_original,
                                                   main_tab = main_tab
   )
-  
   
   # Data download details ------------------------------------------------------
   # Firstly provide list of potential datasets for download 

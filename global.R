@@ -43,13 +43,13 @@ library(progress)
 library(promises)
 library(future)
 library(rstac)
-#library(rmdformats)
-#library(flextable)
-#library(mapview)
+library(rmdformats)
+library(flextable)
+library(mapview)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
-
+terraOptions(progress = 1, memfrac = 0.8)
 
 # logos
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
@@ -75,4 +75,3 @@ custom_theme <- bs_theme(
   fg = "#333333",
   base_font = font_google("Roboto")
 )
-
