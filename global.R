@@ -43,9 +43,9 @@ library(progress)
 library(promises)
 library(future)
 library(rstac)
-library(rmdformats)
-library(flextable)
-library(mapview)
+# library(rmdformats)
+# library(flextable)
+# library(mapview)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
