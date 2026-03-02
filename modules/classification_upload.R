@@ -683,8 +683,8 @@ classification_module_server <- function(id) {
           names(r_orig) <- year_inputs[i]
           r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE, na.rm=T)
           r_map <- tryCatch({
-            project(r_orig, "EPSG:4326")
-          }, error = function(e) { crs(r_orig) <- "EPSG:4326"; r_orig })
+            project(r_map, "EPSG:4326")
+          }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map })
           
         }
       } # end of for loop
@@ -715,4 +715,5 @@ classification_module_server <- function(id) {
     
     
   })
+
 }
