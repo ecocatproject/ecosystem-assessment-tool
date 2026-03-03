@@ -231,8 +231,9 @@ classification_module_server <- function(id) {
           # Optional: remove duplicates
           label <- unique(label)
           
-          raster_vals <- sort(unique(terra::values(r_rast())))
-          raster_vals <- raster_vals[!is.na(raster_vals)]
+          # raster_vals <- sort(terra::unique(r_rast)[,1])
+          raster_vals <- sort(terra::freq(r_rast)[,1])
+          #raster_vals <- raster_vals[!is.na(raster_vals)]
           
           if (length(label) != length(raster_vals)) {
             validate(
@@ -292,27 +293,12 @@ classification_module_server <- function(id) {
     
     
     # --------------------------------------------------------------------------
-    # resolved selection -  # was selected_class
-    # resolved_selection <- eventReactive(process_btn(), {
-    #   req(input$cat_source)
-    #   
-    #   if (input$cat_source %in% c("csv","xml")) {
-    #     req(input$class)
-    #     # numeric raster value from XML
-    #     as.numeric(input$class)
-    #     
-    #   } else {
-    #     req(input$selected_layer)
-    #     # already raster-based
-    #     input$selected_layer
-    #   }
-    # })
-    
+    # resolved selection
     resolved_selection <- eventReactive(process_btn(), {
       # If single-value raster, just return the raster value or first layer
       r <- r_rast()
-      if (nlyr(r) == 1 && length(unique(values(r))) <= 1) {
-        return(as.character(unique(values(r))[!is.na(unique(values(r)))][1]))
+      if (nlyr(r) == 1 && length(terra::unique(r)[,1]) <= 1) {
+        return(as.character(terra::unique(r)[,1]))
       }
       
       # For categorical rasters or XML/CSV categories
@@ -337,7 +323,7 @@ classification_module_server <- function(id) {
         tooltip(bs_icon("info-circle"), "Each must have a input before the 'process button' is available"))
     })
     
-
+    
     
     # --------------------------------------------------------------------------
     # Dynamic year inputs
@@ -428,7 +414,7 @@ classification_module_server <- function(id) {
       
     })
     
- 
+    
     
     # --------------------------------------------------------------------------
     # Conditional hr after year selection
@@ -447,10 +433,10 @@ classification_module_server <- function(id) {
         tooltip(bs_icon("info-circle"),
                 "By checking this box, the descriptive variables will be calculated for most recent ecosystem map. This will slightly increasing the processing time"),
         checkboxInput(ns("run_description"),label = NULL, value = FALSE),
-          hr()
+        hr()
       )
     })
-
+    
     output$process_btn_text <- renderUI({
       # if (isTRUE(input$year_inputs)) 
       req(input$tifs)
@@ -561,37 +547,92 @@ classification_module_server <- function(id) {
     # process rasters 
     # -----------------------------------------------------------------------------
     
+    
+    # check_resolution <- function(file){
+    #   r <- rast(file)
+    #   res_m <- res(project(r, "EPSG:3857"))  # metres
+    #   min_res <- min(res_m)
+    #   if (min_res < 100) {
+    #     return(list(
+    #       ok = FALSE,
+    #       res = round(min_res, 2)
+    #     ))
+    #   }
+    #   
+    #   list(ok = TRUE, res = round(min_res, 2))
+    # }
+    
+    
     #--------------------------------------------------------------------------
     # Process uploaded TIFs when the process_button is clicked
     observeEvent(process_btn(), {
-      
+      gc()
       req(input$tifs)                    # see app.R server for tifs_inputs
       files <- input$tifs$datapath
-      years <- year_inputs()               # see app.R server for year_inputs
       
+      # check <- check_resolution(input$tifs$datapath)
+      # if (!check$ok) {
+      #   
+      #   showModal(modalDialog(
+      #     title = "Raster too detailed",
+      #     paste0(
+      #       "Uploaded raster resolution is ",
+      #       check$res,
+      #       " m.\n\n",
+      #       "Please upload an aggregated raster (≥100 m cells)."
+      #     ),
+      #     easyClose = TRUE
+      #   ))
+      #   
+      #   return(NULL)
+      # }
+      # 
       # show modal popup
       showModal(upload_modal)
       
-      
-      # Description data ------------------------------------------------------
-      
+     # check <- check_resolution(input$file_upload$datapath)
+     #  if (!check$ok) {
+     #    
+     #    showModal(modalDialog(
+     #      title = "Raster too detailed",
+     #      paste0(
+     #        "Uploaded raster resolution is ",
+     #        check$res,
+     #        " m.\n\n",
+     #        "Please upload an aggregated raster (≥100 m cells)."
+     #      ),
+     #      easyClose = TRUE
+     #    ))
+     #    
+     #    return(NULL)
+     #  }
+     
+      # ------------------------------------------------------------------------
       # Create a Progress object
       progress <- shiny::Progress$new(min = 0, max = length(files))
       progress$set(message = "Processing classification maps...", value = 0)
       
+      # ------------------------------------------------------------------------
       # reset previous data
       areas(NULL)
       rasters(NULL)         
       rasters_original(NULL) 
-      areas(NULL)           
       
-      # create some variables for use bewow
+      # ------------------------------------------------------------------------
+      # create some variables + ensure year order is correct
+      years <- year_inputs()               # see app.R server for year_inputs
       area_vals <- numeric(length(files))
-      order_idx <- order(as.numeric(year_inputs()))
+      order_idx <- order(as.numeric(years))
       files <- files[order_idx]
-      year_inputs <- year_inputs()[order_idx]
+      years <- years[order_idx]
       
-      # layer selection or mask  ----------------------------------------------
+      
+      # ------------------------------------------------------------------------
+      # identify selected layer
+      sel_name <- resolved_selection()
+      
+      # ------------------------------------------------------------------------
+      # layer selection or mask function
       select_layer_or_mask <- function(r_all, sel_name) {
         # If no selection provided, return first layer or whole raster
         if (is.null(sel_name) || !nzchar(sel_name)) {
@@ -600,29 +641,45 @@ classification_module_server <- function(id) {
         
         # Case A: sel_name matches a layer name
         if (sel_name %in% names(r_all)) {
+          print("Case A")
           return(r_all[[sel_name]])
         }
         
         # Case B/C: single-layer raster
         if (nlyr(r_all) == 1) {
+          print("Case B/C - getting uvals")
           r_single <- r_all[[1]]
-          uvals <- unique(values(r_single))
+          # uvals <- unique(values(r_single))
+          # uvals <- uvals[!is.na(uvals)]
+          uvals <- terra::unique(r_single)[,1]
           uvals <- uvals[!is.na(uvals)]
           
           # Case C: single category → binary mask
           if (length(uvals) == 1) {
-            return(ifel(!is.na(r_single), 1, NA))
+            print("Case C - creating file")
+            # return(ifel(!is.na(r_single), 1, NA))
+            # r_single <- terra::ifel(!is.na(r_single), 1, NA,
+            #                         filename = tempfile(fileext = ".tif"), overwrite = TRUE)
+            return(r_single)
           }
           
           # Try numeric match
           sel_num <- suppressWarnings(as.numeric(sel_name))
+          # if (!is.na(sel_num)) {
+          #   return(ifel(r_single == sel_num, 1, NA))
+          # }
           if (!is.na(sel_num)) {
-            return(ifel(r_single == sel_num, 1, NA))
+            print("Case C - creating file for selected name")
+            r_single <- terra::ifel(r_single == sel_num, 1, NA,
+                               filename = tempfile(fileext = ".tif"), overwrite = TRUE)
+            return(r_single)
           }
+          
           
           # Try factor levels or fallback to string match
           lev <- levels(r_single)
           if (!is.null(lev) && length(lev) >= 1 && nrow(lev[[1]]) > 0) {
+            print("Case C - attempting factor levels")
             lev_tbl <- lev[[1]]
             lbl_col <- intersect(c("label", "levels", "Labels", "Level"), names(lev_tbl))
             val_col <- intersect(c("value", "ID", "Values", "Class"), names(lev_tbl))
@@ -630,42 +687,62 @@ classification_module_server <- function(id) {
               idx <- match(sel_name, lev_tbl[[lbl_col[1]]])
               if (!is.na(idx)) {
                 v <- lev_tbl[[val_col[1]]][idx]
-                return(ifel(r_single == v, 1, NA))
+                # return(ifel(r_single == v, 1, NA))
+                r_single <- terra::ifel(r_single == v, 1, NA,
+                                   filename = tempfile(fileext = ".tif"), overwrite = TRUE)
+                return(r_single)
+                
               }
             }
           }
+          print("fallback")
           # Fallback: compare as string
-          return(app(r_single, fun = function(x) ifelse(x == sel_name, 1, NA), cores = 1))
-        }
+          # return(app(r_single, fun = function(x) ifelse(x == sel_name, 1, NA), cores = 1))
+          r_single <- terra::ifel(r_single == sel_name, 1, NA,
+                             filename = tempfile(fileext = ".tif"), overwrite = TRUE)
+          return(r_single)
+          
+                  }
         
         # Multi-layer but invalid selection → fallback to first layer
         return(r_all[[1]])
       }
       
-      # identify selected layer
-      # sel_name <- selected_layer()
-      sel_name <- resolved_selection()
+     
       
-      
+
       # loop through each file to calculate areas ------------------------------
       for (i in seq_along(files)) {
+        print("going through files ")
         r_all <- rast(files[i])
         r_orig <- select_layer_or_mask(r_all, sel_name)
         
+        print("select layer complete")
         if (global(r_orig, "isNA") == 0) {
+          # if (terra::global(!is.na(r_orig), "sum")[1,1] == ncell(r_orig)) {
+            print("going through files - 1st if")
           r_orig <- classify(r_orig, matrix(c(0, NA), ncol = 2))
+          }
+        
+        print("doing mask")
+        #mask <- r_orig == 1
+        print("mask complete")
+        
+        if (!is.na(crs(r_orig)) && !is.lonlat(r_orig)) {
+          print("going through files - 2nd if")
+          cell_area <- prod(res(r_orig))
+          # area_vals[i] <- sum(values(mask, na.rm = TRUE)) * cell_area
+          n_cells <- terra::global(r_orig, "sum", na.rm = TRUE)[1,1]
+          area_vals[i] <- n_cells * cell_area
+                  } else {
+                    print("area calc")
+          area_vals[i] <- expanse(r_orig, unit = "m")[,2]
         }
         
-        mask <- r_orig == 1
-        if (!is.na(crs(r_orig)) && !is.lonlat(r_orig)) {
-          cell_area <- prod(res(r_orig))
-          area_vals[i] <- sum(values(mask, na.rm = TRUE)) * cell_area
-        } else {
-          area_vals[i] <- sum(expanse(mask, unit = "m"), na.rm=T)
-        }
+        print(area_vals)
         
         area_df <- data.frame(
-          Year = year_inputs[i],
+          Year = years[i],
           Area_ha = area_vals[i] / 10000,
           Area_km2 = area_vals[i] / 1e6
         )
@@ -674,26 +751,43 @@ classification_module_server <- function(id) {
         if (is.null(areas())) {
           areas(area_df)
         } else {
+          print("areas 1")
+          print(areas())
+          
           areas(rbind(areas(), area_df))
         }
         
+        print("areas all")
+        print(areas())
+        
         
         # Only sample the most recent raster (last in sequence)
+        # this is the plotted map on leaflet
         if (i == length(files)) {
-          names(r_orig) <- year_inputs[i]
-          r_map <- spatSample(r_orig, 100000, method = "regular", as.raster = TRUE, na.rm=T)
+          print("sampling raster")
+          names(r_orig) <- years[i]
+          r_map <- spatSample(r_orig, 1000000, method = "regular", as.raster = TRUE, na.rm=T)
           r_map <- tryCatch({
-            project(r_map, "EPSG:4326")
-          }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map })
+            project(r_map, "EPSG:4326") # project(r_map, "EPSG:3857", method = "near")
+          }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map }) # project(r_map, "EPSG:3857", method = "near")
           
         }
+        
+        # Clean up tempory files periodically on long runs
+        if ((i %% 3) == 0) {
+          try(terra::tmpFiles(remove = TRUE), silent = TRUE)
+          gc()
+        }
+        
+        
       } # end of for loop
       
       
       # store data in relevant reactive variables ------------------------------
       rasters(r_map)
       rasters_original(r_orig)
-      years(year_inputs)
+      # rasters_original(input$tifs$datapath[length(input$tifs$datapath)])
+      years(years)
       
       # hide progress once done ------------------------------------------------
       progress$close()
@@ -715,5 +809,4 @@ classification_module_server <- function(id) {
     
     
   })
-
 }
