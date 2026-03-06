@@ -1,0 +1,99 @@
+---
+title: "IUCN Red List of Ecosystem Assessment: `r params$ecosystem_name`"
+output: 
+  rmdformats::robobook: default
+  word_document: default          # Word
+  pdf_document: default           # PDF
+always_allow_html: true
+fontsize: 12pt
+mainfont: "Arial"
+params:
+  ecosystem_name: NA
+  author: NA
+  organisation: NA
+  email: NA
+  raster_files: NA
+  years: NA
+  areas: NA
+  countries: NA
+  rainfall: NA
+  temperature: NA
+  elevation: NA
+  typology: NA
+  area_change_data: NA
+  area_prediction_data: NA
+  mcp_data: NA
+  mcp_poly: NA
+  b2_data: NA 
+  aoo_sel_ids: NA
+  aoo_all_ids: NA
+  b2_poly: NA
+---
+  
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+# evaluate some parameters
+rasters <- if (!is.null(params$raster_files)) lapply(params$raster_files, terra::rast) else NULL
+years <- params$years %||% numeric(0)
+n <- length(rasters)
+
+terraOptions(progress = 0)
+
+```
+
+Assessed on `r format(Sys.Date(), "%d %B %Y")` `r 
+{
+  parts <- c()
+  
+  if (!is.null(params$author) && nzchar(params$author))
+    parts <- c(parts, paste0("by ", params$author))
+  
+  if (!is.null(params$email) && nzchar(params$email))
+    parts <- c(parts, paste0("(", params$email, ")"))
+  
+  if (!is.null(params$organisation) && nzchar(params$organisation))
+    parts <- c(parts, paste0("affiliated to ", params$organisation))
+  
+  if (length(parts) > 0)
+    paste(parts, collapse = " ")
+  else
+    ""
+}`
+
+# **Report summary**
+
+This report documents an ecosystem assessment, as part of the IUCN Red List of Ecosystems, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
+
+ - The graphs in this report can be downloaded by selecting the 'download as png' icon at the top of each graph.
+ - Watch this space to be able to download the maps too ......
+ - To download the data and mapping files as part of this assessment, please revisit the 'Report/Data download' tab in the tool, select the required data files for download and select the 'Download data' button.
+  
+
+------------------------------------------------------------------------
+  
+# **Ecosystem description**
+  
+### Classification
+
+### Geographic distribution
+
+### Abiotic variables {.tabset .tabset-pills}
+
+#### Rainfall {.active}
+
+#### Temperature
+```{r child='report/description/temperature.Rmd'}```
+
+#### Elevation
+
+------------------------------------------------------------------------
+## {-}
+
+# **Risk Assessment**
+
+### Criterion A: Reduction in geographic distribution
+
+### Criterion B: Restricted geographic distribution
+
+#### Subcriterion B1: Restricted extent of occurrence (EOO)
+
+#### Subcriterion B2: Restricted area of occupancy (AOO)
