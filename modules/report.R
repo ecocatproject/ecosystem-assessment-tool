@@ -70,7 +70,8 @@ report_module_server <- function(datasets,
 
         # Create a fresh temp Rmd on EVERY click ------------------------------
         report_path <- tempfile(fileext = ".Rmd")
-        template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
+        # template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
+        template_path <- file.path("report", "report_main.Rmd")
         file.copy(template_path, report_path, overwrite = TRUE)
         
         # Show modal popup while rendering ------------------------------------
@@ -148,7 +149,8 @@ report_module_server <- function(datasets,
             output_format = fmt,
             output_file = file,
             params = params_list,
-            envir = new.env(parent = globalenv())
+            envir = new.env(parent = globalenv()),
+            knit_root_dir = getwd()
           )
           
        },
