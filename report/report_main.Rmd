@@ -81,7 +81,8 @@ This report documents an ecosystem assessment, as part of the IUCN Red List of E
 #### Rainfall {.active}
 
 #### Temperature
-```{r child='description/temperature.Rmd'}```
+```{r child='description/temperature.Rmd'}
+```
 
 #### Elevation
 
@@ -97,4 +98,5 @@ This report documents an ecosystem assessment, as part of the IUCN Red List of E
 #### Subcriterion B1: Restricted extent of occurrence (EOO)
 
 #### Subcriterion B2: Restricted area of occupancy (AOO)
+
 
