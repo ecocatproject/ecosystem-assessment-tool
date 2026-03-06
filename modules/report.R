@@ -68,12 +68,11 @@ report_module_server <- function(datasets,
       },
       content = function(file) {
 
-        ## Create a fresh temp Rmd on EVERY click ------------------------------
-        # report_path <- tempfile(fileext = ".Rmd")
-        # # template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
-        # template_path <- file.path("report", "report_main.Rmd")
-        # file.copy(template_path, report_path, overwrite = TRUE)
+        # Create a fresh temp Rmd on EVERY click ------------------------------
+        report_path <- tempfile(fileext = ".Rmd")
+        # template_path <- file.path("www", "rle_report_template_html_testing.Rmd")
         template_path <- file.path("report", "report_main.Rmd")
+        file.copy(template_path, report_path, overwrite = TRUE)
         
         # Show modal popup while rendering ------------------------------------
         # showModal(report_modal)
@@ -143,23 +142,17 @@ report_module_server <- function(datasets,
                       docx = "word_document")
         
         # --- Render the report ----------------------------------------------
+        report_dir <- normalizePath("report")
         tryCatch({
-          # rmarkdown::render(
-          #  # input = "rle_report_template_html_testing.rmd", # for local app testing
-          #   input = report_path, # safe for deployed app # for deployed app
-          #   output_format = fmt,
-          #   output_file = file,
-          #   params = params_list,
-          #   envir = new.env(parent = globalenv()),
-          #   knit_root_dir = getwd()
-          # )
           rmarkdown::render(
-            input = template_path,
+           # input = "rle_report_template_html_testing.rmd", # for local app testing
+            input = report_path, # safe for deployed app # for deployed app
             output_format = fmt,
             output_file = file,
             params = params_list,
             envir = new.env(parent = globalenv()),
-            knit_root_dir = dirname(template_path)
+            # knit_root_dir = getwd()
+            knit_root_dir = report_dir
           )
           
        },
