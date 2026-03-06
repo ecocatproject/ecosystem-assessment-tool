@@ -149,7 +149,7 @@ report_module_server <- function(datasets,
             output_format = fmt,
             output_file = file,
             params = params_list,
-            #envir = new.env(parent = globalenv()),
+            envir = new.env(parent = globalenv()),
             knit_root_dir = getwd()
           )
           
@@ -260,4 +260,5 @@ report_module_server <- function(datasets,
   
   
 }
+
 
