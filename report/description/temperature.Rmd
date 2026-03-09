@@ -1,3 +1,7 @@
+<!--
+Temperature across ecosystem
+-->
+
 
 ```{r temperature_text, echo=FALSE, message=FALSE, warning=FALSE}
 if (is.null(params$temperature)) {

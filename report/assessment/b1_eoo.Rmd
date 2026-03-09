@@ -1,0 +1,148 @@
+<!--
+b1
+-->
+
+```{r b1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5,  eval = !is.null(params$mcp_data)}
+assessment_map <- c(
+  "VU" = "Vulnerable",
+  "EN" = "Endangered",
+  "LC" = "Least Concern",
+  "CR" = "Critically Endangered",
+  "NT" = "Near Threatened"
+)
+
+ if (!is.null(params$mcp_data)) {
+   b1_data <- params$mcp_data
+   b1_code <- b1_data$assessment[which.max(as.numeric(b1_data$year))]
+ } 
+
+```
+
+Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) – the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystems types.
+
+`r if (!is.null(params$mcp_data)) {
+  b1_data <- params$mcp_data
+  b1_code <- b1_data$assessment[which.max(as.numeric(b1_data$year))]
+  b1_year <- max(as.numeric(b1_data$year))
+  b1_area <- formatC(
+    b1_data$area_km2[which.max(as.numeric(b1_data$year))],
+    format = "f", big.mark = ",", digits = 0
+  )
+  paste0(
+    "The area of the minimum convex polygon (MCP) encompassing the most recent ecosystem map from ",
+    b1_year, " was **", b1_area, " km²**. ",
+    "This classes the ecosystem as **", assessment_map[b1_code],
+    "** under subcriterion B1."
+  )
+} else {
+  "The extent of occurrence (EOO) under subcriterion B1 could not be calculated because the MCP data was not created for this assessment."
+}`
+
+
+```{r b1_table, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = !is.null(params$mcp_data)}
+b1_data$area_km2 <- format(round(b1_data$area_km2, 0), big.mark = ",", trim = TRUE)
+
+b1_tab <- htmltools::tagList(
+  # centered Title
+  htmltools::div(
+    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
+    "Table of EOO for Subcriterion B1"
+  ),
+  # centrered table too
+htmltools::div(
+  style = "text-align:center;",
+  htmltools::div(
+    style = "display:inline-block; width:auto;",  # shrink to fit content
+    DT::datatable(
+      b1_data,
+      colnames=c("Year", "Area (km<sup>2</sup>)", "Category"),
+      rownames = FALSE,
+      escape = FALSE,
+      options = list(
+        paging = FALSE,
+        searching = FALSE,
+        info = FALSE,
+        dom = 't',
+        autoWidth = FALSE,
+        scrollX = FALSE)) %>%
+      formatStyle(
+        "assessment",
+        backgroundColor = styleEqual(
+          c("CR", "EN", "VU", "NT", "LC"),
+          c("#FF0000", "#FFA500", "#FFFF00", "#ADFF2F", "#008000")),
+        color = "black",
+        fontWeight = "bold"
+      )
+  )
+)
+)
+
+b1_tab
+
+```
+
+
+```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly)}
+map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
+# label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2,2), " km²")
+mcp_list <- params$mcp_poly %||% list()
+
+
+if (length(mcp_list) > 0) {
+  mcp_all <- try(vect(mcp_list), silent = TRUE)
+  latest_year <- max(mcp_all$year, na.rm = TRUE)
+  
+  if (!inherits(mcp_all, "try-error") && nrow(mcp_all) > 0) {
+    if (knitr::is_html_output()) {
+      # HTML Leaflet map ------------------------------------------------------
+      map <- leaflet() %>% addTiles() %>%
+          fitBounds(unname(ext_r["xmin"]), # ext_r created earlier
+                    unname(ext_r["ymin"]),
+                    unname(ext_r["xmax"]),
+                    unname(ext_r["ymax"])) %>%
+       addPolygons(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
+                   fillOpacity = 0.3, color = "black", weight = 2,
+                   group = paste0(latest_year, " MCP"),
+                   label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2, 2), " km²"),
+                   highlightOptions = highlightOptions(bringToFront = TRUE, color = "white", weight = 3)) %>%
+        addRasterImage(r_recent, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
+        addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
+        addLayersControl(baseGroups = c("OSM", "ESRI Satellite"), 
+                         overlayGroups = c(paste0(latest_year, " MCP"),paste0(latest_year, " classification")) ,
+            options = layersControlOptions(collapsed = FALSE))
+      # # return the map
+      # map
+
+      # Wrap the map with title
+      htmltools::tagList(
+        tags$div(
+          style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
+        map)
+      
+      
+      # # Add title above map
+      # htmltools::tagList(
+      #   tags$div(
+      #     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
+      #     map_title
+      #   ),
+      #   map
+      # )
+
+    } else {
+      #  PDF / Word (static map) ----------------------------------------------
+      ggplot() +
+        geom_sf(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
+                                    aes(fill = factor(year)), alpha = 0.3) +
+        #scale_fill_manual(values = pal_colors) +
+        theme_minimal() +
+        ggtitle(map_title) +
+        theme(legend.position = "bottom")
+    }
+  } else {
+    cat("No valid MCP data available for mapping.\n")
+  }
+} else {
+  cat("No MCP vectors provided, so no B1 map can be generated.\n")
+}
+```

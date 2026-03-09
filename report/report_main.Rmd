@@ -29,7 +29,34 @@ params:
   aoo_all_ids: NA
   b2_poly: NA
 ---
-  
+
+<style>
+.status-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  margin-right: 6px;
+}
+
+.status-circle.CR { background:#d73027; }
+.status-circle.EN { background:#fc8d59; }
+.status-circle.VU { background:#fee08b; color:black; }
+.status-circle.NT { background:#91bfdb; }
+.status-circle.LC { background:#1a9850; }
+</style>
+
+```{r setup3, include=FALSE}
+status_circle <- function(x) {
+  sprintf('<span class="status-circle %s">%s</span>', x, x)
+}
+```
+
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
 # evaluate some parameters
 rasters <- if (!is.null(params$raster_files)) lapply(params$raster_files, terra::rast) else NULL
@@ -61,42 +88,74 @@ Assessed on `r format(Sys.Date(), "%d %B %Y")` `r
 
 # **Report summary**
 
-This report documents an ecosystem assessment, as part of the IUCN Red List of Ecosystems, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
+This report documents an ecosystem assessment following the IUCN Red List of Ecosystems (RLE) Guidelines, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
 
+ - This tool and report currently covers **Criterion A** and **Criterion B** of the RLE assessment. 
  - The graphs in this report can be downloaded by selecting the 'download as png' icon at the top of each graph.
- - Watch this space to be able to download the maps too ......
  - To download the data and mapping files as part of this assessment, please revisit the 'Report/Data download' tab in the tool, select the required data files for download and select the 'Download data' button.
   
-
 ------------------------------------------------------------------------
   
 # **Ecosystem description**
   
 ### Classification
+```{r child='description/typology.Rmd'}
+```
 
-### Geographic distribution
+### Distribution
+```{r child='description/distribution.Rmd'}
+```
 
-### Abiotic variables {.tabset .tabset-pills}
+### Abiotic features {.tabset}
 
 #### Rainfall {.active}
+```{r child='description/rainfall.Rmd'}
+```
 
 #### Temperature
 ```{r child='description/temperature.Rmd'}
 ```
 
 #### Elevation
+```{r child='description/elevation.Rmd'}
+```
 
 ------------------------------------------------------------------------
-## {-}
 
-# **Risk Assessment**
 
-### Criterion A: Reduction in geographic distribution
+# **Risk Assessment** {.tabset}
 
-### Criterion B: Restricted geographic distribution
+<!--
+```{r}
+bslib::value_box(
+  title = "Temperature",
+  value = sprintf("%.1f°C", round(mean(params$rainfall$mean), 1)),
+  showcase = bsicons::bs_icon("thermometer"),
+  theme = "danger"
+)
+```
+-->
 
-#### Subcriterion B1: Restricted extent of occurrence (EOO)
+<!--## Criterion A: Reduction in geographic distribution {.active}
+-->
+```{r setup2, include=FALSE}
+result_a <- "LC"   # this would come from your analysis
+```
+## `r status_circle(result_a)` Criterion A: Reduction in geographic distribution {.active}
+```{r child='assessment/criterion_a.Rmd'}
+```
 
-#### Subcriterion B2: Restricted area of occupancy (AOO)
+## Criterion B: Restricted geographic distribution
+
+### Subcriterion B1: Restricted extent of occurrence (EOO)
+```{r child='assessment/b1_eoo.Rmd'}
+```
+
+### Subcriterion B2: Restricted area of occupancy (AOO)
+```{r child='assessment/b2_aoo.Rmd'}
+```
+
+------------------------------------------------------------------------
+# {-}
 
 

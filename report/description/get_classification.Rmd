@@ -1,0 +1,56 @@
+<!--
+Global Ecosystem Classification 
+-->
+
+
+```{r typology_text, echo=FALSE, message=FALSE, warning=FALSE}
+if (is.null(params$typology)) {
+  get_ext <- paste0("Global Ecosystem Typology was not requested")
+} else {
+  get_text <- paste0(
+    
+    "To summarise the [IUCN Global Ecosystem Typology (GET)](https://global-ecosystems.org/) of the ecosystem, the most recent (", max(params$years), ") classification map was overlayed on the global GET maps and the percentage of each ecosystem functional group (EFG) (both major and minor occurrence) intersecting with the ecosystem was calculated.  The summary of EFGs in the mapped ecosystem is presented in the table below with '", params$typology[1,2], "' the most prevalent major EFG. Any EFG with <1% occurrence coverage in the ecosystem is not displayed in this table.")
+}
+
+```
+
+`r get_text`
+
+
+
+```{r typology_table, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$typology)}
+typology_df <- params$typology
+title_text <- "Percentage of Global Ecosystem Typology across the ecosystem"
+
+if (knitr::is_html_output()) {
+htmltools::tagList(
+  # centered Title
+  htmltools::div(
+    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
+  DT::datatable(typology_df, rownames=F,
+                escape = FALSE,
+                options = list(
+                  pageLength = 5,
+                  searching = FALSE,
+                  info = FALSE,
+                  #dom = 't',
+                  autoWidth = TRUE,
+                  scrollX = FALSE)) %>%
+    DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
+)
+
+}else{
+    # flextable
+  set_flextable_defaults(font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent")
+  
+  get_tab <- flextable(typology_df) %>%
+    set_caption(caption = as_paragraph(as_b(title_text))) %>%
+    autofit() %>%
+    flextable::theme_booktabs(bold_header = TRUE) %>%
+    # colformat_num(j="Year", big.mark = "") %>%
+    set_table_properties(layout="autofit")
+  
+  get_tab
+  
+}
+```
