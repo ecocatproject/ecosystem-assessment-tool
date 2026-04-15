@@ -2,7 +2,7 @@
 b1
 -->
 
-```{r b1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5,  eval = !is.null(params$mcp_data)}
+```{r assessment_map, echo=FALSE, message=FALSE, warning=FALSE}
 assessment_map <- c(
   "VU" = "Vulnerable",
   "EN" = "Endangered",
@@ -10,7 +10,9 @@ assessment_map <- c(
   "CR" = "Critically Endangered",
   "NT" = "Near Threatened"
 )
+```
 
+```{r b1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5,  eval = !is.null(params$mcp_data)}
  if (!is.null(params$mcp_data)) {
    b1_data <- params$mcp_data
    b1_code <- b1_data$assessment[which.max(as.numeric(b1_data$year))]
