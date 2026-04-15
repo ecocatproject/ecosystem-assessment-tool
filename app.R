@@ -12,13 +12,17 @@ source("global.R")
 
 # -------------------------------------------------------
 # Load all modules
-source("modules/classification_upload.R")
-source("modules/description_eu.R")         # was description.R
+# source("modules/classification_upload.R")
+# source("modules/description_eu.R")
+source("modules/classification_upload_working.R")
+source("modules/description_eu_working.R")    # was description.R
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
-source("modules/report.R")
+# source("modules/report.R")
+source("modules/report_wthumb.R")
 source("modules/data_download.R")
 source("modules/about.R")
+source("modules/script_export.R")
 
 # -------------------------------------------------------
 # load  helpers
@@ -97,7 +101,24 @@ server <- function(input, output, session) {
                                                   process_btn = upload_module$process,
                                                   tifs_input = upload_module$tifs,
                                                   year_inputs = upload_module$years,
-                                                  countries = countries)
+                                                  countries = countries)#,
+                                                 # clear_trigger = upload_module$clear_aoi_trigger)
+
+  # # Wire drawn AOI from description module → classification module
+  # observeEvent(description_module$drawn_aoi(), {
+  #   print("=== APP.R AOI WIRING FIRED ===")
+  #   print(paste("drawn_aoi is NULL:", is.null(description_module$drawn_aoi())))
+  #   req(description_module$drawn_aoi())
+  #   upload_module$aoi_polygon(description_module$drawn_aoi())
+  #   print(paste("aoi_polygon set:", !is.null(upload_module$aoi_polygon())))
+  # })
+  # 
+  # observeEvent(description_module$map_rendered(), {
+  #   req(description_module$map_rendered() > 0)
+  #   upload_module$trigger_aoi_modal(
+  #     upload_module$trigger_aoi_modal() + 1
+  #   )
+  # }, ignoreInit = TRUE)
   
   # Run Criterion A module ----------------------------------------------------
   main_tab <- reactive(input$main_tab)  # or whatever your navbar id is
@@ -140,7 +161,7 @@ server <- function(input, output, session) {
                        ecosystem_name = input$ecosystem_name,
                        author = input$author,
                        organisation = input$organisation,
-                       email = input$email,
+                       #email = input$email,
                        rasters = upload_module$rasters,
                        areas = upload_module$areas,
                        years = upload_module$years,
@@ -159,6 +180,11 @@ server <- function(input, output, session) {
                        b2_poly = criterion_b_module$b2_poly
   )
   
+  # script_excport  --------------------------------------------------------
+  script_export_server("script_export",
+                       upload_module       = upload_module,
+                       criterion_a_module  = criterion_a_module,
+                       criterion_b_module  = criterion_b_module)
   
   # Run about module --------------------------------------------------------
   # about_module_server("about")
