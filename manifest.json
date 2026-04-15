@@ -2522,6 +2522,35 @@
         "Built": "R 4.4.3; ; 2025-08-04 00:22:11 UTC; windows"
       }
     },
+    "processx": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "processx",
+        "Title": "Execute and Control System Processes",
+        "Version": "3.8.6",
+        "Authors@R": "c(\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\", \"cph\"),\n           comment = c(ORCID = \"0000-0001-7098-9676\")),\n    person(\"Winston\", \"Chang\", role = \"aut\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")),\n    person(\"Ascent Digital Services\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "Tools to run system processes in the background.  It can\n    check if a background process is running; wait on a background process\n    to finish; get the exit status of finished processes; kill background\n    processes. It can read the standard output and error of the processes,\n    using non-blocking connections. 'processx' can poll a process for\n    standard output or error, with a timeout. It can also poll several\n    processes at once.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://processx.r-lib.org, https://github.com/r-lib/processx",
+        "BugReports": "https://github.com/r-lib/processx/issues",
+        "Depends": "R (>= 3.4.0)",
+        "Imports": "ps (>= 1.2.0), R6, utils",
+        "Suggests": "callr (>= 3.7.3), cli (>= 3.3.0), codetools, covr, curl,\ndebugme, parallel, rlang (>= 1.0.2), testthat (>= 3.0.0),\nwebfakes, withr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.1.9000",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-02-19 21:20:47 UTC; gaborcsardi",
+        "Author": "Gábor Csárdi [aut, cre, cph] (<https://orcid.org/0000-0001-7098-9676>),\n  Winston Chang [aut],\n  Posit Software, PBC [cph, fnd],\n  Ascent Digital Services [cph, fnd]",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-02-21 17:00:01 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 01:04:19 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "progress": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2634,6 +2663,36 @@
         "Archs": "x64"
       }
     },
+    "ps": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "ps",
+        "Title": "List, Query, Manipulate System Processes",
+        "Version": "1.9.1",
+        "Authors@R": "c(\n    person(\"Jay\", \"Loden\", role = \"aut\"),\n    person(\"Dave\", \"Daeschler\", role = \"aut\"),\n    person(\"Giampaolo\", \"Rodola'\", role = \"aut\"),\n    person(\"Gábor\", \"Csárdi\", , \"csardi.gabor@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "List, query and manipulate all system processes, on\n    'Windows', 'Linux' and 'macOS'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/r-lib/ps, https://ps.r-lib.org/",
+        "BugReports": "https://github.com/r-lib/ps/issues",
+        "Depends": "R (>= 3.4)",
+        "Imports": "utils",
+        "Suggests": "callr, covr, curl, pillar, pingr, processx (>= 3.1.0), R6,\nrlang, testthat (>= 3.0.0), webfakes, withr",
+        "Biarch": "true",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-04-12 09:23:06 UTC; gaborcsardi",
+        "Author": "Jay Loden [aut],\n  Dave Daeschler [aut],\n  Giampaolo Rodola' [aut],\n  Gábor Csárdi [aut, cre],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-04-12 09:50:01 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 00:22:30 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "purrr": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -2666,6 +2725,35 @@
         "Date/Publication": "2025-07-10 17:50:02 UTC",
         "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-08-04 01:49:14 UTC; windows",
         "Archs": "x64"
+      }
+    },
+    "quarto": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "quarto",
+        "Title": "R Interface to 'Quarto' Markdown Publishing System",
+        "Version": "1.5.1",
+        "Authors@R": "c(\n    person(\"JJ\", \"Allaire\", , \"jj@posit.co\", role = \"aut\",\n           comment = c(ORCID = \"0000-0003-0174-9868\")),\n    person(\"Christophe\", \"Dervieux\", , \"cderv@posit.co\", role = c(\"cre\", \"aut\"),\n           comment = c(ORCID = \"0000-0003-4474-2498\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")),\n    person(\"Gordon\", \"Woodhull\", role = \"ctb\")\n  )",
+        "Description": "Convert R Markdown documents and 'Jupyter' notebooks to a\n    variety of output formats using 'Quarto'.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/quarto-dev/quarto-r,\nhttps://quarto-dev.github.io/quarto-r/",
+        "BugReports": "https://github.com/quarto-dev/quarto-r/issues",
+        "Depends": "R (>= 4.1.0)",
+        "Imports": "cli, fs, htmltools, jsonlite, later, lifecycle, processx,\nrlang, rmarkdown, rstudioapi, tools, utils, xfun, yaml (>=\n2.3.10)",
+        "Suggests": "bslib, callr, curl, dplyr, flextable, ggiraph, ggplot2, gt,\nheatmaply, kableExtra, knitr, palmerpenguins, patchwork,\npkgload, plotly, rsconnect (>= 0.8.26), testthat (>= 3.1.7),\nthematic, tidyverse, tinytable, whoami, withr",
+        "VignetteBuilder": "quarto",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "SystemRequirements": "Quarto command line tool\n(<https://github.com/quarto-dev/quarto-cli>).",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-09-04 13:45:05 UTC; chris",
+        "Author": "JJ Allaire [aut] (ORCID: <https://orcid.org/0000-0003-0174-9868>),\n  Christophe Dervieux [cre, aut] (ORCID:\n    <https://orcid.org/0000-0003-4474-2498>),\n  Posit Software, PBC [cph, fnd],\n  Gordon Woodhull [ctb]",
+        "Maintainer": "Christophe Dervieux <cderv@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-09-04 15:30:02 UTC",
+        "Built": "R 4.4.3; ; 2025-09-04 23:52:06 UTC; windows"
       }
     },
     "ragg": {
@@ -3027,6 +3115,31 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-07-18 20:30:01 UTC",
         "Built": "R 4.4.3; ; 2025-11-01 03:45:56 UTC; windows"
+      }
+    },
+    "rstudioapi": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "rstudioapi",
+        "Title": "Safely Access the RStudio API",
+        "Description": "Access the RStudio API (if available) and provide informative error\n    messages when it's not.",
+        "Version": "0.17.1",
+        "Authors@R": "c(\n    person(\"Kevin\", \"Ushey\", role = c(\"aut\", \"cre\"), email = \"kevin@rstudio.com\"),\n    person(\"JJ\", \"Allaire\", role = c(\"aut\"), email = \"jj@posit.co\"),\n    person(\"Hadley\", \"Wickham\", role = c(\"aut\"), email = \"hadley@posit.co\"),\n    person(\"Gary\", \"Ritchie\", role = c(\"aut\"), email = \"gary@posit.co\"),\n    person(family = \"RStudio\", role = \"cph\")\n    )",
+        "Maintainer": "Kevin Ushey <kevin@rstudio.com>",
+        "License": "MIT + file LICENSE",
+        "URL": "https://rstudio.github.io/rstudioapi/,\nhttps://github.com/rstudio/rstudioapi",
+        "BugReports": "https://github.com/rstudio/rstudioapi/issues",
+        "RoxygenNote": "7.3.2",
+        "Suggests": "testthat, knitr, rmarkdown, clipr, covr",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-10-22 20:55:52 UTC; kevin",
+        "Author": "Kevin Ushey [aut, cre],\n  JJ Allaire [aut],\n  Hadley Wickham [aut],\n  Gary Ritchie [aut],\n  RStudio [cph]",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-10-22 22:40:02 UTC",
+        "Built": "R 4.4.3; ; 2025-08-04 00:22:20 UTC; windows"
       }
     },
     "s2": {
@@ -4717,7 +4830,7 @@
       "checksum": "1b58b3e2480a90e277dc2bfc75514261"
     },
     "global.R": {
-      "checksum": "efa85e3575c4d378133392443fb902bb"
+      "checksum": "052d964f456a79bc181288c00fef9ef3"
     },
     "helpers/analysis_functions.R": {
       "checksum": "a3e87a95407889be6dd8f658cae79658"
@@ -4750,7 +4863,7 @@
       "checksum": "58984fb5f82bd3a2ec9d2de2dcadb515"
     },
     "modules/about.R": {
-      "checksum": "82eb9a59dd972352a4ee40390246f030"
+      "checksum": "4c5878e21342a61749257531b871668e"
     },
     "modules/classification_upload.R": {
       "checksum": "8e0ab42b6b7d82af13e2e7ec2017938f"
@@ -4792,7 +4905,7 @@
       "checksum": "fe212be113553617799aabf438d2ae09"
     },
     "modules/report_wthumb.R": {
-      "checksum": "b3b0bd1783edc1341c66acf84b4c2b89"
+      "checksum": "26908577ed3d60e16df381cc391a16de"
     },
     "modules/script_export.R": {
       "checksum": "32e1523a9efac2550bfc59ef7ba503d7"
@@ -4810,10 +4923,10 @@
       "checksum": "1776fa3413f8c36c3ad601dc513af743"
     },
     "renv.lock": {
-      "checksum": "00f09c95d550e0bb02e92e5e8beb9141"
+      "checksum": "a96ebfb40d1a38b8a7bd3c58feecf05d"
     },
     "report/b1_eoo.Rmd": {
-      "checksum": "a9cca8353539261481d65d3f5eb415fc"
+      "checksum": "b3c7887f2837c1c2820621f1f7a0c7a2"
     },
     "report/b2_aoo.Rmd": {
       "checksum": "84b9f744b2cf5ccfa069eef78aa811b9"
@@ -4851,11 +4964,29 @@
     "www/custom.css": {
       "checksum": "79cd8037f63488f6d78b427f8b93eac3"
     },
-    "www/ecocat_guidance.html": {
+    "www/documentation/ecocat_guidance.html": {
       "checksum": "1180f7b23550ace59d9b97f4f0bd8568"
     },
-    "www/ecocat_guidance.qmd": {
+    "www/documentation/ecocat_guidance.qmd": {
       "checksum": "d8f05091280e1108e0626ad90e0fc056"
+    },
+    "www/documentation/itigi_sumbu_summary.html": {
+      "checksum": "59fd9983100045c35f1da4e41d00ac26"
+    },
+    "www/documentation/itigi_sumbu_summary.log": {
+      "checksum": "cbc9bf8a183d5c6cf52cd361be834432"
+    },
+    "www/documentation/itigi_sumbu_summary.qmd": {
+      "checksum": "ddfd564e0a28e0ae35ee55a694ae757b"
+    },
+    "www/documentation/itigi_sumbu_summary.tex": {
+      "checksum": "dafe63e4e0f97d4b0e85bad17f18fb3b"
+    },
+    "www/documentation/thicket-distribution.png": {
+      "checksum": "b4b2466c71dba7594875302e6bad4354"
+    },
+    "www/documentation/thicket-fire.jpg": {
+      "checksum": "1081f20d23abcb94e883e322d1562b97"
     },
     "www/examples/itigit-thicket-zambia-example-2006.tif": {
       "checksum": "08af4e8cca5f95a462eee2e6d98b291d"

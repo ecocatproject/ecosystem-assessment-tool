@@ -2,15 +2,15 @@
 
 # renv::snapshot(exclude=c("climateR", "RNetCDF", "rnz", "ncmeta")) # creates lockfile
 # # renv::snapshot() # creates lockfile
-# renv::dependencies()
+# # renv::dependencies()
 # # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
 # rsconnect::writeManifest() #captures dependencies from lockfile
 # manifest <- jsonlite::fromJSON("manifest.json")
-# orig.manifest <- jsonlite::fromJSON("C:/Users/rcr11kg/Downloads/manifest.json")
-# names(orig.manifest$packages)
+# # orig.manifest <- jsonlite::fromJSON("C:/Users/rcr11kg/Downloads/manifest.json")
+# # names(orig.manifest$packages)
 # names(manifest$packages)
-# renv::install("DT")
-# #remove.packages("tidyterra")
+# # renv::install("DT")
+# # remove.packages("tidyterra")
 
 library(shiny)
 library(shinythemes)
@@ -51,6 +51,8 @@ library(rstac)
 # library(mapview)
 library(xml2)
 library(stars)
+library(quarto)
+
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
