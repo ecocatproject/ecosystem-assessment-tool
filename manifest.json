@@ -247,6 +247,28 @@
         "Archs": "x64"
       }
     },
+    "abind": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "abind",
+        "Version": "1.4-8",
+        "Date": "2024-09-08",
+        "Title": "Combine Multidimensional Arrays",
+        "Authors@R": "c(person(\"Tony\", \"Plate\", email = \"tplate@acm.org\", role = c(\"aut\", \"cre\")), person(\"Richard\", \"Heiberger\", role = c(\"aut\")))",
+        "Maintainer": "Tony Plate <tplate@acm.org>",
+        "Description": "Combine multidimensional arrays into a single array.\n  This is a generalization of 'cbind' and 'rbind'.  Works with\n  vectors, matrices, and higher-dimensional arrays (aka tensors).\n  Also provides functions 'adrop', 'asub', and 'afill' for\n  manipulating, extracting and replacing data in arrays.",
+        "Depends": "R (>= 1.5.0)",
+        "Imports": "methods, utils",
+        "License": "MIT + file LICENSE",
+        "NeedsCompilation": "no",
+        "Packaged": "2024-09-11 21:58:20 UTC; tap",
+        "Author": "Tony Plate [aut, cre],\n  Richard Heiberger [aut]",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-09-12 17:40:54 UTC",
+        "Built": "R 4.4.1; ; 2024-09-18 23:52:21 UTC; windows"
+      }
+    },
     "askpass": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1970,7 +1992,7 @@
     },
     "leaflet.extras": {
       "Source": "CRAN",
-      "Repository": null,
+      "Repository": "https://cran.rstudio.com",
       "description": {
         "Package": "leaflet.extras",
         "Type": "Package",
@@ -3347,6 +3369,36 @@
         "Archs": "x64"
       }
     },
+    "stars": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "stars",
+        "Title": "Spatiotemporal Arrays, Raster and Vector Data Cubes",
+        "Version": "0.6-8",
+        "Authors@R": "\n    c(person(given = \"Edzer\",\n             family = \"Pebesma\",\n             role = c(\"aut\", \"cre\"),\n             email = \"edzer.pebesma@uni-muenster.de\",\n             comment = c(ORCID = \"0000-0001-8049-7069\")),\n      person(given = \"Michael\",\n             family = \"Sumner\",\n             role = \"ctb\", \n             comment=c(ORCID = \"0000-0002-2471-7511\")),\n      person(given = \"Etienne\",\n             family = \"Racine\",\n             role = \"ctb\"),\n      person(given = \"Adriano\",\n             family = \"Fantini\",\n             role = \"ctb\"), \n      person(given = \"David\", \n             family = \"Blodgett\", \n             role = \"ctb\"), \n      person(given = \"Krzysztof\", \n             family = \"Dyba\", \n             role = \"ctb\",\n             comment=c(ORCID = \"0000-0002-8614-3816\")))",
+        "Description": "Reading, manipulating, writing and plotting\n    spatiotemporal arrays (raster and vector data cubes) in 'R', using 'GDAL'\n    bindings provided by 'sf', and 'NetCDF' bindings by 'ncmeta' and 'RNetCDF'.",
+        "License": "Apache License",
+        "URL": "https://r-spatial.github.io/stars/,\nhttps://github.com/r-spatial/stars/",
+        "BugReports": "https://github.com/r-spatial/stars/issues/",
+        "Additional_repositories": "https://cran.uni-muenster.de/pebesma/",
+        "LazyData": "true",
+        "Depends": "R (>= 3.3.0), abind, sf (>= 1.0-19)",
+        "Imports": "methods, parallel, classInt (>= 0.4-1), rlang, units",
+        "Suggests": "Cairo, OpenStreetMap, PCICt, RNetCDF (>= 1.8-2), clue, covr,\ncubble (>= 0.3.0), cubelyr, digest, dplyr (>= 0.7-0),\nexactextractr, FNN, future.apply, ggforce, ggplot2, ggthemes,\ngstat, httr, jsonlite, knitr, lwgeom, maps, mapdata, ncdfgeom,\nncmeta (>= 0.0.3), pbapply, plm, randomForest, raster,\nrmarkdown, sp, spacetime, spatstat (>= 2.0-1), spatstat.geom,\nstarsdata, terra (>= 1.4-22), testthat, tibble, tidyr, tsibble,\nviridis, xts, zoo",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "Collate": "'aggregate.R' 'cubble.R' 'datasets.R' 'dimensions.R'\n'extract.R' 'factors.R' 'geom.R' 'gt.R' 'init.R' 'intervals.R'\n'mdim.R' 'mosaic.R' 'ncdf.R' 'ncproxy.R' 'OpenStreetMap.R'\n'ops.R' 'plot.R' 'prcomp.R' 'proxy.R' 'rasterize.R' 'raster.R'\n'read.R' 'rotate.R' 'sample.R' 'sf.R' 'spacetime.R'\n'spatstat.R' 'sp.R' 'stars.R' 'subset.R' 'tidyverse.R' 'tile.R'\n'transform.R' 'values.R' 'warp.R' 'write.R' 'xts.R'",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-02-01 17:31:06 UTC; edzer",
+        "Author": "Edzer Pebesma [aut, cre] (<https://orcid.org/0000-0001-8049-7069>),\n  Michael Sumner [ctb] (<https://orcid.org/0000-0002-2471-7511>),\n  Etienne Racine [ctb],\n  Adriano Fantini [ctb],\n  David Blodgett [ctb],\n  Krzysztof Dyba [ctb] (<https://orcid.org/0000-0002-8614-3816>)",
+        "Maintainer": "Edzer Pebesma <edzer.pebesma@uni-muenster.de>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-02-01 18:50:02 UTC",
+        "Built": "R 4.4.3; ; 2025-09-03 02:42:25 UTC; windows"
+      }
+    },
     "stringi": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -4095,7 +4147,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "6c00ecfb5cde38811a9ecbdaf21855af"
+      "checksum": "4b5a4a293e7c7bb4a0b777a606dcaddc"
     },
     "data/data/get_geotiff/F3.2.web.orig_v1.0.tif": {
       "checksum": "12106700175518b8fdf6dd93aa22c4ac"
@@ -4665,13 +4717,13 @@
       "checksum": "1b58b3e2480a90e277dc2bfc75514261"
     },
     "global.R": {
-      "checksum": "183b651954bf87ce4c8c3d98c30ca361"
+      "checksum": "efa85e3575c4d378133392443fb902bb"
     },
     "helpers/analysis_functions.R": {
       "checksum": "a3e87a95407889be6dd8f658cae79658"
     },
     "helpers/country_overlap.R": {
-      "checksum": "3fc7fe747e001545796df6fbae05e2d3"
+      "checksum": "0bf878016d4847da25df3878f507ec38"
     },
     "helpers/elevation.R": {
       "checksum": "4246c1e61216149b43b98f2b6e0c030c"
@@ -4680,10 +4732,10 @@
       "checksum": "5702b232bf5d2a40b1d557ee0690538f"
     },
     "helpers/modals.R": {
-      "checksum": "99a7add7db5a0209e28f689dacbc9b81"
+      "checksum": "593e48bd47edc1ebddf753bf128f9371"
     },
     "helpers/precipitation.R": {
-      "checksum": "d8a50b15d378b419f52baae25ec96148"
+      "checksum": "dbc40d7ee5b48e089aa1a500dfa7ff01"
     },
     "helpers/process_rasters.R": {
       "checksum": "b5bb63dfb4bab8b6cdcdc3d524f0f776"
@@ -4692,40 +4744,61 @@
       "checksum": "14d363cf795e4c60057e964fa9bbd8b3"
     },
     "helpers/typology.R": {
-      "checksum": "3c25de753997241804c5b008023643aa"
+      "checksum": "d3513fc4ddd542b62466e6c4b20ca578"
     },
     "map.html": {
       "checksum": "58984fb5f82bd3a2ec9d2de2dcadb515"
     },
     "modules/about.R": {
-      "checksum": "ab0c4fbe492f3808e05e27da9c7afb04"
+      "checksum": "82eb9a59dd972352a4ee40390246f030"
     },
     "modules/classification_upload.R": {
-      "checksum": "fd5962f4a44adbe00bd2306be34a0ce5"
+      "checksum": "8e0ab42b6b7d82af13e2e7ec2017938f"
+    },
+    "modules/classification_upload_old_v.R": {
+      "checksum": "1a2ff3ebb10753465e656371174775b5"
     },
     "modules/classification_upload_playreclass.R": {
       "checksum": "87e390f4efd0e9750c38b041a522c710"
     },
+    "modules/classification_upload_state.R": {
+      "checksum": "7c992edb62f5d1a363e648ffb3123bf9"
+    },
     "modules/classification_upload_with preview - no quite working.R": {
       "checksum": "11ba72677152dff8d3a11776c6e8be18"
+    },
+    "modules/classification_upload_working.R": {
+      "checksum": "e222c29f0d6395b33b082cb8f3181f01"
     },
     "modules/classification_upload_working_wocategories.R": {
       "checksum": "0d402ceb47504c4405e29d15e05cfd17"
     },
     "modules/criterion_a.R": {
-      "checksum": "dbd8c18cc1e50257694a66b0e113094e"
+      "checksum": "fc681b4d296e80289efd6ae1676b89be"
     },
     "modules/criterion_b.R": {
-      "checksum": "305cdafaf1d216e15fcc4b07eea3e2a4"
+      "checksum": "811bc32eeb324e2ddae8a9e0be2b1bdf"
     },
     "modules/data_download.R": {
-      "checksum": "b599ab5d528abf5384ae09ff3b601fb7"
+      "checksum": "6129d6e6847843721405804a9fd8e7a7"
     },
     "modules/description_eu.R": {
-      "checksum": "e128460d1946216e52750b9d78c03e0f"
+      "checksum": "fd338927e2abf9500191fde98648e4df"
+    },
+    "modules/description_eu_working.R": {
+      "checksum": "41ec3473ace3d11fc1abe9f03f0f9d88"
     },
     "modules/report.R": {
-      "checksum": "592724930677a592d45daecb09d740ef"
+      "checksum": "fe212be113553617799aabf438d2ae09"
+    },
+    "modules/report_wthumb.R": {
+      "checksum": "b3b0bd1783edc1341c66acf84b4c2b89"
+    },
+    "modules/script_export.R": {
+      "checksum": "32e1523a9efac2550bfc59ef7ba503d7"
+    },
+    "modules/script_export_v1.R": {
+      "checksum": "d1d01d81a3573c456bc9b98f20595ae5"
     },
     "old/classification_upload_v2.R": {
       "checksum": "ebd51a6f4b62c07340b8cbec8cd4bf4a"
@@ -4737,7 +4810,43 @@
       "checksum": "1776fa3413f8c36c3ad601dc513af743"
     },
     "renv.lock": {
-      "checksum": "1f7b1966963f086a78e36022aadfbb46"
+      "checksum": "00f09c95d550e0bb02e92e5e8beb9141"
+    },
+    "report/b1_eoo.Rmd": {
+      "checksum": "a9cca8353539261481d65d3f5eb415fc"
+    },
+    "report/b2_aoo.Rmd": {
+      "checksum": "84b9f744b2cf5ccfa069eef78aa811b9"
+    },
+    "report/criterion_a.Rmd": {
+      "checksum": "fdb1ceab274be825f6c26fbfd71da063"
+    },
+    "report/distribution.Rmd": {
+      "checksum": "472df6fde44913e620a9090f3c8112dd"
+    },
+    "report/elevation.Rmd": {
+      "checksum": "f6e391b7dcae40ebc1b85c2df7ac9e56"
+    },
+    "report/get_classification.Rmd": {
+      "checksum": "17cbd9659f4616602c0e9ad09aa3cb9d"
+    },
+    "report/rainfall.Rmd": {
+      "checksum": "e8715e2887c0fd5611de81e49aaa4721"
+    },
+    "report/report_main.Rmd": {
+      "checksum": "e404c87f1539c8550ab543c285d4232a"
+    },
+    "report/temperature.Rmd": {
+      "checksum": "87a23946b556868515e95c91bb0b4f94"
+    },
+    "report/typology.Rmd": {
+      "checksum": "8b0043d6d3c4cfecc382d7007bd84c0b"
+    },
+    "www/a_table.jpg": {
+      "checksum": "79b081332ef5648d133e62edd79b368f"
+    },
+    "www/a_table.png": {
+      "checksum": "1c758595ff7979bfe11ee71a7a942f0b"
     },
     "www/custom.css": {
       "checksum": "79cd8037f63488f6d78b427f8b93eac3"
@@ -4747,6 +4856,15 @@
     },
     "www/ecocat_guidance.qmd": {
       "checksum": "d8f05091280e1108e0626ad90e0fc056"
+    },
+    "www/examples/itigit-thicket-zambia-example-2006.tif": {
+      "checksum": "08af4e8cca5f95a462eee2e6d98b291d"
+    },
+    "www/examples/itigit-thicket-zambia-example-2016.tif": {
+      "checksum": "4c2277d625d239060e3a717fa32c3066"
+    },
+    "www/examples/itigit-thicket-zambia-example-2023.tif": {
+      "checksum": "4f02b9ca6355b23e84763b4851573357"
     },
     "www/FranklinGothic.ttf": {
       "checksum": "9c9dbb999dd7068f51335d93cc7328bd"
@@ -4797,7 +4915,7 @@
       "checksum": "378f3d853e8b590d34d22ccf5aa00f3a"
     },
     "www/rle_report_template_html_testing.Rmd": {
-      "checksum": "d1ef5ed55e40368e2a3e37aac1bf86f6"
+      "checksum": "5b82fedfd0f8ced95c102e6234c3bbc2"
     },
     "www/template.docx": {
       "checksum": "53fcfb4e8104bef92a358e163b6c734d"
