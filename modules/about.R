@@ -30,9 +30,16 @@ about_module_ui <- function(id) {
       nav_panel(
         "RLE",
         card_body(
-          tags$p(
-            "RLE criterion doc here"
-          )
+          # tags$p(
+          #   "RLE criterion doc here"
+          # )
+          fluidPage(
+            tags$iframe(
+              src = "documentation/rle-assessment-criteria.html",
+              width = "100%",
+              height = "900px",
+              style = "border:none;"
+            ))
           )),
       nav_panel(
         "About",
