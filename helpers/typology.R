@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------------
 # Compute Global Ecosystem Typology
 compute_typology <- function(eau, efg_lookup) {
-  validate(need(!is.null(eau), "Ecosystem map not loaded."))
+  if (is.null(eau )) stop("Ecosystem map not loaded.")
   
   get_files <- list.files("data/get_geotiff", pattern = "\\.tif$", full.names = TRUE)[c(1:26, 28:70, 72:109)]
   
@@ -15,7 +15,7 @@ compute_typology <- function(eau, efg_lookup) {
   get_data <- rast(get_files, win = ext(eau))
   
   # if (length(get_data) == 0) return(data.frame())
-  validate(need(!is.null(get_data), "Could not load typology rasters."))
+  # validate(need(!is.null(get_data), "Could not load typology rasters."))
   
   # reample eau and mask to get the GET data
   eau2 <- resample(eau, get_data[[1]], method = "average")
@@ -53,9 +53,11 @@ compute_typology <- function(eau, efg_lookup) {
         ),
       by = "EFG_CODE"
     ) |>
-    dplyr::mutate(`major % of Ecosystem` = scales::percent(proportion_major_global, accuracy = 0.1)) |>
-    dplyr::mutate(`minor % of Ecosystem` = scales::percent(proportion_minor_global, accuracy = 0.1)) |>
-    dplyr::select(EFG_CODE, `Ecosystem Functional Group`, Realm, Biome, `major % of Ecosystem`, `minor % of Ecosystem`)
+    # dplyr::mutate(`% of Ecosystem (Major)` = scales::percent(proportion_major_global, accuracy = 0.1)) |>
+    # dplyr::mutate(`% of Ecosystem (Minor)` = scales::percent(proportion_minor_global, accuracy = 0.1)) |>
+    dplyr::mutate(`Major occurrence (%)` = round(proportion_major_global*100,2)) |>
+    dplyr::mutate(`Minor occurrence (%)` = round(proportion_minor_global*100,2)) |>
+    dplyr::select(Realm, Biome, `Ecosystem Functional Group`, EFG_CODE, `Major occurrence (%)`, `Minor occurrence (%)`)
   
   typ_tbl
 }

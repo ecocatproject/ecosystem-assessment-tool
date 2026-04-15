@@ -68,21 +68,35 @@ upload_modal <- modalDialog(
 a_quick_modal <- modalDialog(
   title = "Criterion A – quick guide",
   tagList(
-    tags$p("Criterion A Assessement"),
+    tags$p("Criterion A Assessement - reduction in geographic distribution over ANY of the following time periods:"),
     tags$ul(
-      tags$li(tags$b("A1 - Past predicted change in geographic distribution (past 50 years")),
-      tags$li(tags$b("A2 - Future predicted change in geographic distribution (next 50 years)")),
-      tags$li(tags$b("A3 - Predicted change in geographic distribution over any 50 year period (including the past, present and future)"))
-      
+      tags$li(tags$b("A1 - the past 50 years")),
+      tags$li(tags$b("A2a - the next 50 years")),
+      tags$li(tags$b("A2b - any 50-year period including the past, present and future"))
     ),
-    tags$p("Tip: The lines of each graph can be turn on and off by selecting them")
+    # link to RLE guidelines
+    tags$p(
+      tags$b("Source: "),
+      "RLE Guidelines - ",
+      tags$a(
+        href = "https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf",
+        "Click here",
+        target = "blank",
+        style = "color: #2c7fb8;"
+      )
+    ),
+    # image of Criterion A criterion taken from the RLE guidelines
+    tags$img(
+      src = "a_table.png",
+      width = "100%",
+     style = "margin-top: 15px;margin-bottom: 50px"
+    ),
+    tags$hr(),
+    tags$p("Tip: The lines of each legend item can be removed/shown by selecting them in the legend.")
   ),
   easyClose = TRUE,
-  footer = tagList(
-    modalButton("Close")#,
-    # actionButton(("open_help"), "More help")
-  ),
-  size = "m"
+  footer = tagList(modalButton("Close")),
+  size = "l"
 )
 
 # -----------------------------------------------------------------------------

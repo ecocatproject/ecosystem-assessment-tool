@@ -63,7 +63,8 @@ compute_precipitation <- function(x,
       max_smooth  = predict(loess(max  ~ as.numeric(month), span = 0.5)),
       mean_smooth = predict(loess(mean ~ as.numeric(month), span = 0.5))
     ) %>% 
-    mutate_if(is.numeric, round, 1)
+    mutate_if(is.numeric, round, 1) %>%
+    mutate(across(where(is.numeric), ~ ifelse(. < 0, 0, .)))# <0 to 0s
   
   return(smooth_df)
 }
@@ -86,7 +87,7 @@ compute_precipitation <- function(x,
 #   month = lubridate::month(1:12, label = TRUE),
 #   mean  = apply(vals, 2, mean, na.rm = TRUE),
 #   min   = apply(vals, 2, min, na.rm = TRUE),
-#   max   = apply(vals, 2, max, na.rm = TRUE)
+#   max   = apply(vals, 2, max, na.rm = TRUE) %>%
 # )
 
 

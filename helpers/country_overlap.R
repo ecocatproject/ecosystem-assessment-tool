@@ -6,8 +6,7 @@
 # library(exactextractr)
 # library(sf)
 # # load data
- countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
-
+countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
 # country_overlap.R
 
@@ -15,9 +14,8 @@
 # will work for both spatvector and spatraster
 
 compute_countries <- function(x, countries) {
-  validate(need(!is.null(countries), "Countries data not available"))
-  validate(need(!is.null(x), "ROI/EAU object not loaded."))
-  
+  if (is.null(countries)) stop("Countries data not available")
+  if (is.null(x)) stop("ROI not loaded")
   # -------------------------------------------------------------------------
   # spatvector 
   if (inherits(x, "SpatVector")) {
@@ -101,9 +99,9 @@ compute_countries <- function(x, countries) {
 }
 
 # # # # test function
-# eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
-# result_eau <- compute_countries(eau, countries)
-# result_eau
+eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
+result_eau <- compute_countries(eau, countries)
+result_eau
 # # test function
 # # roi <- vect("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiSumbuThicketEcoregion20kmBuffer.shp")
 # # result_shp <- compute_country_overlap_roi(roi, countries)
