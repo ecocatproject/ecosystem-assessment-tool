@@ -19,20 +19,31 @@ about_module_ui <- function(id) {
       nav_panel(
         "Example Data",
         card_body(
-          tags$p(
-            "example dataset rmd/quarto doc will go here"
-      ))),
+          fluidPage(
+            tags$iframe(
+              src = "documentation/itigi_sumbu_summary.html",
+              width = "100%",
+              height = "900px",
+              style = "border:none;"
+            ))
+      )),
       nav_panel(
         "RLE",
         card_body(
           tags$p(
             "RLE criterion doc here"
-          ))),
+          )
+          )),
       nav_panel(
         "About",
         card_body(
           tags$p(
             "about doc here"
-          )))
+          )
+          ))
     )))
 }
+
+about_module_server <- function(input, output, session) {}
+
+shinyApp(about_module_ui, about_module_server)
