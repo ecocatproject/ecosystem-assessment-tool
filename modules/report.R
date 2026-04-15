@@ -13,13 +13,19 @@ report_module_ui <- function(id) {
         fluidRow(
           column(
             width = 6,
-            textInput(ns("ecosystem_name"), "Ecosystem Name"),
-            textInput(ns("organisation"), "Organisation(s)"),
-            textInput(ns("author"), "Author"),
-            textInput(ns("email"), "Email address"),
+            textInput(ns("ecosystem_name"),
+                      tags$span("Ecosystem Name",tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained")),
+                      placeholder = "Enter ecosystem name - Optional"),
+            textInput(ns("organisation"),
+                      tags$span("Organisation(s)",tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained")),
+                      placeholder = "Enter organisation name(s) - Optional"),
+            textInput(ns("author"),
+                      tags$span("Author",tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained")),
+                      placeholder = "Enter assessor name - Optional"),
+            # textInput(ns("email"), "Email address"),
             selectInput(
               ns("report_format"),
-              "Choose report format:",
+              tags$span("Choose report format:",tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures")),
               choices = c("HTML" = "html", "Word" = "docx") # "PDF" = "pdf"
             ),
             downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
@@ -28,6 +34,10 @@ report_module_ui <- function(id) {
             width = 6,
             checkboxGroupInput(ns("dataset_choice"), "Choose datasets:", choices = NULL),
             downloadButton(ns("download_file"), "Download data")
+        ),
+        column(
+          width = 6,
+        script_export_ui("script_export")
         )
         )
       )
@@ -40,7 +50,7 @@ report_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 report_module_server <- function(datasets,
                                  id,
-                                 ecosystem_name, author, organisation, email,
+                                 ecosystem_name, author, organisation,# email,
                                  rasters,
                                  areas,
                                  years,
@@ -61,10 +71,17 @@ report_module_server <- function(datasets,
                                  ) {
   moduleServer(id, function(input, output, session) {
 
+    # --------------------------------------------------------------------------
+    # conditionally build file name
     output$generate_report <- downloadHandler(
       filename = function() {
         ext <- input$report_format
-        paste0("RLE_Assessment_", gsub(" ", "_", input$ecosystem_name), ".", ext)
+        name_part <- if (!is.null(input$ecosystem_name) && nzchar(trimws(input$ecosystem_name))) {
+          paste0(gsub(" ", "_", trimws(input$ecosystem_name)), "_")
+        } else {
+          ""
+        }
+        paste0("RLE_Assessment_", name_part, format(Sys.Date(), "%d%m%Y"), ".", ext)
       },
       content = function(file) {
 
@@ -114,7 +131,7 @@ report_module_server <- function(datasets,
           ecosystem_name = input$ecosystem_name,
           author = input$author,
           organisation = input$organisation,
-          email = input$email,
+          # email = input$email,
           areas = (areas()),
           years = (years()),
           raster_files = raster_paths,
@@ -182,7 +199,8 @@ report_module_server <- function(datasets,
       updateCheckboxGroupInput(
         session,
         "dataset_choice",
-        choices = names(ds)
+        choices = names(ds),
+        selected = names(ds)
       )
     })
     

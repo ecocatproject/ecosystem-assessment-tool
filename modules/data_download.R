@@ -1,26 +1,8 @@
 # modules/data_download.R
 
+#-------------------------------------------------------------------------------
 # Module UI
-# download_module_ui <- function(id) {
-#   ns <- NS(id)
-#   
-#   nav_panel(
-#     "Download Data",
-#     card(
-#       card_body(
-#         checkboxGroupInput(ns("dataset_choice"), "Choose datasets:",
-#                            choices = names(list(
-#                              "Criterion A - area change data" = criterion_a_module$area_change_data,
-#                              "Criterion A - area prediction data" = criterion_a_module$area_change_data
-#                            ))),
-#         br(),
-#         downloadButton(ns("download_file"), "Download")
-#       )
-#     ))
-#   
-#   }
-
-
+#-------------------------------------------------------------------------------
 download_module_ui <- function(id) {
   ns <- NS(id)
   
@@ -36,18 +18,67 @@ download_module_ui <- function(id) {
   )
 }
 
+#-------------------------------------------------------------------------------
 # module server
+#-------------------------------------------------------------------------------
+
 download_module_server <- function(id, datasets) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     # Update checkboxes whenever available datasets change
+    # observe({
+    #   ds <- datasets()
+    #   updateCheckboxGroupInput(
+    #     session,
+    #     "dataset_choice",
+    #     choices = names(ds),
+    #   )
+    # })
+
     observe({
       ds <- datasets()
+      req(length(ds) > 0)
+      
+      choices <- c(names(ds), "Select All")
+      
       updateCheckboxGroupInput(
         session,
         "dataset_choice",
-        choices = names(ds)
+        choices = choices,
+        selected = "Select All"   # only this is selected initially
       )
+    })
+    
+    observeEvent(input$dataset_choice, {
+      ds_names <- names(datasets())
+      
+      # If "Select All" is clicked → select everything
+      if ("Select All" %in% input$dataset_choice) {
+        updateCheckboxGroupInput(
+          session,
+          "dataset_choice",
+          selected = ds_names
+        )
+      }
+    })
+    
+    observeEvent(input$dataset_choice, {
+      ds_names <- names(datasets())
+      
+      if ("Select All" %in% input$dataset_choice) {
+        updateCheckboxGroupInput(
+          session,
+          "dataset_choice",
+          selected = ds_names
+        )
+      } else if (setequal(input$dataset_choice, ds_names)) {
+        # If user manually deselects one → remove all
+        updateCheckboxGroupInput(
+          session,
+          "dataset_choice",
+          selected = character(0)
+        )
+      }
     })
     
     output$download_file <- downloadHandler(
@@ -80,38 +111,3 @@ download_module_server <- function(id, datasets) {
   })
 }
 
-# Module Server
-# download_module_server <-  function(id, datasets) {
-#   moduleServer(id, function(input, output, session) {
-#     ns <- session$ns
-# 
-#     output$download_file <- downloadHandler(
-#       filename = function() {
-#         selected <- input$dataset_choice
-#         if (length(selected) == 1) {
-#           paste0(selected, ".csv")
-#         } else {
-#           "datasets.zip"
-#         }
-#       },
-#       content = function(file) {
-#         selected <- input$dataset_choice
-#         tmpdir <- tempdir()
-#         files <- c()
-# 
-#         for (ds in selected) {
-#           data <- datasets[[ds]]
-#           file_path <- file.path(tmpdir, paste0(ds, ".csv"))
-#           write.csv(data, file_path, row.names = FALSE)
-#           files <- c(files, file_path)
-#         }
-# 
-#         if (length(files) > 1) {
-#           zip::zipr(file, files)  # multiple CSVs → ZIP
-#         } else {
-#           file.copy(files, file, overwrite = TRUE)  # single CSV
-#         }
-#       }
-#     )
-#   })
-# }

@@ -293,8 +293,9 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       dat_sel <- grid_sf[grid_sf$cell_id %in% sel_ids$cell_ids[[1]], ]
       
       # combine and save the above
-      cells10km <- vect(rbind(dat_all,dat_sel))
-      cells10km$type <- c("all", "assessement")
+      dat_all$type  <- "all"
+      dat_sel$type  <- "assessment"
+      cells10km <- vect(rbind(dat_all, dat_sel))
       b2_poly(cells10km)
       
       
