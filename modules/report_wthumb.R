@@ -1,5 +1,4 @@
 # modules/report.R
-# require(base64enc)
 
 # =============================================================================
 # Report Module
@@ -305,7 +304,8 @@ report_module_server <- function(datasets,
         ggplot2::scale_linetype_manual(values = plot_linetypes) +
         ggplot2::labs(
           x = "Year", y = expression("Area (km"^2*")"),
-          colour = "Method", linetype = "Scenario"
+          colour = "Method", linetype = "Scenario",
+          caption = "Generated with EcoCAT Assessment tool",
         ) +
         ggplot2::theme_bw(base_size = 13)
     })
@@ -324,16 +324,6 @@ report_module_server <- function(datasets,
       eoo_area    <- round(as.data.frame(mcp_poly()[[1]])$area_km2, 1)
       
       ggplot2::ggplot() +
-        # ggplot2::geom_raster(
-        #   data = raster_df,
-        #   ggplot2::aes(x = x, y = y),
-        #   fill = "grey30", alpha = 0.7
-        # ) +
-        # ggplot2::geom_sf(
-        #   data = eoo_sf,
-        #   fill = NA, colour = "black", linewidth = 0.8
-        # ) +
-        
         ggplot2::geom_raster(
           data = raster_df,
           ggplot2::aes(x = x, y = y),
@@ -360,6 +350,7 @@ report_module_server <- function(datasets,
         ggplot2::labs(
           title    = paste0("Criterion B1 \u2014 Extent of Occurrence (", latest_year, ")"),
           subtitle = paste0("EOO area: ", eoo_area, " km\u00b2"),
+          caption = "Generated with EcoCAT Assessment tool",
           x = NULL, y = NULL
         ) +
         ggplot2::theme_minimal(base_size = 12) +
@@ -382,16 +373,6 @@ report_module_server <- function(datasets,
       n_all <- nrow(dat_all)
       n_sel <- nrow(dat_sel)
       
-      # ggplot2::ggplot() +
-      #   ggplot2::geom_sf(
-      #     data = dat_all,
-      #     fill = "black", alpha = 0.2, linewidth = 0.3
-      #   ) +
-      #   ggplot2::geom_sf(
-      #     data = dat_sel,
-      #     fill = "orange", alpha = 0.5, linewidth = 0.3
-      #   ) +
-      #   geom_raster(data = raster_df, aes(x = x, y = y)) + # the sampled data
       ggplot2::ggplot() +
       geom_sf(data      = dat_all,
               aes(fill  = "10 x 10 km grid\n(<1% occupancy)"),
@@ -407,7 +388,7 @@ report_module_server <- function(datasets,
                 inherit.aes = FALSE) +
         geom_raster(data = raster_df, aes(x = x, y = y)) + # the sampled data
         scale_fill_manual(
-          name   = "Polygon layers",
+          name   = NULL,
           values = c("10 x 10 km grid\n(<1% occupancy)"       = "black",
                      "AOO\n(>1% occupancy)" = "orange"),
            guide  = guide_legend(
@@ -421,6 +402,7 @@ report_module_server <- function(datasets,
           title    = paste0("Criterion B2 \u2014 Area of Occupancy (", max(years(), na.rm = TRUE), ")"),
           subtitle = paste0("Total occupied cells: ", n_all,
                             ", cells >1% occupancy (AOO): ", n_sel),
+          caption = "Generated with EcoCAT Assessment tool",
           x = NULL, y = NULL
         ) +
         ggplot2::theme_minimal(base_size = 12) +
