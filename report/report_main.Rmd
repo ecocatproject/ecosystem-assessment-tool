@@ -11,7 +11,6 @@ params:
   ecosystem_name: NA
   author: NA
   organisation: NA
-  email: NA
   raster_files: NA
   years: NA
   areas: NA
@@ -70,7 +69,7 @@ terraOptions(progress = 0)
 Assessed on `r format(Sys.Date(), "%d %B %Y")` `r 
 {
   parts <- c()
-  
+
   if (!is.null(params$author) && nzchar(params$author))
     parts <- c(parts, paste0("by ", params$author))
   
@@ -86,9 +85,17 @@ Assessed on `r format(Sys.Date(), "%d %B %Y")` `r
     ""
 }`
 
+```{r set-ecosystem-name, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+ecosystem_label <- if (is.na(params$ecosystem_name) || !nzchar(params$ecosystem_name)) {
+  "ecosystem"
+} else {
+  params$ecosystem_name
+}
+```
+
 # **Report summary**
 
-This report documents an ecosystem assessment following the IUCN Red List of Ecosystems (RLE) Guidelines, for the `r params$ecosystem_name` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
+This report documents an ecosystem assessment following the IUCN Red List of Ecosystems (RLE) Guidelines, for the `r ecosystem_label` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
 
  - This tool and report currently covers **Criterion A** and **Criterion B** of the RLE assessment. 
  - The graphs in this report can be downloaded by selecting the 'download as png' icon at the top of each graph.
@@ -99,25 +106,25 @@ This report documents an ecosystem assessment following the IUCN Red List of Eco
 # **Ecosystem description**
   
 ### Classification
-```{r child='description/typology.Rmd'}
+```{r child='typology.Rmd'}
 ```
 
 ### Distribution
-```{r child='description/distribution.Rmd'}
+```{r child='distribution.Rmd'}
 ```
 
 ### Abiotic features {.tabset}
 
 #### Rainfall {.active}
-```{r child='description/rainfall.Rmd'}
+```{r child='rainfall.Rmd'}
 ```
 
 #### Temperature
-```{r child='description/temperature.Rmd'}
+```{r child='temperature.Rmd'}
 ```
 
 #### Elevation
-```{r child='description/elevation.Rmd'}
+```{r child='elevation.Rmd'}
 ```
 
 ------------------------------------------------------------------------
@@ -142,17 +149,17 @@ bslib::value_box(
 result_a <- "LC"   # this would come from your analysis
 ```
 ## `r status_circle(result_a)` Criterion A: Reduction in geographic distribution {.active}
-```{r child='assessment/criterion_a.Rmd'}
+```{r child='criterion_a.Rmd'}
 ```
 
 ## Criterion B: Restricted geographic distribution
 
 ### Subcriterion B1: Restricted extent of occurrence (EOO)
-```{r child='assessment/b1_eoo.Rmd'}
+```{r child='b1_eoo.Rmd'}
 ```
 
 ### Subcriterion B2: Restricted area of occupancy (AOO)
-```{r child='assessment/b2_aoo.Rmd'}
+```{r child='b2_aoo.Rmd'}
 ```
 
 ------------------------------------------------------------------------
