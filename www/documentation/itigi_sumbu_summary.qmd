@@ -1,7 +1,7 @@
 ---
-title: "Itigi-Sumbu Thicket: Ecosystem Assessment Summary"
-subtitle: "IUCN Red List of Ecosystems — Tanzania & Zambia"
-author: "Critchlow  - a summary of assessment report by Leão et al. (Royal Botanic Gardens, Kew)"
+title: "IUCN Red List of Ecosystem Assessment: Itigi-Sumbu thicket in Tanzania and Zambia"
+subtitle: "This is a summary of an a assessment report by Leão et al. (Royal Botanic Gardens, Kew)"
+author: "Rob Critchlow"
 date: today
 format:
   html:
@@ -43,9 +43,9 @@ Satellite mapping using Landsat imagery (1984–2023) reveals severe and acceler
 | 2016 | 4,493      | 1.8% / year        |
 | 2023 | 3,057      | **5.3% / year**    |
 
-: Observed area and deforestation rates of global Itigi-Sumbu thicket {tbl-colwidths="\[20,20,30\]"}
+: Observed area and deforestation (proportional) rates of global Itigi-Sumbu thicket {tbl-colwidths="\[20,20,30\]"}
 
-The estimated **50-year decline (1973–2023) is approximately 59%**, qualifying the ecosystem as **Endangered (EN) under criterion A1**. Under pessimistic projections (current rate of 5.3%/year sustained), the ecosystem could lose **94% of its area by 2073** (Critically Endangered).
+The estimated **50-year decline (1973–2023) is approximately 59%**, qualifying the ecosystem as **Endangered (EN) under subcriterion A1**. Under pessimistic projections (current rate of 5.3%/year sustained), the ecosystem could lose **94% of its area by 2073** (Critically Endangered (CR) under subcriterion A2a).
 
 Tanzania has seen a dramatic acceleration from 0.2–0.4%/year (1986–1996) to 5.2–5.8%/year (2016–2023). Zambia's rates, while historically higher, have been partially mitigated by national parks.
 
