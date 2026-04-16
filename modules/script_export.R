@@ -153,7 +153,7 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
       header <- glue::glue(
         '# =============================================================================
 # EcoCAT RLE Assessment Tool - Auto-generated reproducible script
-# Generated: <<Sys.time()>>
+# Generated: <<Sys.Date()>>
 # =============================================================================
 # Reproduces your assessment, figures, and maps outside the Shiny interface.
 #
