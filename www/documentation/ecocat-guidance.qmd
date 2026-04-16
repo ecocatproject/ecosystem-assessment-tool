@@ -34,7 +34,7 @@ This ecosystem assessment tool from the EcoCAT project is designed for users who
 
 The ecosystem assessment tool will help provide standardised ecosystem assessments, to ensure ecosystem status are comparable across all assessed ecosystems.
 
-For additional information on the project including the team involved and other tools in development (e.g. an ecosystem mapping tool), please visit the [RBG Kew project webpage](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the RBG Kew project webpage")
+For additional information on the project including the team involved and other tools in development (e.g. an ecosystem mapping tool), please visit the [RBG Kew project webpage](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the RBG Kew project webpage"){target="_blank" rel="noopener noreferrer"}.
 
 ------------------------------------------------------------------------
 
