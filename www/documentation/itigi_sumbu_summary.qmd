@@ -1,6 +1,6 @@
 ---
 title: "IUCN Red List of Ecosystem Assessment: Itigi-Sumbu thicket in Tanzania and Zambia"
-subtitle: "This is a summary of an a assessment report by Leão et al. (Royal Botanic Gardens, Kew)"
+subtitle: "This is a summary of an assessment report by Leão et al. (Royal Botanic Gardens, Kew)"
 author: "Rob Critchlow"
 date: today
 format:

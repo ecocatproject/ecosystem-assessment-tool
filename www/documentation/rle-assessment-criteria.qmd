@@ -29,4 +29,4 @@ execute:
 *\* Note: The full text of clauses B1(a)iii and B2(a)ii of the criteria, states “a measure of disruption to biotic interactions appropriate to…” (IUCN 2016). Alternative phrasing given here avoids potential misinterpretation associated with double-negative expression when that phrase is read in context with clause B1(a) or B2(a), respectively, “continuing decline” in “... a measure of \[disruption to\] biotic interactions”.*
 
 ### Data source
-Source: [IUCN RLE Guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf)
+Source: [IUCN RLE Guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf){target="_blank" rel="noopener noreferrer"}
