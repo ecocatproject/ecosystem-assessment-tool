@@ -153,7 +153,7 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
       header <- glue::glue(
         '# =============================================================================
 # EcoCAT RLE Assessment Tool - Auto-generated reproducible script
-# Generated: {Sys.time()}
+# Generated: <<Sys.time()>>
 # =============================================================================
 # Reproduces your assessment, figures, and maps outside the Shiny interface.
 #
@@ -163,26 +163,40 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
 #   3. Figures are saved to a "figures/" subfolder in your working directory
 # =============================================================================
 
+
 # =============================================================================
-# STEP 0 - Load packages, functions, create output folder
+# STEP 0.1 - check and load packages
 # =============================================================================
 
-# check and load packages
-packages <- c("terra", "dplyr", "purrr", "sf", "exactextractr", "tidyr", "ggplot2","plotly", "leaflet", "htmlwidgets", "mgcv")
+packages.required <- c("terra", "dplyr", "purrr", "sf", "exactextractr",
+              "tidyr", "ggplot2", "plotly", "leaflet", "htmlwidgets", "mgcv")
 
-for (pkg in packages) {
+for (pkg in packages.required) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     install.packages(pkg)
   }
   library(pkg, character.only = TRUE)
 }
 
+# Create output folder for figures
+dir.create("figures", showWarnings = FALSE)
+    
+    ',
+.open = "<<", .close = ">>"
+)
 
-# load functions
+      # ---- functions ----------------------------------------------------------------
+      
+functions_block <- 
+  '
+# =============================================================================
+# STEP 0.2 - Load functions
+# =============================================================================
 
 # -----------------------------------------------------------------------------
-# 1. calculate area change
+# 1) calculate area change
 calc_area_change <- function(area.data) {
+  # calculate stats for observed changes 
   area.data <- area.data %>%
     dplyr::select(Year, Area_km2) %>%
     dplyr::mutate(year = round(as.numeric(Year),0), area = Area_km2, Year = NULL, Area_km2 = NULL) %>%
@@ -195,12 +209,14 @@ calc_area_change <- function(area.data) {
       proportional_rate_change = ((area / lag(area))^(1 / dt) - 1) * 100,
       absolute_rate_change = area_change / dt,
     )
+    
   return(obsv_change)
 }
 
 # -----------------------------------------------------------------------------
-# 2. Function to calculate decline statistics + projections
+# 2) Function to calculate decline statistics + projections
 predict_area_change <- function(obsv_change, horizon = 50) {
+  
   # helper data for projections
   oldest <- cbind(
     obsv_change %>% slice(1) %>% dplyr::select(year, area),                        # select the 1st row of year and area data, but need the next decline stat
@@ -288,22 +304,19 @@ predict_area_change <- function(obsv_change, horizon = 50) {
 }
 
 # -----------------------------------------------------------------------------
-# 3.function needed for MCP calculation
+# 3) function needed for MCP calculation
 makeEOO.SpatRaster <- function(input.data, year){
   EOO.polygon <- as.polygons(input.data, na.rm=T)
   EOO.poly <- convHull(EOO.polygon)
   # add attributes directly
   EOO.poly$year <- year
   EOO.poly$area_km2 <- terra::expanse(EOO.poly, unit = "km")
+  
   return(EOO.poly)
 }
 
-# -----------------------------------------------------------------------------
-# Create output folder for figures
-dir.create("figures", showWarnings = FALSE)
-
-')
-      
+      '
+            
       # ---- Input files -----------------------------------------------------------
       if (isTRUE(p$using_example)) {
         file_block <-
@@ -808,7 +821,7 @@ cat("Saved: figures/criterion_b2_aoo_map.png\n")
 # =============================================================================
 '
     
-    paste(header, file_block, year_block, layer_block,
+    paste(header, functions_block, file_block, year_block, layer_block,
           processing_block, crit_a_block, crit_b1_block, crit_b2_block,
           footer, sep = "\n")
     }
