@@ -59,11 +59,11 @@ Historical temperature data is currently extracted from [WorldClim verison 2.1](
 
 ### Criterion A
 
-Observed changes in ecosystem area between time periods were calculated as both an absolute rate of change and a proportional rate of change. The absolute rate of change ($\text{ARC}$, km² yr⁻¹) was calculated as:
+Observed changes in ecosystem area between time periods were calculated as both an absolute rate of change and a proportional rate of change. The absolute rate of change ($\text{ARC}$, km² yr⁻¹) is calculated as:
 
 $$\text{ARC} = \frac{A_t - A_{t-1}}{\Delta t}$$
 
-where $A_t$ is the area at time $t$ and $\Delta t$ is the number of years between observations. The proportional rate of change ($\text{PRC}$, % yr⁻¹) was calculated as a compound annual rate to account for unequal intervals between survey years:
+where $A_t$ is the area at time $t$ and $\Delta t$ is the number of years between observations. The proportional rate of change ($\text{PRC}$, % yr⁻¹) is calculated as a compound annual rate to account for unequal intervals between survey years:
 
 $$\text{PRC} = \left(\left(\frac{A_t}{A_{t-1}}\right)^{1/\Delta t} - 1\right) \times 100$$
 
@@ -71,21 +71,21 @@ Past and future trajectories were then projected over a 50-year horizon using bo
 
 ### Criterion B
 
-Criterion B assess the geographic distribution of a mapped ecosystem to identify those with restricted distributions and are therefore at risk of collapse from threatening events [@Rodr_guez_2015]. There are 2 measures of ecosystem distribution: Extent of occurrence (EOO) for subcriterion B1 and Area of occupancy (AOO) for subcriterion B2. These spatial distribution metrics have been shown to be appropriate across ecosystems with varying distribution patterns such as linear ecosystems (e.g., riverine) and more uniform types such as intact forest @guidelin2024.
+Criterion B assess the geographic distribution of a mapped ecosystem to identify those with restricted distributions and are therefore at risk of collapse from threatening events [@Rodr_guez_2015]. There are 2 measures of ecosystem distribution: Extent of occurrence (EOO) for subcriterion B1 and Area of occupancy (AOO) for subcriterion B2. These spatial distribution metrics have been shown to be appropriate across ecosystems with varying distribution patterns such as linear ecosystems (e.g., riverine) and more uniform types such as intact forest [@guidelin2024].
 
 #### Subcriterion B1
 
 Extent of occurrence (EOO) is measured using a minimum convex polygon (MCP) that encompasses all known spatial localities of the ecosystem. The area (km^2^) of the MCP must not exclude any areas irrespective of whether the ecosystem can occur there or not.
 
-Extent of Occurrence (EOO) was calculated from input raster data using a custom function implemented in R. The input raster was first converted to a polygon vector using the `as.polygons` function from the `terra` package, with NA cells excluded. A convex hull was then fitted around the resulting polygons using the `hull` function (also from `terra`), providing the minimum convex polygon enclosing all presence locations. The area of this convex hull was calculated in km² using the `expanse` function from the `terra` package, and the resulting EOO polygon was attributed with both the survey year and the calculated area.
+Extent of Occurrence (EOO) is calculated from input raster data using a custom function implemented in R. The input raster is first converted to a polygon vector using the `as.polygons` function from the `terra` package, with NA cells excluded. A convex hull is then fitted around the resulting polygons using the `hull` function (also from `terra`), providing the minimum convex polygon enclosing all presence locations. The area of this convex hull is calculated in km² using the `expanse` function from the `terra` package, and the resulting EOO polygon is attributed with both the survey year and the calculated area.
 
 #### Subcriterion B2
 
 Area of occupancy (AOO) counts the number of 10km^2^ grid cells occupied by the ecosystem - this is standardised across all ecosystems regardless of the spatial resolution of the mapped ecosystem.
 
-Area of Occupancy (AOO) was calculated using a 10 km × 10 km grid overlaid on the ecosystem map. The grid was created to match the spatial extent of the input raster, with a two-cell buffer added to ensure full coverage at the edges. Grid cells were converted to polygons and the area of ecosystem coverage within each cell was extracted using the `exact_extract` function from the `exactextractr` package, which accounts for partial cell coverage. This was repeated for each year layer in the input raster stack.
+Area of Occupancy (AOO) is calculated using a 10 km × 10 km grid overlaid on the ecosystem map. The grid is created to match the spatial extent of the input raster, with a two-cell buffer added to ensure full coverage at the edges. Grid cells were converted to polygons and the area of ecosystem coverage within each cell is extracted using the `exact_extract` function from the `exactextractr` package, which accounts for partial cell coverage. This is repeated for each year layer in the input raster stack.
 
-To exclude cells with negligible ecosystem presence, a 1% rule was applied: cells were ranked by their coverage area in ascending order and the cumulative proportion of total area was calculated. Only cells exceeding the bottom 1% cumulative area threshold were retained. AOO was then summarised per year with both the total number of occupied cells (coverage area \> 0) and the number of cells passing the 1% threshold.
+To exclude cells with negligible ecosystem presence, a 1% rule is applied: cells were ranked by their coverage area in ascending order and the cumulative proportion of total area is calculated. Only cells exceeding the bottom 1% cumulative area threshold were retained. AOO is then summarised per year with both the total number of occupied cells (coverage area \> 0) and the number of cells passing the 1% threshold.
 
 ------------------------------------------------------------------------
 
