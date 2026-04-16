@@ -23,9 +23,7 @@ report_module_ui <- function(id) {
   nav_panel(
     "Report/Data download",
     
-    page_fluid(navset_card_tab(
-      # height = 450,
-      full_screen = TRUE,
+    page_fluid(navset_card_pill(
       # -----------------------------------------------------------------------
       # report
       nav_panel(

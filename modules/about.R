@@ -13,33 +13,24 @@ about_module_ui <- function(id) {
   
   nav_panel(
     "About/Help",
-    page_fluid(navset_card_tab(
-      # height = 450,
-      full_screen = TRUE,
+    navset_card_pill(
       nav_panel(
         "Example Data",
-        card_body(
-          fluidPage(
             tags$iframe(
               src = "documentation/itigi_sumbu_summary.html",
               width = "100%",
               height = "900px",
               style = "border:none;"
-            ))
-      )),
+            )),
       nav_panel(
         "RLE",
         card_body(
-          # tags$p(
-          #   "RLE criterion doc here"
-          # )
-          fluidPage(
             tags$iframe(
               src = "documentation/rle-assessment-criteria.html",
               width = "100%",
               height = "900px",
               style = "border:none;"
-            ))
+            )
           )),
       nav_panel(
         "About",
@@ -48,7 +39,7 @@ about_module_ui <- function(id) {
             "about doc here"
           )
           ))
-    )))
+    ))
 }
 
 about_module_server <- function(input, output, session) {}
