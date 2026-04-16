@@ -1,8 +1,24 @@
+# helpers/modals.R
+
+# =============================================================================
 # modals
+# =============================================================================
+# This script creates the modals used throughout the app
+# 1) start up 
+# 2) upload_modal
+# 3) a quick
+# 4) b quick
+# 5) b help
+# 6) b1
+# 7) b2
+
+# currently not the report modal..... 
+# =============================================================================
 
 
-# -----------------------------------------------------------------------------
-# start up modal
+# =============================================================================
+# 1) start up modal
+# =============================================================================
 start_up_modal <- modalDialog(
     title = div(
       style = "font-size: 20px; font-weight: bold; text-align:center;",
@@ -35,8 +51,8 @@ start_up_modal <- modalDialog(
         tags$hr(),
         
         tags$p(
-          style = "font-size: 14px; font-style: italic; color: #666;",
-          "Tip: Hover over info icons throughout the app for additional guidance."
+          style = "font-size: 12px; font-style: italic; color: #7f8c8d;",
+          tags$p("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
         )
       )
     ),
@@ -45,8 +61,9 @@ start_up_modal <- modalDialog(
     footer = modalButton("Start")
   )
 
-# -----------------------------------------------------------------------------
-# upload 
+# =============================================================================
+# 2) upload modal 
+# =============================================================================
 upload_modal <- modalDialog(
   title = "Processing classification maps",
   tagList(
@@ -63,8 +80,9 @@ upload_modal <- modalDialog(
 
 
 
-# -----------------------------------------------------------------------------
-# criterion a quick 
+# =============================================================================
+# 3) criterion a quick modal 
+# =============================================================================
 a_quick_modal <- modalDialog(
   title = "Criterion A – quick guide",
   tagList(
@@ -99,8 +117,9 @@ a_quick_modal <- modalDialog(
   size = "l"
 )
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # criterion b quick 
+# =============================================================================
 b_quick_modal <- modalDialog(
   title = "Criterion B – quick guide",
   tagList(
@@ -119,8 +138,9 @@ b_quick_modal <- modalDialog(
   size = "m"
 )
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # criterion b more help
+# =============================================================================
 b_help_modal <- modalDialog(
   title = "Criterion B – quick guide",
   tagList(
@@ -139,8 +159,9 @@ b_help_modal <- modalDialog(
   size = "m"
 )
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # subcriterion b1
+# =============================================================================
 # b1_modal <- modalDialog(
 #   title = "Subcriteria B1",
 #   tagList(
@@ -157,7 +178,6 @@ b_help_modal <- modalDialog(
 #   ),
 #   size = "m"
 # )
-
 b1_modal <- modalDialog(
   title = "Subcriteria B1 Assessment",
   tagList(
@@ -174,8 +194,9 @@ b1_modal <- modalDialog(
   footer = NULL
 )
 
-# -----------------------------------------------------------------------------
+# =============================================================================
 # subcriterion b2 
+# =============================================================================
 # b2_modal <- modalDialog(
 #   title = "Criterion B – quick guide",
 #   tagList(
@@ -209,8 +230,10 @@ b2_modal <- modalDialog(
   footer = NULL
 )
 
-# # -----------------------------------------------------------------------------
+
+# =============================================================================
 # # report / download
+# =============================================================================
 # report_modal <- modalDialog(
 #  tagList(
 #     div(
