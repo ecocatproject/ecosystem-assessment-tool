@@ -52,7 +52,7 @@ start_up_modal <- modalDialog(
         
         tags$p(
           style = "font-size: 12px; font-style: italic; color: #7f8c8d;",
-          tags$p("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
+          tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
         )
       )
     ),
