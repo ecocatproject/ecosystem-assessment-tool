@@ -158,26 +158,147 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
 # Reproduces your assessment, figures, and maps outside the Shiny interface.
 #
 # BEFORE RUNNING:
-#   1. Install required packages listed below
-#   2. Check / update the file path(s) in the INPUT FILES section
-#   3. Ensure helpers/analysis_functions.R is accessible (see source() call)
-#   4. Figures are saved to a "figures/" subfolder in your working directory
+#   1. Check / update the file path(s) in the INPUT FILES section
+#   2. Ensure helpers/analysis_functions.R is accessible (see source() call)
+#   3. Figures are saved to a "figures/" subfolder in your working directory
 # =============================================================================
 
-library(terra)
-library(dplyr)
-library(purrr)
-library(sf)
-library(exactextractr)
-library(tidyr)
-library(ggplot2)
-library(plotly)
-library(leaflet)
-library(htmlwidgets)
-library(mgcv)
+# =============================================================================
+# STEP 0 - Load packages, functions, create output folder
+# =============================================================================
 
-source("helpers/analysis_functions.R")  # calc_area_change, predict_area_change, makeEOO.SpatRaster
+# check and load packages
+packages <- c("terra", "dplyr", "purrr", "sf", "exactextractr", "tidyr", "ggplot2","plotly", "leaflet", "htmlwidgets", "mgcv")
 
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg)
+  }
+  library(pkg, character.only = TRUE)
+}
+
+
+# load functions
+
+# -----------------------------------------------------------------------------
+# 1. calculate area change
+calc_area_change <- function(area.data) {
+  area.data <- area.data %>%
+    dplyr::select(Year, Area_km2) %>%
+    dplyr::mutate(year = round(as.numeric(Year),0), area = Area_km2, Year = NULL, Area_km2 = NULL) %>%
+    dplyr::arrange(year)
+  
+  obsv_change <- area.data %>%
+    dplyr::mutate(
+      dt = year - lag(year),
+      area_change = area - lag(area),   # later - earlier (signed correctly)
+      proportional_rate_change = ((area / lag(area))^(1 / dt) - 1) * 100,
+      absolute_rate_change = area_change / dt,
+    )
+  return(obsv_change)
+}
+
+# -----------------------------------------------------------------------------
+# 2. Function to calculate decline statistics + projections
+predict_area_change <- function(obsv_change, horizon = 50) {
+  # helper data for projections
+  oldest <- cbind(
+    obsv_change %>% slice(1) %>% dplyr::select(year, area),                        # select the 1st row of year and area data, but need the next decline stat
+    obsv_change %>% slice(2) %>% dplyr::select(absolute_rate_change, proportional_rate_change) # # select the  1st set of decline stats
+  )
+  recent <- obsv_change %>% slice(n())                                      # choose the most recent row
+  nYearsPast <- (horizon - (max(obsv_change$year) - min(obsv_change$year))) # oldest data
+  if (nYearsPast < 0) nYearsPast <- 0                                       # safeguard if there happens to be early estimates?
+  
+  # projection function
+  # this is used separately for future and past projections
+  # and is applied to future projections using imap (purrr package)
+  # project_seq <- function(start_area, rate, type, years, direction = "future") {
+    project_seq <- function(start_area, rate, type, years, direction = c("future", "past")) {
+      direction <- match.arg(direction)
+      
+    seq_df <- data.frame(i = 0:years) %>%
+      mutate(
+        area = case_when(
+          type == "PRC" & direction == "future" ~ start_area * (1 + rate/100)^i,
+          type == "PRC" & direction == "past"   ~ start_area * (1 + rate/100)^(-i),
+          type == "ARC" & direction == "future" ~ start_area + rate * i,
+          type == "ARC" & direction == "past"   ~ start_area - rate * i,
+          TRUE ~ NA_real_
+        ),
+      area = pmax(area, 0),   # this prevents negative values
+      #  area = area,
+        year = if (direction == "future") recent$year + i else oldest$year - i,
+      ptype = "projected",
+      method = type
+      ) 
+    return(seq_df)
+  }
+  
+  # Past extrapolation (using oldest rate)
+  past_proj <- bind_rows(
+    # project_seq(oldest$area, -oldest$annual_rate_change, "ARC", nYearsPast, "past"),
+    project_seq(oldest$area, oldest$proportional_rate_change, "PRC", nYearsPast, "past"),
+    project_seq(oldest$area, oldest$absolute_rate_change, "ARC", nYearsPast, "past")
+  ) %>% mutate(scenario = "past") %>%
+    dplyr::select(year, area,  type = ptype, method, scenario) %>%
+    dplyr::arrange(year)
+  
+  # Future projections
+  scenarios <- list(
+    median = list(
+      PRC = median(obsv_change$proportional_rate_change, na.rm = TRUE),
+      ARC = median(obsv_change$absolute_rate_change, na.rm = TRUE)
+    ),
+    recent = list(
+      PRC = recent$proportional_rate_change,
+      ARC = recent$absolute_rate_change
+    ),
+    worst = list(
+      PRC = min(0, min(obsv_change$proportional_rate_change, na.rm = TRUE)), # clamped to 0 to prevent increases
+      ARC = min(0, min(obsv_change$absolute_rate_change, na.rm = TRUE))
+    )
+  )
+  
+  # If recent and worst are the same, merge them into "recent/worst"
+  equal_check <- all.equal(scenarios$recent, scenarios$worst, tolerance = 1e-8)
+  if (isTRUE(equal_check)) {
+    scenarios$`recent/worst` <- scenarios$worst
+    scenarios$recent <- NULL
+    scenarios$worst <- NULL
+  }
+  
+  future_proj <- imap_dfr(scenarios, function(rates, scen) { # this iterates over 2 arguments at a time (a bit like seq_along...)
+    bind_rows(
+      project_seq(recent$area, rates$PRC, "PRC", horizon, "future"),
+      project_seq(recent$area, rates$ARC, "ARC", horizon, "future")
+    ) %>% mutate(scenario = scen) %>%
+      dplyr::select(year, area,  type = ptype, method, scenario) %>%
+      arrange(year)
+  })
+  
+  # Combine observed + projections
+  observed <- obsv_change %>% 
+    dplyr::select(year, area) %>%                                                # select the data required for combining
+    mutate(type = "observed", method = "observed", scenario = "observed") # force names to comply with other data
+  
+  out <- bind_rows(past_proj, observed,  future_proj)                     # combine the 3 sets of data
+  
+  return(out)
+}
+
+# -----------------------------------------------------------------------------
+# 3.function needed for MCP calculation
+makeEOO.SpatRaster <- function(input.data, year){
+  EOO.polygon <- as.polygons(input.data, na.rm=T)
+  EOO.poly <- convHull(EOO.polygon)
+  # add attributes directly
+  EOO.poly$year <- year
+  EOO.poly$area_km2 <- terra::expanse(EOO.poly, unit = "km")
+  return(EOO.poly)
+}
+
+# -----------------------------------------------------------------------------
 # Create output folder for figures
 dir.create("figures", showWarnings = FALSE)
 
