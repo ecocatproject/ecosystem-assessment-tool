@@ -96,10 +96,9 @@ a_quick_modal <- modalDialog(
     # link to RLE guidelines
     tags$p(
       tags$b("Source: "),
-      "RLE Guidelines - ",
       tags$a(
         href = "https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf",
-        "Click here",
+        "IUCN RLE Guidelines",
         target = "blank",
         style = "color: #2c7fb8;"
       )
