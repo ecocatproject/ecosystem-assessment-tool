@@ -1,0 +1,77 @@
+---
+title: "EcoCAT Red List of Ecosystems Assessment Tool"
+subtitle: "Data description and methods"
+date: last-modified
+author: "Rob Critchlow"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: 2
+    theme: flatly
+    # toc_collapsed: true
+    self-contained: true
+    self-contained-math: true
+    embed-resources: true
+   # bibliography: references.bib
+    link-citations: true
+    link-external-icon: true
+    # page-layout: fulle
+execute:
+  echo: false
+# editor: visual
+---
+
+## Introduction
+
+This ecosystem assessment tool from the EcoCAT project is designed for users who already have maps of ecosystems or habitats that they want perform an ecosystem assessment on following the [IUCN Red List of Ecosystem assessment guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf "pdf file of the RLE ecosytem assessment guidelines"){target="_blank" rel="noopener noreferrer"}. This tool can generate the following:
+
+-   Descriptive information of a mapped ecosystem
+
+-   Criterion A (temporal change) - only when \>1 time period of data is uploaded
+
+-   Criterion B (Area and extent of occurrence)
+
+The ecosystem assessment tool will help provide standardised ecosystem assessments, to ensure ecosystem status are comparable across all assessed ecosystems.
+
+For additional information on the project including the team involved and other tools in development (e.g. an ecosystem mapping tool), please visit the [RBG Kew project webpage](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the RBG Kew project webpage")
+
+------------------------------------------------------------------------
+
+## Methods
+
+### Descriptive data
+
+#### Rainfall
+
+Historical rainfall data is currently extracted from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} at a 2.5 minute resolution
+
+#### Temperature
+
+Historical temperature data is currently extracted from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} at a 2.5 minute resolution.
+
+#### Elevation
+
+#### Global Ecosystem Typology
+
+#### Country overlap
+
+### Criterion A
+
+xxx
+
+### Criterion B
+
+xxx
+
+------------------------------------------------------------------------
+
+## Limitations
+
+------------------------------------------------------------------------
+
+## Future
+
+### Criterion C
+
+### Criteria D
