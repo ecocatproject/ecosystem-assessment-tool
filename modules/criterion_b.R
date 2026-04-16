@@ -185,7 +185,10 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
               mcp_vectors()[mcp_vectors()$year == latest_year, ], "EPSG:4326")),
             fillOpacity = 0.3, color = "black", weight = 2,
             group = paste0(latest_year, " MCP"),
-            label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2, 2), " km²"),
+            label = ~htmltools::HTML(
+              paste0("<strong>Year:</strong> ", year,
+                     "<br><strong>Area:</strong> ", round(area_km2, 2), " km²")
+            ),
             highlightOptions = highlightOptions(bringToFront = TRUE, color = "white", weight = 3)
           ) %>%
           addRasterImage(latest, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
