@@ -3,7 +3,8 @@
 # =============================================================================
 # modals
 # =============================================================================
-# This script creates the modals used throughout the app
+# This script creates the modals used throughout the app:
+
 # 1) start up 
 # 2) upload_modal
 # 3) a quick
