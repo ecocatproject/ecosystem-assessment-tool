@@ -3121,25 +3121,35 @@ window.Quarto = {
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-  <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="2">
+  <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="3">
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
+  <ul>
+  <li><a href="#descriptive-data" id="toc-descriptive-data" class="nav-link" data-scroll-target="#descriptive-data">Descriptive data</a>
   <ul class="collapse">
-  <li><a href="#descriptive-data" id="toc-descriptive-data" class="nav-link" data-scroll-target="#descriptive-data">Descriptive data</a></li>
+  <li><a href="#rainfall" id="toc-rainfall" class="nav-link" data-scroll-target="#rainfall">Rainfall</a></li>
+  <li><a href="#temperature" id="toc-temperature" class="nav-link" data-scroll-target="#temperature">Temperature</a></li>
+  <li><a href="#elevation" id="toc-elevation" class="nav-link" data-scroll-target="#elevation">Elevation</a></li>
+  <li><a href="#global-ecosystem-typology" id="toc-global-ecosystem-typology" class="nav-link" data-scroll-target="#global-ecosystem-typology">Global Ecosystem Typology</a></li>
+  <li><a href="#country-overlap" id="toc-country-overlap" class="nav-link" data-scroll-target="#country-overlap">Country overlap</a></li>
+  </ul></li>
+  <li><a href="#iucn-red-list-of-ecosystem-assessment" id="toc-iucn-red-list-of-ecosystem-assessment" class="nav-link" data-scroll-target="#iucn-red-list-of-ecosystem-assessment">IUCN Red List of Ecosystem Assessment</a>
+  <ul class="collapse">
   <li><a href="#criterion-a" id="toc-criterion-a" class="nav-link" data-scroll-target="#criterion-a">Criterion A</a></li>
   <li><a href="#criterion-b" id="toc-criterion-b" class="nav-link" data-scroll-target="#criterion-b">Criterion B</a></li>
   </ul></li>
+  </ul></li>
   <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
   <li><a href="#future-work" id="toc-future-work" class="nav-link" data-scroll-target="#future-work">Future work</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#criterion-b---subcriterion-b3" id="toc-criterion-b---subcriterion-b3" class="nav-link" data-scroll-target="#criterion-b---subcriterion-b3">Criterion B - subcriterion B3</a></li>
   <li><a href="#criterion-c" id="toc-criterion-c" class="nav-link" data-scroll-target="#criterion-c">Criterion C</a></li>
   <li><a href="#criterion-d" id="toc-criterion-d" class="nav-link" data-scroll-target="#criterion-d">Criterion D</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
 </div>
@@ -3215,28 +3225,32 @@ window.Quarto = {
 <p>The overlap of the ecosystem with national boundaries was assessed using country polygons from the <a href="naturalearthdata.com">Natural Earth</a> dataset (medium scale, 1:50m) accessed via the <code>rnaturalearth</code> package. To reduce computational load, up to 100,000 points are sampled from the the mapped ecosystem at regular intervals using the <code>spatSample</code> function in the <code>terra</code> package and converted back to a raster grid. Country polygons are rasterized to match this grid. Zonal statistics of the sampled ecosystem raster are calculated using the <code>zonal</code> function from the <code>terra</code> package and the area of ecosystem cells falling within each country is calculated using the <code>expanse</code>. Results are then summarised as area and percentage of total ecosystem coverage, and ranked in descending order of area.</p>
 </section>
 </section>
-<section id="criterion-a" class="level3">
-<h3 class="anchored" data-anchor-id="criterion-a">Criterion A</h3>
+<section id="iucn-red-list-of-ecosystem-assessment" class="level3">
+<h3 class="anchored" data-anchor-id="iucn-red-list-of-ecosystem-assessment">IUCN Red List of Ecosystem Assessment</h3>
+<p>The assessments for Criterion A and B are implemented following the <a href="https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf" target="_blank" rel="noopener noreferrer" title="pdf file of the RLE ecosytem assessment guidelines">IUCN Red List of Ecosystem assessment guidelines</a>. Further details of how the guidelines have been implemented are provide below.</p>
+<section id="criterion-a" class="level4">
+<h4 class="anchored" data-anchor-id="criterion-a">Criterion A</h4>
 <p>Observed changes in ecosystem area between time periods were calculated as both an absolute rate of change and a proportional rate of change. The absolute rate of change (<span class="math inline">\(\text{ARC}\)</span>, km² yr⁻¹) is calculated as:</p>
 <p><span class="math display">\[\text{ARC} = \frac{A_t - A_{t-1}}{\Delta t}\]</span></p>
 <p>where <span class="math inline">\(A_t\)</span> is the area at time <span class="math inline">\(t\)</span> and <span class="math inline">\(\Delta t\)</span> is the number of years between observations. The proportional rate of change (<span class="math inline">\(\text{PRC}\)</span>, % yr⁻¹) is calculated as a compound annual rate to account for unequal intervals between survey years:</p>
 <p><span class="math display">\[\text{PRC} = \left(\left(\frac{A_t}{A_{t-1}}\right)^{1/\Delta t} - 1\right) \times 100\]</span></p>
 <p>Past and future trajectories were then projected over a 50-year horizon using both methods in parallel. Under the ARC method, area at year <span class="math inline">\(i\)</span> is projected as <span class="math inline">\(A_0 + \text{ARC} \times i\)</span>, and under the PRC method as <span class="math inline">\(A_0 \times (1 + \text{PRC}/100)^i\)</span>, where <span class="math inline">\(A_0\)</span> is the starting area.</p>
 </section>
-<section id="criterion-b" class="level3">
-<h3 class="anchored" data-anchor-id="criterion-b">Criterion B</h3>
+<section id="criterion-b" class="level4">
+<h4 class="anchored" data-anchor-id="criterion-b">Criterion B</h4>
 <p>Criterion B assess the geographic distribution of a mapped ecosystem to identify those with restricted distributions and are therefore at risk of collapse from threatening events <span class="citation" data-cites="Rodr_guez_2015">(<a href="#ref-Rodr_guez_2015" role="doc-biblioref">Rodríguez et al. 2015</a>)</span>. There are 2 measures of ecosystem distribution: Extent of occurrence (EOO) for subcriterion B1 and Area of occupancy (AOO) for subcriterion B2. These spatial distribution metrics have been shown to be appropriate across ecosystems with varying distribution patterns such as linear ecosystems (e.g., riverine) and more uniform types such as intact forest <span class="citation" data-cites="guidelin2024">(<a href="#ref-guidelin2024" role="doc-biblioref">Keith et al. 2024</a>)</span>.</p>
-<section id="subcriterion-b1" class="level4">
-<h4 class="anchored" data-anchor-id="subcriterion-b1">Subcriterion B1</h4>
+<section id="subcriterion-b1" class="level5">
+<h5 class="anchored" data-anchor-id="subcriterion-b1">Subcriterion B1</h5>
 <p>Extent of occurrence (EOO) is measured using a minimum convex polygon (MCP) that encompasses all known spatial localities of the ecosystem. The area (km<sup>2</sup>) of the MCP must not exclude any areas irrespective of whether the ecosystem can occur there or not.</p>
 <p>Extent of Occurrence (EOO) is calculated from input raster data using a custom function implemented in R. The input raster is first converted to a polygon vector using the <code>as.polygons</code> function from the <code>terra</code> package, with NA cells excluded. A convex hull is then fitted around the resulting polygons using the <code>hull</code> function (also from <code>terra</code>), providing the minimum convex polygon enclosing all presence locations. The area of this convex hull is calculated in km² using the <code>expanse</code> function from the <code>terra</code> package, and the resulting EOO polygon is attributed with both the survey year and the calculated area.</p>
 </section>
-<section id="subcriterion-b2" class="level4">
-<h4 class="anchored" data-anchor-id="subcriterion-b2">Subcriterion B2</h4>
+<section id="subcriterion-b2" class="level5">
+<h5 class="anchored" data-anchor-id="subcriterion-b2">Subcriterion B2</h5>
 <p>Area of occupancy (AOO) counts the number of 10km<sup>2</sup> grid cells occupied by the ecosystem - this is standardised across all ecosystems regardless of the spatial resolution of the mapped ecosystem.</p>
 <p>Area of Occupancy (AOO) is calculated using a 10 km × 10 km grid overlaid on the ecosystem map. The grid is created to match the spatial extent of the input raster, with a two-cell buffer added to ensure full coverage at the edges. Grid cells were converted to polygons and the area of ecosystem coverage within each cell is extracted using the <code>exact_extract</code> function from the <code>exactextractr</code> package, which accounts for partial cell coverage. This is repeated for each year layer in the input raster stack.</p>
 <p>To exclude cells with negligible ecosystem presence, a 1% rule is applied: cells were ranked by their coverage area in ascending order and the cumulative proportion of total area is calculated. Only cells exceeding the bottom 1% cumulative area threshold were retained. AOO is then summarised per year with both the total number of occupied cells (coverage area &gt; 0) and the number of cells passing the 1% threshold.</p>
 <hr>
+</section>
 </section>
 </section>
 </section>
@@ -3245,6 +3259,14 @@ window.Quarto = {
 </section>
 <section id="future-work" class="level2">
 <h2 class="anchored" data-anchor-id="future-work">Future work</h2>
+<ul>
+<li><p>Assessment precision</p></li>
+<li><p>Uncertainty</p>
+<ul>
+<li>mapping</li>
+<li>assessment (e.g. grid)</li>
+</ul></li>
+</ul>
 <section id="criterion-b---subcriterion-b3" class="level3">
 <h3 class="anchored" data-anchor-id="criterion-b---subcriterion-b3">Criterion B - subcriterion B3</h3>
 </section>
@@ -3254,10 +3276,10 @@ window.Quarto = {
 <section id="criterion-d" class="level3">
 <h3 class="anchored" data-anchor-id="criterion-d">Criterion D</h3>
 </section>
-<section id="references" class="level3 unnumbered">
-
-
 </section>
+<section id="references" class="level2 unnumbered">
+
+
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
