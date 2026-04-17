@@ -45,17 +45,25 @@ For additional information on the project including the team involved and other 
 
 #### Rainfall
 
-Historical rainfall data is currently extracted from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} at a 2.5 minute resolution
+Historical rainfall data is derived from[WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} [@fick2017] at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.
 
 #### Temperature
 
-Historical temperature data is currently extracted from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} at a 2.5 minute resolution.
+Historical monthly temperature data is derived from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} [@fick2017] at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package, with monthly temperature values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum temperature are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series.
 
 #### Elevation
 
+Elevation data is extracted for the ecosystem area using the `get_elev_raster` function from the `elevatr` package, retrieving tiles from the [Amazon Web Services (AWS) Terrain Tiles](registry.opendata.aws/terrain-tiles) service at zoom level 6. The AWS terrain tiles incorporate 3DEP, SRTM, and GMTED2010 content courtesy of the U.S. Geological Survey, and ETOPO1 content courtesy of the U.S. National Oceanic and Atmospheric Administration. The resolution of the returned raster is determined by both the zoom level and latitude; full details of the zoom-to-resolution relationship are provided in the [Mapzen/Tilezen documentation](github.com/tilezen/joerd/blob/master/docs/data-sources.md). The spatial extent of the input ecosystem raster is first converted to an `sf` polygon to define the region of interest for the elevation query. The returned elevation raster is then resampled to match the resolution and alignment of the ecosystem raster using bilinear averaging, and masked to retain only elevation values falling within the mapped ecosystem extent.
+
 #### Global Ecosystem Typology
 
+The Global Ecosystem Typology (GET) of the ecosystem was assessed using the IUCN Global Ecosystem Typology GeoTIFF layers, which classify land area into Ecosystem Functional Groups (EFGs) at global extent @keith2022a. The ecosystem raster is reprojected to match the CRS of the GET layers where necessary (using modal resampling to preserve categorical values), and the GET layers were loaded for the spatial extent of the ecosystem. The ecosystem raster is then resampled to match the GET layer resolution and used as a mask to restrict the analysis to the mapped ecosystem area.
+
+The number of raster cells assigned to each EFG was counted separately for major (value = 1) and minor (value = 2) occurrences, following the GET classification convention. The proportion of each EFG relative to the total cell count across all layers is calculated, and EFGs contributing less than 1% of the total (for both major and minor occurrence) are excluded to ensure the most meaningful EFGs overlapping the ecosystem. The remaining EFGs are ranked by the proportion of major occurrence.
+
 #### Country overlap
+
+The overlap of the ecosystem with national boundaries was assessed using country polygons from the [Natural Earth](naturalearthdata.com) dataset (medium scale, 1:50m) accessed via the `rnaturalearth` package. To reduce computational load, up to 100,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package and converted back to a raster grid. Country polygons are rasterized to match this grid. Zonal statistics of the sampled ecosystem raster are calculated using the `zonal` function from the `terra` package and the area of ecosystem cells falling within each country is calculated using the `expanse`. Results are then summarised as area and percentage of total ecosystem coverage, and ranked in descending order of area.
 
 ### Criterion A
 
