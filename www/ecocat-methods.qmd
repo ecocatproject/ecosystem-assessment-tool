@@ -1,0 +1,87 @@
+---
+title: "EcoCAT Red List of Ecosystems Assessment Tool"
+subtitle: "Data description and methods"
+date: last-modified
+author: "Rob Critchlow"
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: 3
+    theme: flatly
+    # toc_collapsed: true
+    self-contained: true
+    self-contained-math: true
+    embed-resources: true
+    bibliography: methods-references.bib
+    csl: conservation-biology.csl
+    link-citations: true
+    link-external-icon: true
+    # page-layout: fulle
+execute:
+  echo: false
+# editor: visual
+---
+
+## Methods
+  
+### Descriptive data
+  
+#### Rainfall
+  
+  Historical rainfall data is derived from[WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} [@fick2017] at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.
+
+#### Temperature
+
+Historical monthly temperature data is derived from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} [@fick2017] at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package, with monthly temperature values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum temperature are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series.
+
+#### Elevation
+
+Elevation data is extracted for the ecosystem area using the `get_elev_raster` function from the `elevatr` package, retrieving tiles from the [Amazon Web Services (AWS) Terrain Tiles](registry.opendata.aws/terrain-tiles){target="_blank" rel="noopener noreferrer"} service at zoom level 6. The AWS terrain tiles incorporate 3DEP, SRTM, and GMTED2010 content courtesy of the U.S. Geological Survey, and ETOPO1 content courtesy of the U.S. National Oceanic and Atmospheric Administration. The resolution of the returned raster is determined by both the zoom level and latitude; full details of the zoom-to-resolution relationship are provided in the [Mapzen/Tilezen documentation](github.com/tilezen/joerd/blob/master/docs/data-sources.md){target="_blank" rel="noopener noreferrer"}. The spatial extent of the input ecosystem raster is first converted to an `sf` polygon to define the region of interest for the elevation query. The returned elevation raster is then resampled to match the resolution and alignment of the ecosystem raster using bilinear averaging, and masked to retain only elevation values falling within the mapped ecosystem extent.
+
+#### Global Ecosystem Typology
+
+The Global Ecosystem Typology (GET) of the ecosystem was assessed using the IUCN Global Ecosystem Typology GeoTIFF layers, which classify land area into Ecosystem Functional Groups (EFGs) at global extent @keith2022a. The ecosystem raster is reprojected to match the CRS of the GET layers where necessary (using modal resampling to preserve categorical values), and the GET layers were loaded for the spatial extent of the ecosystem. The ecosystem raster is then resampled to match the GET layer resolution and used as a mask to restrict the analysis to the mapped ecosystem area.
+
+The number of raster cells assigned to each EFG was counted separately for major (value = 1) and minor (value = 2) occurrences, following the GET classification convention. The proportion of each EFG relative to the total cell count across all layers is calculated, and EFGs contributing less than 1% of the total (for both major and minor occurrence) are excluded to ensure the most meaningful EFGs overlapping the ecosystem. The remaining EFGs are ranked by the proportion of major occurrence.
+
+#### Country overlap
+
+The overlap of the ecosystem with national boundaries was assessed using country polygons from the [Natural Earth](naturalearthdata.com){target="_blank" rel="noopener noreferrer"} dataset (medium scale, 1:50m) accessed via the `rnaturalearth` package. To reduce computational load, up to 100,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package and converted back to a raster grid. Country polygons are rasterized to match this grid. Zonal statistics of the sampled ecosystem raster are calculated using the `zonal` function from the `terra` package and the area of ecosystem cells falling within each country is calculated using the `expanse`. Results are then summarised as area and percentage of total ecosystem coverage, and ranked in descending order of area.
+
+### IUCN Red List of Ecosystem Assessment
+
+The assessments for Criterion A and B are implemented following the [IUCN Red List of Ecosystem assessment guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf "pdf file of the RLE ecosytem assessment guidelines"){target="_blank" rel="noopener noreferrer"}. Further details of how the guidelines have been implemented are provide below.
+
+#### Criterion A
+
+Observed changes in ecosystem area between time periods were calculated as both an absolute rate of change and a proportional rate of change. The absolute rate of change ($\text{ARC}$, km² yr⁻¹) is calculated as:
+  
+  $$\text{ARC} = \frac{A_t - A_{t-1}}{\Delta t}$$
+  
+  where $A_t$ is the area at time $t$ and $\Delta t$ is the number of years between observations. The proportional rate of change ($\text{PRC}$, % yr⁻¹) is calculated as a compound annual rate to account for unequal intervals between survey years:
+  
+  $$\text{PRC} = \left(\left(\frac{A_t}{A_{t-1}}\right)^{1/\Delta t} - 1\right) \times 100$$
+  
+  Past and future trajectories were then projected over a 50-year horizon using both methods in parallel. Under the ARC method, area at year $i$ is projected as $A_0 + \text{ARC} \times i$, and under the PRC method as $A_0 \times (1 + \text{PRC}/100)^i$, where $A_0$ is the starting area.
+
+#### Criterion B
+
+Criterion B assess the geographic distribution of a mapped ecosystem to identify those with restricted distributions and are therefore at risk of collapse from threatening events [@Rodr_guez_2015]. There are 2 measures of ecosystem distribution: Extent of occurrence (EOO) for subcriterion B1 and Area of occupancy (AOO) for subcriterion B2. These spatial distribution metrics have been shown to be appropriate across ecosystems with varying distribution patterns such as linear ecosystems (e.g., riverine) and more uniform types such as intact forest [@guidelin2024].
+
+##### Subcriterion B1
+
+Extent of occurrence (EOO) is measured using a minimum convex polygon (MCP) that encompasses all known spatial localities of the ecosystem. The area (km^2^) of the MCP must not exclude any areas irrespective of whether the ecosystem can occur there or not.
+
+Extent of Occurrence (EOO) is calculated from input raster data using a custom function implemented in R. The input raster is first converted to a polygon vector using the `as.polygons` function from the `terra` package, with NA cells excluded. A convex hull is then fitted around the resulting polygons using the `hull` function (also from `terra`), providing the minimum convex polygon enclosing all presence locations. The area of this convex hull is calculated in km² using the `expanse` function from the `terra` package, and the resulting EOO polygon is attributed with both the survey year and the calculated area.
+
+##### Subcriterion B2
+
+Area of occupancy (AOO) counts the number of 10km^2^ grid cells occupied by the ecosystem - this is standardised across all ecosystems regardless of the spatial resolution of the mapped ecosystem.
+
+Area of Occupancy (AOO) is calculated using a 10 km × 10 km grid overlaid on the ecosystem map. The grid is created to match the spatial extent of the input raster, with a two-cell buffer added to ensure full coverage at the edges. Grid cells were converted to polygons and the area of ecosystem coverage within each cell is extracted using the `exact_extract` function from the `exactextractr` package, which accounts for partial cell coverage. This is repeated for each year layer in the input raster stack.
+
+To exclude cells with negligible ecosystem presence, a 1% rule is applied: cells were ranked by their coverage area in ascending order and the cumulative proportion of total area is calculated. Only cells exceeding the bottom 1% cumulative area threshold were retained. AOO is then summarised per year with both the total number of occupied cells (coverage area \> 0) and the number of cells passing the 1% threshold.
+
+
+## References
