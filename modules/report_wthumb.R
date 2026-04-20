@@ -31,19 +31,19 @@ report_module_ui <- function(id) {
             column(
               width = 6,
               textInput(ns("ecosystem_name"),
-                        tags$span("Ecosystem Name",tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained")),
+                        tags$span(tags$b("Ecosystem Name:"),tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained"), style = "color: #555;"),
                         placeholder = "Enter ecosystem name - Optional"),
               textInput(ns("organisation"),
-                        tags$span("Organisation(s)",tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained")),
+                        tags$span(tags$b("Organisation(s):"),tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained"), style = "color: #555;"),
                         placeholder = "Enter organisation name(s) - Optional")),
             column(
               width = 6,
               textInput(ns("author"),
-                        tags$span("Author",tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained")),
+                        tags$span(tags$b("Author:"),tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained"), style = "color: #555;"),
                         placeholder = "Enter assessor name - Optional"),
               selectInput(
                 ns("report_format"),
-                tags$span("Choose report format:",tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures")),
+                tags$span(tags$b("Choose report format:"),tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures"), style = "color: #555;"),
                 choices = c("HTML" = "html", "Word" = "docx") # "PDF" = "pdf"
               )),
               downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
@@ -55,7 +55,7 @@ report_module_ui <- function(id) {
       nav_panel(
         "Data",
         card_body(
-          checkboxGroupInput(ns("dataset_choice"), "Choose datasets:", choices = NULL),
+          checkboxGroupInput(ns("dataset_choice"), tags$b("Choose datasets:"), choices = NULL),
           downloadButton(ns("download_file"), "Download data")
         )
       ),
@@ -86,7 +86,7 @@ report_module_ui <- function(id) {
             # Criterion A trend figure
             column(
               width = 4,
-              tags$b("Criterion A \u2014 Area change trend"),
+              tags$b("Criterion A - Area change trend"),
               uiOutput(ns("fig_a_preview")),
               tags$br(),
               downloadButton(ns("dl_fig_a"), "Download PNG",
@@ -95,7 +95,7 @@ report_module_ui <- function(id) {
             # Criterion B1 EOO map
             column(
               width = 4,
-              tags$b("Criterion B1 \u2014 EOO map"),
+              tags$b("Criterion B1 - EOO map"),
               uiOutput(ns("fig_b1_preview")),
               tags$br(),
               downloadButton(ns("dl_fig_b1"), "Download PNG",
@@ -104,7 +104,7 @@ report_module_ui <- function(id) {
             # Criterion B2 AOO map
             column(
               width = 4,
-              tags$b("Criterion B2 \u2014 AOO map"),
+              tags$b("Criterion B2 - AOO map"),
               uiOutput(ns("fig_b2_preview")),
               tags$br(),
               downloadButton(ns("dl_fig_b2"), "Download PNG",

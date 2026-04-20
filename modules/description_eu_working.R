@@ -10,15 +10,12 @@
 # country overlap
 # global ecosystem typology overlap
 # elevation
-
 # =============================================================================
 
 
 
 # ==============================================================================
-# -----------------------------------------------------------------------------
 # UI
-# -----------------------------------------------------------------------------
 # ==============================================================================
 
 description_module_ui <- function(id) {
@@ -158,19 +155,51 @@ description_module_server <- function(id, upload_module, countries,
     # =========================================================================
     # Outputs - graphs and tables
     # =========================================================================
+    # blank plot when varibles calcualtion not selected
+    biotic_blank <- plot_ly() %>%
+      layout(
+        xaxis = list(visible = FALSE),
+        yaxis = list(visible = FALSE),
+        annotations = list(
+          list(
+            text = "Run assessment to preview figure",
+            x = 0.5,
+            y = 0.5,
+            xref = "paper",
+            yref = "paper",
+            showarrow = FALSE,
+            font = list(size = 14, color = "grey")
+          )
+        ),
+        paper_bgcolor = "white",
+        plot_bgcolor = "white"
+      )
+    
+    table_blank <- datatable(
+      data.frame(` ` = character(0), check.names = FALSE),
+      options = list(
+        pageLength = 5,
+        dom = "t",
+        language = list(emptyTable = "Run assessment to preview table")
+      ),
+      caption = NULL
+    )
     
     # -------------------------------------------------------------------------
     # country table
     output$roi_country_table <- DT::renderDataTable({
-      req(rv$countries)
+      dat <- tryCatch(rv$countries, error = function(e) NULL)
+      if (is.null(dat)) {
+        table_blank
+      } else {
       rv$countries
+      }
     }, options = list(pageLength = 5, dom = "t"))
-
+    
     # -------------------------------------------------------------------------
     # output rainfall value
     output$r_value <- renderUI({
       if (is.null(rv$rainfall)) return(NULL)
-
       span(
         paste0(" – (Annual average: ", round(sum(rv$rainfall$mean, na.rm=T),0), "mm)"),
         class = "text-muted ms-1"
@@ -180,11 +209,14 @@ description_module_server <- function(id, upload_module, countries,
     # -------------------------------------------------------------------------
     # rainfall graph 
     output$rain_graph <- renderPlotly({
-      req(rv$rainfall)
-
-      plot_ly(rv$rainfall, x = ~month) %>%
-        add_ribbons(
-          ymin = ~min_smooth,
+     # req(rv$rainfall)
+      p <- tryCatch(rv$rainfall, error = function(e) NULL)
+      if (is.null(p)) {
+        biotic_blank
+      } else {
+        plot_ly(rv$rainfall, x = ~month) %>%
+          add_ribbons(
+            ymin = ~min_smooth,
           ymax = ~max_smooth,
           line = list(color = 'transparent'),
           fillcolor = 'lightblue',
@@ -201,6 +233,7 @@ description_module_server <- function(id, upload_module, countries,
           xaxis = list(title = "Month"),
           yaxis = list(title = "Rainfall (mm)")
         )
+      }
     })
     
     # -------------------------------------------------------------------------
@@ -217,8 +250,11 @@ description_module_server <- function(id, upload_module, countries,
     # -------------------------------------------------------------------------
     # output temperature graph 
     output$temp_graph <- renderPlotly({
-      req(rv$temperature)
-
+      # req(rv$temperature)
+      p <- tryCatch(rv$temperature, error = function(e) NULL)
+      if (is.null(p)) {
+        biotic_blank
+      } else {
       plot_ly(rv$temperature, x = ~month) %>%
         add_ribbons(
           ymin = ~min_smooth,
@@ -237,6 +273,7 @@ description_module_server <- function(id, upload_module, countries,
           xaxis = list(title = "Month"),
           yaxis = list(title = "Temperature (°C)")
         )
+      }
     })
     
     # -------------------------------------------------------------------------
@@ -253,8 +290,12 @@ description_module_server <- function(id, upload_module, countries,
     # -------------------------------------------------------------------------
     # elevation histogram 
     output$elev_graph <- renderPlotly({
-      req(rv$elevation)
-
+      # req(rv$elevation)
+      p <- tryCatch(rv$elevation, error = function(e) NULL)
+      if (is.null(p)) {
+        biotic_blank
+      } else {
+      
       elev_values <- values(rv$elevation, na.rm = TRUE)  # get numeric vector without NAs
       elev_values <- as.numeric(elev_values)             # ensure it's a vector, not matrix
 
@@ -262,14 +303,20 @@ description_module_server <- function(id, upload_module, countries,
         layout(xaxis = list(title = "Elevation (m)"),
                yaxis = list(title = "Percentage of mapped pixels"),
                bargap = 0.01)
+      }
     })
 
     # -------------------------------------------------------------------------
     # typology table 
     output$get_table <- DT::renderDataTable({
-      req(rv$typology)
-      rv$typology
-    }, options = list(
+      dat <- tryCatch(rv$typology, error = function(e) NULL)
+      if (is.null(dat)) {
+        table_blank
+      } else {
+        rv$typology
+        }
+      },
+      options = list(
       paging = FALSE,        # no pagination
       searching = FALSE,     # no search box
       info = FALSE,          # no "Showing X of Y entries"
@@ -277,6 +324,20 @@ description_module_server <- function(id, upload_module, countries,
     ), rownames = FALSE)
 
 
+    # -------------------------------------------------------------------------
+    # country table
+    output$roi_country_table <- DT::renderDataTable({
+      dat <- tryCatch(rv$countries, error = function(e) NULL)
+      if (is.null(dat)) {
+        table_blank
+      } else {
+        rv$countries
+      }
+    }, options = list(pageLength = 5, dom = "t"))
+    
+    
+    
+    
     # ========================================================================
     # Processing 
     # ========================================================================
