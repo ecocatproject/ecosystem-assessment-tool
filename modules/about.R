@@ -24,7 +24,7 @@ about_module_ui <- function(id) {
                 tags$iframe(
                   src = "documentation/ecocat-about.html",
                   width = "100%",
-                  height = "900px",
+                  height = "100%",
                   style = "border:none;"
                 )
               ),
@@ -35,7 +35,7 @@ about_module_ui <- function(id) {
                 tags$iframe(
                   src = "documentation/ecocat-methods.html",
                   width = "100%",
-                  height = "900px",
+                  height = "100%",
                   style = "border:none;"
                 )
               ),
@@ -46,7 +46,7 @@ about_module_ui <- function(id) {
                 tags$iframe(
                   src = "documentation/itigi_sumbu_summary.html",
                   width = "100%",
-                  height = "900px",
+                  height = "100%",
                   style = "border:none;"
                 )
               ),
@@ -57,7 +57,7 @@ about_module_ui <- function(id) {
                 tags$iframe(
                   src = "documentation/rle-assessment-criteria.html",
                   width = "100%",
-                  height = "900px",
+                  height = "100%",
                   style = "border:none;"
                 )
               )
