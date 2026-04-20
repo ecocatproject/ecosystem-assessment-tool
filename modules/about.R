@@ -18,6 +18,28 @@ about_module_ui <- function(id) {
   nav_panel("About/Help",
             navset_card_pill(
               # ----------------------------------------------------------------
+              # about
+              nav_panel(
+                "About",
+                tags$iframe(
+                  src = "documentation/ecocat-about.html",
+                  width = "100%",
+                  height = "900px",
+                  style = "border:none;"
+                )
+              ),
+              # ----------------------------------------------------------------
+              # about / guidance
+              nav_panel(
+                "Methods",
+                tags$iframe(
+                  src = "documentation/ecocat-methods.html",
+                  width = "100%",
+                  height = "900px",
+                  style = "border:none;"
+                )
+              ),
+              # ----------------------------------------------------------------
               # example data
               nav_panel(
                 "Example Data",
@@ -38,18 +60,8 @@ about_module_ui <- function(id) {
                   height = "900px",
                   style = "border:none;"
                 )
-              ),
-              # ----------------------------------------------------------------
-              # about / guidance
-              nav_panel(
-                "About",
-                tags$iframe(
-                  src = "documentation/ecocat-guidance.html",
-                  width = "100%",
-                  height = "900px",
-                  style = "border:none;"
-                )
               )
+             
             ))
 }
 
