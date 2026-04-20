@@ -1,6 +1,6 @@
 ---
 title: "EcoCAT Red List of Ecosystems Assessment Tool"
-subtitle: "Data description and methods"
+subtitle: "About"
 date: last-modified
 author: "Rob Critchlow"
 format: 
@@ -13,8 +13,8 @@ format:
     self-contained: true
     self-contained-math: true
     embed-resources: true
-    bibliography: guidance-references.bib
-    csl: conservation-biology.csl
+    # bibliography: guidance-references.bib
+    # csl: conservation-biology.csl
     link-citations: true
     link-external-icon: true
     # page-layout: fulle
@@ -55,5 +55,3 @@ For additional information on the project including the team involved and other 
 ### Criterion C
 
 ### Criterion D
-
-## References
