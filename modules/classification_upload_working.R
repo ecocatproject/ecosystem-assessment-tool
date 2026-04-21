@@ -637,11 +637,6 @@ classification_module_server <- function(id) {
     output$process_btn_ui <- renderUI({
       req(tifs())
       
-      ## Check that all dropdowns have a valid selection
-      ## i.e., not NULL and not the placeholder "Select a year..."
-      dropdowns_valid <- all(!is.null(year_inputs()) & year_inputs() != "Select a year..." & nzchar(input$selected_layer))
-      
-      
       # Collect year inputs
       years_raw <- sapply(seq_along(tifs()$name),
                           function(i) input[[paste0("year_", i)]])
@@ -668,6 +663,13 @@ classification_module_server <- function(id) {
       # 
       # if (!more_than_one_file) {
       # Single file: valid year is enough
+      
+      
+      ## Check that all dropdowns have a valid selection
+      ## i.e., not NULL and not the placeholder "Select a year..."
+      
+      dropdowns_valid <- all(!is.null(year_inputs()) & year_inputs() != "Select a year..." & nzchar(input$selected_layer))
+      
       actionButton(ns("process"), "Process ecosystem maps", disabled = !dropdowns_valid )    #} else {
       #   # Multiple files: require distinct years
       #   if (more_than_one_unique) {

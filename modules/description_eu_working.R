@@ -80,7 +80,8 @@ description_module_ui <- function(id) {
         card_header("Ecosystem Country Overlap",
                     tooltip(bs_icon("info-circle"), "Proportion of the ecosystem within each country"
         )),
-        card_body(DT::dataTableOutput(ns("roi_country_table")))
+        # card_body(DT::dataTableOutput(ns("roi_country_table")))
+        card_body(uiOutput(ns("roi_country_table")))
       ),
 
       # ----------------------------------------------------------------------
@@ -90,7 +91,7 @@ description_module_ui <- function(id) {
         card_header(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank"),
                     tooltip(bs_icon("info-circle"), "Global Ecosystem Typology (Levels 1-3) within the ecosystem (> 1% of major or minor occurrence)"
         )),
-        card_body(DT::dataTableOutput(ns("get_table")))
+        card_body(uiOutput(ns("get_table")))
       )
     )
   )
@@ -162,7 +163,7 @@ description_module_server <- function(id, upload_module, countries,
         yaxis = list(visible = FALSE),
         annotations = list(
           list(
-            text = "Run assessment to preview figure",
+            text = "Upload data to view data",
             x = 0.5,
             y = 0.5,
             xref = "paper",
@@ -174,27 +175,6 @@ description_module_server <- function(id, upload_module, countries,
         paper_bgcolor = "white",
         plot_bgcolor = "white"
       )
-    
-    table_blank <- datatable(
-      data.frame(` ` = character(0), check.names = FALSE),
-      options = list(
-        pageLength = 5,
-        dom = "t",
-        language = list(emptyTable = "Run assessment to preview table")
-      ),
-      caption = NULL
-    )
-    
-    # -------------------------------------------------------------------------
-    # country table
-    output$roi_country_table <- DT::renderDataTable({
-      dat <- tryCatch(rv$countries, error = function(e) NULL)
-      if (is.null(dat)) {
-        table_blank
-      } else {
-      rv$countries
-      }
-    }, options = list(pageLength = 5, dom = "t"))
     
     # -------------------------------------------------------------------------
     # output rainfall value
@@ -308,13 +288,9 @@ description_module_server <- function(id, upload_module, countries,
 
     # -------------------------------------------------------------------------
     # typology table 
-    output$get_table <- DT::renderDataTable({
-      dat <- tryCatch(rv$typology, error = function(e) NULL)
-      if (is.null(dat)) {
-        table_blank
-      } else {
+    output$get_dt <- DT::renderDataTable({
+        req(rv$typology)
         rv$typology
-        }
       },
       options = list(
       paging = FALSE,        # no pagination
@@ -323,17 +299,37 @@ description_module_server <- function(id, upload_module, countries,
       dom = 't'              # only show table
     ), rownames = FALSE)
 
-
-    # -------------------------------------------------------------------------
-    # country table
-    output$roi_country_table <- DT::renderDataTable({
+    output$get_blank <- renderPlotly({ biotic_blank })
+    
+    # renderUI just decides which one to show
+    output$get_table <- renderUI({
       dat <- tryCatch(rv$countries, error = function(e) NULL)
       if (is.null(dat)) {
-        table_blank
+        plotlyOutput(ns("get_blank"))
       } else {
-        rv$countries
+        dataTableOutput(ns("get_dt"))
       }
+    })
+    
+    # -------------------------------------------------------------------------
+    # country table
+    # Define the two outputs independently
+    output$roi_country_dt <- DT::renderDataTable({
+      req(rv$countries)
+      rv$countries
     }, options = list(pageLength = 5, dom = "t"))
+    
+    output$roi_country_blank <- renderPlotly({ biotic_blank })
+    
+    # renderUI just decides which one to show
+    output$roi_country_table <- renderUI({
+      dat <- tryCatch(rv$countries, error = function(e) NULL)
+      if (is.null(dat)) {
+        plotlyOutput(ns("roi_country_blank"))
+      } else {
+        dataTableOutput(ns("roi_country_dt"))
+      }
+    })
     
     
     
