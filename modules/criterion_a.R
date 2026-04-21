@@ -281,70 +281,68 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           }
         }
         
-        # ---------------------------------------------------------------------
-        # GAM smoother (only if enough points)
-        n_points <- NROW(rv$area_change_data)
-
-        if (n_points > 3) {
-          dat <- rv$area_change_data
-          
-          # fit GAM with try()
-          gam_model <- try(
-            mgcv::gam(area ~ s(year, k = max(3, n_points - 2)), data=dat),
-            silent = TRUE
-          )
-          
-          if (!inherits(gam_model, "try-error")) {
-            new_years <- data.frame(year = seq(min(rv$area_prediction_data$year), max(rv$area_prediction_data$year)))
-            pred_gam <- predict(gam_model, newdata = new_years, se.fit = TRUE)
-            
-            pred_gam <- data.frame(
-              year = new_years$year,
-              fit = pred_gam$fit,
-              lwr = pred_gam$fit - 2 * pred_gam$se.fit,
-              upr = pred_gam$fit + 2 * pred_gam$se.fit
-            ) %>%
-              mutate(across(c(fit, lwr, upr), ~ pmax(., 0)))
-             
-            # For plotting split data into before/after
-            pred_gam_before <- filter(pred_gam, year < min(dat$year))
-            pred_gam_after  <- filter(pred_gam, year > max(dat$year))
-          
-            p <- p %>%
-              add_trace(
-                data = pred_gam_before,
-                x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
-                line = list(color = 'blue', width = 3, dash = 'dash'),
-                name = "GAM",
-                legendgroup = "GAM",
-                showlegend = TRUE,
-                visible = "legendonly"   # hidden by default, but present in legend
-              ) %>%
-              add_trace(
-                data = pred_gam_after,
-                x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
-                line = list(color = 'blue', width = 3, dash = 'dash'),
-                name = "GAM",
-                legendgroup = "GAM",
-                showlegend = FALSE       # not shown in legend, but grouped
-                # visible will follow the legend item above
-              ) %>%
-              add_ribbons(
-                data = pred_gam,
-                x = ~year, ymin = ~lwr, ymax = ~upr,
-                fillcolor = 'rgba(0,0,255,0.2)',
-                line = list(color = 'transparent'),
-                name = '95% CI',
-                # If you want the CI to toggle with GAM as well, keep the next two lines.
-                legendgroup = "GAM",
-                showlegend = FALSE,
-                visible = "legendonly"   # start hidden too (even if not in legend)
-              )
-            
-            
-            
-          }
-        } # end of if >3 points
+        # # ---------------------------------------------------------------------
+        # # GAM smoother (only if enough points)
+        # n_points <- NROW(rv$area_change_data)
+        # 
+        # if (n_points > 3) {
+        #   dat <- rv$area_change_data
+        #   
+        #   # fit GAM with try()
+        #   gam_model <- try(
+        #     mgcv::gam(area ~ s(year, k = max(3, n_points - 2)), data=dat),
+        #     silent = TRUE
+        #   )
+        #   
+        #   if (!inherits(gam_model, "try-error")) {
+        #     new_years <- data.frame(year = seq(min(rv$area_prediction_data$year), max(rv$area_prediction_data$year)))
+        #     pred_gam <- predict(gam_model, newdata = new_years, se.fit = TRUE)
+        #     
+        #     pred_gam <- data.frame(
+        #       year = new_years$year,
+        #       fit = pred_gam$fit,
+        #       lwr = pred_gam$fit - 2 * pred_gam$se.fit,
+        #       upr = pred_gam$fit + 2 * pred_gam$se.fit
+        #     ) %>%
+        #       mutate(across(c(fit, lwr, upr), ~ pmax(., 0)))
+        #      
+        #     # For plotting split data into before/after
+        #     pred_gam_before <- filter(pred_gam, year < min(dat$year))
+        #     pred_gam_after  <- filter(pred_gam, year > max(dat$year))
+        #   
+        #     p <- p %>%
+        #       add_trace(
+        #         data = pred_gam_before,
+        #         x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
+        #         line = list(color = 'blue', width = 3, dash = 'dash'),
+        #         name = "GAM",
+        #         legendgroup = "GAM",
+        #         showlegend = TRUE,
+        #         visible = "legendonly"   # hidden by default, but present in legend
+        #       ) %>%
+        #       add_trace(
+        #         data = pred_gam_after,
+        #         x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
+        #         line = list(color = 'blue', width = 3, dash = 'dash'),
+        #         name = "GAM",
+        #         legendgroup = "GAM",
+        #         showlegend = FALSE       # not shown in legend, but grouped
+        #         # visible will follow the legend item above
+        #       ) %>%
+        #       add_ribbons(
+        #         data = pred_gam,
+        #         x = ~year, ymin = ~lwr, ymax = ~upr,
+        #         fillcolor = 'rgba(0,0,255,0.2)',
+        #         line = list(color = 'transparent'),
+        #         name = '95% CI',
+        #         # If you want the CI to toggle with GAM as well, keep the next two lines.
+        #         legendgroup = "GAM",
+        #         showlegend = FALSE,
+        #         visible = "legendonly"   # start hidden too (even if not in legend)
+        #       )
+        #     
+        #   }
+        # } # end of if >3 points
         
         # Layout
         p <- p %>%
