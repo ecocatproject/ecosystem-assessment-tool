@@ -16,7 +16,7 @@ classification_module_ui <- function(id) {
     conditionalPanel(
       condition = "!input.example",
       tags$span(
-        "1) Upload Ecosystem classification file(s)",
+        tags$strong(style = "font-size:14px;", "1) Upload Ecosystem map(s)"),
         tooltip(
           bs_icon("info-circle"),
           "The file must be a raster format - e.g. .tif"
@@ -27,32 +27,19 @@ classification_module_ui <- function(id) {
     ),
     
     # 2) Example dataset toggle option
-    # checkboxInput(ns("example"), "Or use example dataset (itigi)?", value = FALSE),
     checkboxInput(ns("example"),
-                  tags$span("Or use example dataset (itigi)?",
+                  tags$span( tags$strong(style = "font-size:14px;","Or use example dataset?"),
                             tooltip(bs_icon("info-circle"),
                                     "Classification of the Itigi-Sumbu thicket ecosystem in Zambia. Further details can be
               found in the 'Example dataset' section of the 'About' Tab"
                             )), value = FALSE),
     
-    # # 3) Message shown only when example = TRUE
-    # conditionalPanel(
-    #   condition = "input.example",
-    #   tags$span(
-    #     "1) Using example ecosystem classification file(s)",
-    #     tooltip(
-    #       bs_icon("info-circle"),
-    #       "Itigi thicket"
-    #     )
-    #   )
-    # ),
-    
     # 4) separator line is better than hr()  - less white space
     div(style = "border-top: 1px solid #ccc; margin: 10px 0;"),
     
     # 5) remaining sidebar sections 
-    uiOutput(ns("part2")),
-    uiOutput(ns("year_inputs")),
+    # uiOutput(ns("part2")),
+    uiOutput(ns("year_sidebar_section")),
     uiOutput(ns("ecosystem_dropdown")),
     uiOutput(ns("run_description")),
     uiOutput(ns("process_btn_text")),
@@ -114,6 +101,9 @@ classification_module_server <- function(id) {
     })
     
     observeEvent(data_source(), {
+
+      # ---- Reset stored years immediately so example years don't bleed ----
+      stored_years$years <- list()          # <-- ADD THIS LINE
       
       # ---- Reset reactiveVals ----
       rasters(NULL)
@@ -137,21 +127,54 @@ classification_module_server <- function(id) {
       
     })
     
-    
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    # Persistent year store — add near the top of your module server
+    stored_years <- reactiveValues(years = list())
+
+    # --------------------------------------------------------------------------
+    # Reset + open modal whenever tifs() changes
     observeEvent(tifs(), {
+      # Full reset every time tifs() changes — covers example↔upload switching
+      fnames     <- tifs()$name          # NULL-safe: if tifs() is NULL, this errors
+      fnames     <- basename(fnames)     # and the whole observer just stops, which is fine
+      auto_years <- sapply(fnames, extract_year)
       
-      output$year_inputs <- renderUI(NULL)  # force flush
+      stored_years$years <- setNames(
+        lapply(seq_along(fnames), function(i) {
+          yr <- auto_years[[i]]
+          if (!is.null(yr) && !is.na(yr) && yr %in% 1750:2150) {
+            as.character(yr)
+          } else {
+            NA_character_
+          }
+        }),
+        paste0("year_", seq_along(fnames))
+      )
       
-      if (is.null(tifs())) return()
-      
-      output$year_inputs <- renderUI({
-        build_year_inputs()
-      })
-      
-    }, ignoreNULL = FALSE)
+      build_year_inputs()
+    }, ignoreNULL = TRUE)   # ignoreNULL = TRUE so NULL tifs() doesn't trigger reset
     
+    # --------------------------------------------------------------------------
+    # Save inputs → store on Confirm, then close
+    observeEvent(input$confirm_years, {
+      req(tifs())
+      fnames <- basename(tifs()$name)
+      for (i in seq_along(fnames)) {
+        key <- paste0("year_", i)
+        val <- input[[key]]    # numericInput returns a number or NA
+        stored_years$years[[key]] <- if (!is.null(val) && !is.na(val)) {
+          as.character(as.integer(val))
+        } else {
+          NA_character_
+        }
+      }
+      removeModal()
+    })
     
+    # Re-open from sidebar
+    observeEvent(input$open_year_modal, {
+      build_year_inputs()
+    })
     
     #--------------------------------------------------------------------------
     # REACTIVE WRAPPER FOR INPUT TIFFS OR EXAMPLE FILES ----
@@ -190,7 +213,7 @@ classification_module_server <- function(id) {
     rasters          <- reactiveVal(NULL)
     rasters_original <- reactiveVal(NULL)
     areas            <- reactiveVal(NULL)
-    
+    rasters_change <- reactiveVal(NULL)
     
     
     # reactive for layer names --------- --------------------------------------
@@ -203,8 +226,10 @@ classification_module_server <- function(id) {
     # Reactive year inputs ----------------------------------------------------
     year_inputs <- reactive({
       req(tifs())
-      sapply(seq_along(tifs()$name),
-             function(i) input[[paste0("year_", i)]])
+      sapply(seq_along(tifs()$name), function(i) {
+        val <- input[[paste0("year_", i)]]
+        if (!is.null(val) && !is.na(val)) as.character(as.integer(val)) else NA_character_
+      })
     })
     
     # Reactive selected layer -------------------------------------------------
@@ -228,7 +253,117 @@ classification_module_server <- function(id) {
       try(freq(r_rast()), silent = TRUE)
     })
     
-    
+    # --------------------------------------------------------------------------
+    # Conditionally render years ui
+    output$year_sidebar_section <- renderUI({
+      req(tifs())
+      fnames <- basename(tifs()$name)
+      
+      rows <- lapply(seq_along(fnames), function(i) {
+        key    <- paste0("year_", i)
+        yr     <- stored_years$years[[key]]
+        valid  <- !is.null(yr) && !is.na(yr) && nzchar(yr) && yr != "NA"
+        colour <- if (valid) "#27ae60" else "#c0392b"
+        label  <- if (valid) yr else "--"
+        
+        tags$div(
+          style = "display:flex; justify-content:space-between; align-items:center;
+               font-size:12px; padding:3px 4px; border-bottom:1px dotted #eee;",
+          tags$span(
+            style = "color:#444; overflow:hidden; text-overflow:ellipsis;
+                 white-space:nowrap; max-width:72%; display:inline-block;",
+            title = fnames[i],
+            fnames[i]
+          ),
+          tags$span(
+            style = paste0("color:", colour, "; font-weight:bold; white-space:nowrap;"),
+            label
+          )
+        )
+      })
+      
+      # tags$div(
+      #   tags$hr(style = "margin:8px 0;"),
+      #   tags$div(
+      #     style = "display:flex; justify-content:space-between; align-items:center;
+      #          margin-bottom:4px;",
+      #     
+      #     
+      #     tags$span(
+      #       tags$strong("2) Check year:"),
+      #       tooltip(bs_icon("info-circle"), "Each map requires a year input before the 'process button' is available")),
+      #     
+      #     
+      #     actionButton(
+      #       ns("open_year_modal"),
+      #       label = tagList(icon("pencil-alt"), " Edit"),
+      #       class = "btn-xs btn-outline-secondary",
+      #       style = "padding:2px 8px; font-size:11px;"
+      #     )
+      #   ),
+      #   tags$div(
+      #     style = "background:#f9f9f9; border:1px solid #e0e0e0;
+      #          border-radius:4px; padding:5px 6px;",
+      #     tags$div(
+      #       style = "display:flex; justify-content:space-between; font-size:11px;
+      #            font-weight:bold; color:#888; padding:2px 4px 5px;
+      #            border-bottom:1px solid #ddd; margin-bottom:3px;",
+      #       tags$span("File"), tags$span("Year")
+      #     ),
+      #     tagList(rows)
+      #   )
+      # )
+      tags$div(
+        tags$div(
+          style = "display:flex; justify-content:space-between; align-items:center;
+             margin-bottom:4px;",
+          tags$span(
+            tags$strong(style = "font-size:14px;", "2) Check year:"),
+            tooltip(bs_icon("info-circle"),
+                    "Each map requires a year input before the 'process button' is available")
+          ),
+          actionButton(
+            ns("open_year_modal"),
+            label = tagList(icon("pencil-alt"), " Edit"),
+            class = "btn-xs btn-outline-secondary",
+            style = "padding:2px 8px; font-size:11px;"
+          )
+        ),
+        tags$div(
+          style = "border-radius:4px; padding:5px 6px;",       # transparent: no background/border
+          tags$div(
+            style = "display:flex; justify-content:space-between; font-size:11px;
+               font-weight:bold; color:#888; padding:2px 4px 5px;
+               border-bottom:1px solid #ccc; margin-bottom:3px;",
+            tags$span("File"), tags$span("Year")
+          ),
+          tagList(lapply(seq_along(fnames), function(i) {
+            key    <- paste0("year_", i)
+            yr     <- stored_years$years[[key]]
+            valid  <- !is.null(yr) && !is.na(yr) && nzchar(yr) && yr != "NA"
+            colour <- if (valid) "#27ae60" else "#c0392b"
+            label  <- if (valid) yr else "--"
+            
+            tags$div(
+              style = "display:flex; justify-content:space-between; align-items:center;
+                 font-size:12px; padding:3px 4px; border-bottom:1px dotted #ccc;",
+              tags$span(
+                style = "color:#444; overflow:hidden; text-overflow:ellipsis;
+                   white-space:nowrap; max-width:72%; display:inline-block;",
+                title = fnames[i],
+                fnames[i]
+              ),
+              tags$span(
+                style = paste0("color:", colour, "; font-weight:bold; white-space:nowrap;"),
+                label
+              )
+            )
+          }))
+        ),
+        tags$hr(style = "margin:8px 0;")
+      )
+    })
+        
     # --------------------------------------------------------------------------
     # Conditionally render dropdown
     output$ecosystem_dropdown <- renderUI({
@@ -246,7 +381,9 @@ classification_module_server <- function(id) {
           tagList(
             selectInput(
               ns("selected_layer"),
-              "3) Multiple data layers detected - select the layer/ecosystem required:",
+              tags$strong(style = "font-size:14px;"
+                          ,"3) Multiple data layers detected - select the layer/ecosystem required:"),
+              
               # choices = lyr_names(),
               choices = c("Select a layer..." = "", lyr_names()),
               selected = NULL#lyr_names()[1]
@@ -261,7 +398,7 @@ classification_module_server <- function(id) {
             # 3) Category source choice
             radioButtons(
               ns("cat_source"),
-              "3a) Do you have a file describing the category levels?",
+              tags$strong(style = "font-size:14px;","3a) Do you have a file describing the category levels?"),
               choices = c(
                 "Yes – I have a .aux.xml file" = "xml",
                 "Yes – I have a 2-column .csv file" = "csv",
@@ -289,14 +426,16 @@ classification_module_server <- function(id) {
       if (input$cat_source == "xml") {
         tagList(
           fileInput(
-            ns("aux"),  "3b) Upload corresponding .aux.xml file", accept = ".xml"),
+            ns("aux"),  
+            tags$strong(style = "font-size:14px;","3b) Upload corresponding .aux.xml file"),
+            accept = ".xml"),
           uiOutput(ns("class_ui"))
         )
         
       } else if (input$cat_source == "csv") {
         tagList(
           fileInput(
-            ns("cat_file"), "3b) Upload corresponding 2-column .csv file", accept = ".csv"),
+            ns("cat_file"),  tags$strong(style = "font-size:14px;","3b) Upload corresponding 2-column .csv file"), accept = ".csv"),
           #uiOutput(ns("column_preview_ui")),
           uiOutput(ns("class_ui"))
         )
@@ -364,10 +503,8 @@ classification_module_server <- function(id) {
           # Optional: remove duplicates
           label <- unique(label)
           
-          # raster_vals <- sort(terra::unique(r_rast)[,1])
           raster_vals <- sort(terra::freq(r_rast)[,1])
-          #raster_vals <- raster_vals[!is.na(raster_vals)]
-          
+
           if (length(label) != length(raster_vals)) {
             validate(
               paste(
@@ -418,9 +555,6 @@ classification_module_server <- function(id) {
         return(NULL)
       }
       
-      # Optional: remove NA rows
-      # df <- df[!is.na(df$value) & !is.na(df$label), ]
-      
       df
     })
     
@@ -446,18 +580,6 @@ classification_module_server <- function(id) {
     })
     
     # --------------------------------------------------------------------------
-    # part 2 ui sidebar
-    output$part2 <- renderUI({
-      # if (isTRUE(input$year_inputs)) 
-      req(tifs())
-      tags$span(
-        "2) Select year for each classification map",
-        tooltip(bs_icon("info-circle"), "Each map requires a year input before the 'process button' is available"))
-    })
-    
-    
-    
-    # --------------------------------------------------------------------------
     # Dynamic year inputs
     extract_year <- function(filename) {
       m <- regexpr("(?<!\\d)(19|20)\\d{2}(?!\\d)", filename, perl = TRUE)
@@ -466,125 +588,144 @@ classification_module_server <- function(id) {
     }
     
     # --------------------------------------------------------------------------
-    # render year ui
-    # output$year_inputs <- renderUI({
-    build_year_inputs <- function(){
+    # build_year_inputs — reads from stored_years so edits persist on reopen
+    build_year_inputs <- function() {
       req(tifs())
+      fnames <- basename(tifs()$name)
       
-      fnames <- tifs()$name
-      fnames <- basename(fnames)
-      auto_years <- sapply(fnames, extract_year)
-      
-      # Build HTML rows for modal
-      file_rows <- mapply(function(f, y) {
+      rows <- lapply(seq_along(fnames), function(i) {
+        key <- paste0("year_", i)
+        sel <- stored_years$years[[key]]
         
-        if (is.null(y)) {
-          # RED for missing year
-          htmltools::tags$tr(
-            htmltools::tags$td(f),
-            htmltools::tags$td(style = "color:#c0392b; font-weight:bold;", "No year detected")
-          )
+        # Convert to numeric for numericInput; NA renders as empty
+        yr_num <- suppressWarnings(as.numeric(sel))
+        yr_val <- if (!is.null(yr_num) && !is.na(yr_num) &&
+                      yr_num %in% 1750:2150) yr_num else NA
+        
+        valid <- !is.na(yr_val)
+        badge <- if (valid) {
+          tags$span(style = "color:#27ae60; font-weight:bold; font-size:11px;",
+                    "\u2713 detected")
         } else {
-          # GREEN for detected year
-          htmltools::tags$tr(
-            htmltools::tags$td(f),
-            htmltools::tags$td(style = "color:#27ae60; font-weight:bold;", y)
-          )
+          tags$span(style = "color:#c0392b; font-weight:bold; font-size:11px;",
+                    "\u26a0 not found \u2014 enter manually")
         }
         
-      }, fnames, auto_years, SIMPLIFY = FALSE)
-      
-      # Show modal
-      showModal(
-        modalDialog(
-          title = htmltools::tags$div(
-            style="font-size:20px; font-weight:bold; color:#2c3e50;",
-            "Auto-Detected Years"
+        tags$tr(
+          style = "border-bottom:1px solid #f0f0f0;",
+          tags$td(
+            style = "padding:8px 10px; vertical-align:middle; width:60%;",
+            tags$div(style = "font-size:13px; word-break:break-all;", fnames[i]),
+            tags$div(style = "margin-top:2px;", badge)
           ),
-          easyClose = TRUE,
-          footer = modalButton("OK"),
-          
-          # Modal body
-          htmltools::tags$div(
-            style="margin-bottom:10px; color:#34495e;",
-            "Years were automatically extracted from filenames. Year can be adjusted in the sidebar (section 2 - drop down list)."
-          ),
-          
-          # Styled table
-          htmltools::tags$table(
-            style="
-          width:100%;
-          border-collapse: collapse;
-          margin-top:10px;
-          font-size:14px;
-        ",
-            htmltools::tags$thead(
-              htmltools::tags$tr(
-                htmltools::tags$th("Filename", style="text-align:left; border-bottom:2px solid #bdc3c7; padding:6px;"),
-                htmltools::tags$th("Detected Year", style="text-align:left; border-bottom:2px solid #bdc3c7; padding:6px;")
-              )
-            ),
-            htmltools::tags$tbody(
-              lapply(file_rows, identity)
+          tags$td(
+            style = "padding:8px 10px; vertical-align:middle;",
+            numericInput(           # <-- replaces selectInput entirely
+              inputId = ns(key),
+              label   = NULL,
+              value   = yr_val,
+              min     = 1750,
+              max     = 2150,
+              step    = 1,
+              width   = "110px"
             )
           )
         )
-      )
-      
-      # Generate year dropdowns
-      # dropdowns <-lapply(seq_along(fnames), function(i) {
-      #   selectInput(
-      #     ns(paste0("year_", i)),   # <-- use ns() here
-      #     paste(fnames[i]),
-      #     choices = c("Select a year...", rev(seq(1900, 2025, by = 1))),
-      #     selected = if (!is.null(auto_years[i]) &&
-      #                    auto_years[i] %in% 1900:2025) auto_years[i] else NULL
-      #   )
-      # })
-      dropdowns <-lapply(seq_along(fnames), function(i) {
-        center_year <- if (!is.null(auto_years[i]) &&
-                           auto_years[i] %in% 1900:2150) {
-          auto_years[i]
-        } else {
-          # 2025  # default pivot point
-          "Select a year..."
-        }
-        
-        choices <- c(
-          rev(seq(as.numeric(format(Sys.Date(), "%Y")) + 1, 2150, 1)),  # future years (scroll up)
-          paste("Select a year..."),
-          as.numeric(format(Sys.Date(), "%Y")),                    # pivot year in the middle
-          rev(seq(1750, as.numeric(format(Sys.Date(), "%Y")) - 1, 1))   # past years (scroll down)
-        )
-        
-        selectInput(
-          ns(paste0("year_", i)),
-          paste(fnames[i]),
-          choices = choices,
-          selected = center_year
-        )
       })
-      # dropdowns <-lapply(seq_along(fnames), function(i) {
-      #   numericInput(
-      #     ns(paste0("year_", i)),   # <-- use ns() here
-      #     paste(fnames[i]),
-      #     value = if (!is.null(auto_years[i]) &&
-      #                    auto_years[i] %in% 1750:2150) auto_years[i] else 2025,
-      #     min=1750,
-      #     max=2150, step = 1
-      #     # choices = c("Select a year...", rev(seq(1900, 2025, by = 1))),
-      #   )
-      # })
-      # 
       
-      # Append a single horizontal rule after all dropdowns, margins removes whitespace
-      tagList(dropdowns, 
-              div(style = "border-top: 1px solid #ccc; margin: 0;"))
-      
-      
+      showModal(
+        modalDialog(
+          title     = tags$div(
+            style = "font-size:18px; font-weight:bold; color:#2c3e50;",
+            icon("calendar"), " Classification years", #icon("calendar")
+          ),
+          size      = "m",
+          easyClose = FALSE,
+          footer    = tagList(
+            actionButton(ns("confirm_years"), "Confirm & Close",
+                         class = "btn-primary"),
+            modalButton("Cancel")
+          ),
+          tags$div(
+            style = "margin-bottom:12px; color:#34495e; font-size:13px;",
+            "Years were auto-extracted from file names.",
+            tagList(tags$strong(" Type or adjust any year below, then click Confirm & Close."),
+            " Reopen anytime via the",icon("pencil-alt")," Edit button in section 2 of the sidebar.")
+          ),
+          tags$table(
+            style = "width:100%; border-collapse:collapse; font-size:14px;",
+            tags$thead(
+              tags$tr(
+                style = "background:#f5f6fa;",
+                tags$th("Filename",
+                        style = "text-align:left; padding:8px 10px;
+                             border-bottom:2px solid #ddd;"),
+                tags$th("Year",
+                        style = "text-align:left; padding:8px 10px;
+                             border-bottom:2px solid #ddd;")
+              )
+            ),
+            tags$tbody(lapply(rows, identity))
+          )
+        )
+      )
     }
     
-    
+
+  
+    # Render a compact summary in the sidebar (refreshes on confirm)
+    output$year_summary_sidebar <- renderUI({
+      req(tifs())
+      
+      input$confirm_years  # also refresh on confirm
+      
+      fnames <- basename(tifs()$name)
+      
+      # Build reactive dependency on ALL year inputs so sidebar
+      # updates live even without pressing Confirm
+      year_vals <- lapply(seq_along(fnames), function(i) {
+        input[[ns(paste0("year_", i))]]
+      })
+      
+      header <- tags$div(
+        style = "display:flex; justify-content:space-between;
+             font-size:11px; font-weight:bold; color:#888;
+             padding:2px 4px 4px 4px; border-bottom:1px solid #ddd;
+             margin-bottom:4px;",
+        tags$span("Filename"),
+        tags$span("Year")
+      )
+      
+      rows <- lapply(seq_along(fnames), function(i) {
+        yr_val <- year_vals[[i]]
+        valid  <- !is.null(yr_val) && yr_val != "Select a year..."
+        colour <- if (valid) "#27ae60" else "#c0392b"
+        label  <- if (valid) yr_val    else "—"
+        
+        tags$div(
+          style = "display:flex; justify-content:space-between; align-items:center;
+               font-size:12px; padding:3px 4px;
+               border-bottom:1px dotted #eee;",
+          tags$span(
+            style = "color:#444; overflow:hidden; text-overflow:ellipsis;
+                 white-space:nowrap; max-width:70%; display:inline-block;",
+            title = fnames[i],   # tooltip shows full name on hover
+            fnames[i]
+          ),
+          tags$span(
+            style = paste0("color:", colour, "; font-weight:bold; white-space:nowrap;"),
+            label
+          )
+        )
+      })
+      
+      tags$div(
+        style = "margin-top:6px; background:#f9f9f9;
+             border:1px solid #e0e0e0; border-radius:4px; padding:6px;",
+        header,
+        tagList(rows)
+      )
+    })
     
     # --------------------------------------------------------------------------
     # Conditional hr after year selection
@@ -598,8 +739,9 @@ classification_module_server <- function(id) {
       req(tifs())
       tags$span(
         ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
-               "4) Select here for calculation of descriptive variables",
-               "3) Select here for calculation of descriptive variables"),
+               tagList(tags$strong(style = "font-size:14px;", "4) Select here for calculation of descriptive variables")),
+                       tagList( tags$strong(style = "font-size:14px;","3) Select here for calculation of descriptive variables"))),
+        
         tooltip(bs_icon("info-circle"),
                 "Uncheck this box to skip calculating descriptive variables (this will speed up processing time).",
                 tagList(
@@ -623,8 +765,8 @@ classification_module_server <- function(id) {
       
       tags$span(
         ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
-               "5) Click the process button below to start the ecosystem assessment: ",
-               "4) Click the process button below to start the ecosystem assessment: "),
+               tagList(tags$strong(style = "font-size:14px;",  "5) Click the process button below to start the ecosystem assessment: ")),
+               tagList(tags$strong(style = "font-size:14px;", "4) Click the process button below to start the ecosystem assessment: "))),
         tooltip(bs_icon("info-circle"),
                 "The 'Process ecosystem maps' button will only be selectable when 
                 a year for each classifcation map (section 2) has been entered."
@@ -637,49 +779,25 @@ classification_module_server <- function(id) {
     output$process_btn_ui <- renderUI({
       req(tifs())
       
-      # Collect year inputs
-      years_raw <- sapply(seq_along(tifs()$name),
-                          function(i) input[[paste0("year_", i)]])
+      # Check every year in the store: must be numeric and within 1750–2150
+      years_valid <- all(sapply(seq_along(tifs()$name), function(i) {
+        yr <- stored_years$years[[paste0("year_", i)]]
+        if (is.null(yr) || is.na(yr) || !nzchar(yr) || yr == "NA") return(FALSE)
+        yr_num <- suppressWarnings(as.numeric(yr))
+        !is.na(yr_num) && yr_num >= 1750 && yr_num <= 2150
+      }))
       
-      # Normalize years: trim and convert plausible numerics
-      normalize_year <- function(y) {
-        if (is.null(y)) return(NA_character_)
-        y_chr <- trimws(as.character(y))
-        if (y_chr == "" || tolower(y_chr) %in% c("not known", "unknown")) return(NA_character_)
-        # keep 4-digit numeric strings as-is; otherwise NA
-        if (grepl("^\\d{4}$", y_chr)) return(y_chr)
-        return(NA_character_)
-      }
+      # Layer selection also required when applicable
+      layer_valid <- is.null(input$selected_layer) || nzchar(input$selected_layer)
       
-      years <- vapply(years_raw, normalize_year, FUN.VALUE = character(1))
-      
-      # # Validity checks
-      # all_valid <- all(!is.na(years)|!is.null(lyr_names()))
-      # more_than_one_file <- length(years) > 1
-      # more_than_one_unique <- length(unique(years)) > 1
-      # 
-      # # Only show button when conditions are met
-      # if (!all_valid) return(NULL)
-      # 
-      # if (!more_than_one_file) {
-      # Single file: valid year is enough
-      
-      
-      ## Check that all dropdowns have a valid selection
-      ## i.e., not NULL and not the placeholder "Select a year..."
-      
-      dropdowns_valid <- all(!is.null(year_inputs()) & year_inputs() != "Select a year..." & nzchar(input$selected_layer))
-      
-      actionButton(ns("process"), "Process ecosystem maps", disabled = !dropdowns_valid )    #} else {
-      #   # Multiple files: require distinct years
-      #   if (more_than_one_unique) {
-      #     actionButton(ns("process"), "Process ecosystem maps", disabled = !all_years_selected   )     } else {
-      #       return(NULL)
-      #     }
-      # }
+      actionButton(
+        ns("process"),
+        "Process ecosystem maps",
+        disabled = !(years_valid && layer_valid)
+      )
     })
     
-    #     } # end of ifelse for example dataset
+  
     # -----------------------------------------------------------------------------
     # process rasters 
     # -----------------------------------------------------------------------------
@@ -732,11 +850,14 @@ classification_module_server <- function(id) {
       progress <- shiny::Progress$new(min = 0, max = length(files))
       progress$set(message = "Processing classification maps...", value = 0)
       
+     
+      
       # ------------------------------------------------------------------------
       # reset previous data
       areas(NULL)
       rasters(NULL)         
-      rasters_original(NULL) 
+      rasters_original(NULL)
+      rasters_change(NULL)
       
       # ------------------------------------------------------------------------
       # create some variables + ensure year order is correct
@@ -842,6 +963,12 @@ classification_module_server <- function(id) {
           r_orig <- classify(r_orig, matrix(c(0, NA), ncol = 2))
         }
         
+        # # ADD: save oldest raster to a temp file (avoids keeping SpatRaster object in memory)
+        # if (i == 1 && length(files) > 1) {
+        #   oldest_tmp <- tempfile(fileext = ".tif")
+        #   writeRaster(r_orig, oldest_tmp, overwrite = TRUE)
+        # }
+        
         print("doing mask")
         #mask <- r_orig == 1
         print("mask complete")
@@ -879,6 +1006,8 @@ classification_module_server <- function(id) {
         print(areas())
         
         
+       
+        
         # Only sample the most recent raster (last in sequence)
         # this is the plotted map on leaflet
         if (i == length(files)) {
@@ -888,15 +1017,108 @@ classification_module_server <- function(id) {
           r_map <- tryCatch({
             project(r_map, "EPSG:4326") # project(r_map, "EPSG:3857", method = "near")
           }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map }) # project(r_map, "EPSG:3857", method = "near")
-          
+
+
+
+        # ADD: compute change map if more than one file
+        # Change map: re-read oldest file directly from its original path
+          if (length(files) > 1) {
+            r_oldest  <- rast(files[1])
+            r_oldest  <- select_layer_or_mask(r_oldest, sel_name)
+
+            # replace NA with 0 for subtraction
+            r_oldest_rc <- classify(r_oldest, matrix(c(NA, 0), ncol = 2))
+            r_newest_rc <- classify(r_orig,   matrix(c(NA, 0), ncol = 2))
+
+            r_change <- r_newest_rc - r_oldest_rc
+
+            # restore NA where BOTH rasters had no data — these are outside the study area
+            both_na  <- is.na(r_oldest) & is.na(r_orig)
+            r_change <- ifel(both_na, NA, r_change)
+
+            r_change_map <- spatSample(r_change, 1000000, method = "regular",
+                                       as.raster = TRUE, na.rm = FALSE)
+            r_change_map <- tryCatch({
+              project(r_change_map, "EPSG:4326")
+            }, error = function(e) { crs(r_change_map) <- "EPSG:4326"; r_change_map })
+
+            rasters_change(r_change_map)
+            rm(r_oldest, r_oldest_rc, r_newest_rc, r_change, r_change_map, both_na)
+            gc()
+          }
+
         }
+
+        
+        
+        # if (i == length(files)) {
+        #   names(r_orig) <- years[i]
+        #   
+        #   r_4326 <- tryCatch({
+        #     project(r_orig, "EPSG:4326", method = "near")
+        #   }, error = function(e) { crs(r_orig) <- "EPSG:4326"; r_orig })
+        #   
+        #   total_cells <- ncell(r_4326)
+        #   
+        #   # Target ~500k cells max for plotting
+        #   # If raster is smaller, use it as-is (no sampling needed)
+        #   target_cells <- 1000000
+        #   
+        #   if (total_cells <= target_cells) {
+        #     # Small raster — use directly, no memory issue
+        #     r_map <- r_4326
+        #     
+        #   } else {
+        #     # Large raster — aggregate by factor rather than random sample
+        #     # aggregation preserves spatial structure better than spatSample
+        #     agg_factor <- ceiling(sqrt(total_cells / target_cells))
+        #     r_map <- aggregate(r_4326, fact = agg_factor, fun = "modal")
+        #   }
+        #   
+        #   rasters(r_map)
+        #   
+        #   # change map
+        #   if (length(files) > 1) {
+        #     r_oldest    <- rast(files[1])
+        #     r_oldest    <- select_layer_or_mask(r_oldest, sel_name)
+        #     r_oldest_rc <- classify(r_oldest, matrix(c(NA, 0), ncol = 2))
+        #     r_newest_rc <- classify(r_orig,   matrix(c(NA, 0), ncol = 2))
+        #     r_change    <- r_newest_rc - r_oldest_rc
+        #     both_na     <- is.na(r_oldest) & is.na(r_orig)
+        #     r_change    <- ifel(both_na, NA, r_change)
+        #     
+        #     r_change_4326 <- tryCatch({
+        #       project(r_change, "EPSG:4326", method = "near")
+        #     }, error = function(e) { crs(r_change) <- "EPSG:4326"; r_change })
+        #     
+        #     # same adaptive aggregation for change map
+        #     if (ncell(r_change_4326) > target_cells) {
+        #       agg_factor_c  <- ceiling(sqrt(ncell(r_change_4326) / target_cells))
+        #       r_change_4326 <- aggregate(r_change_4326, fact = agg_factor_c, fun = "modal")
+        #     }
+        #     
+        #     rasters_change(r_change_4326)
+        #     rm(r_oldest, r_oldest_rc, r_newest_rc, r_change, both_na)
+        #     gc()
+        #   }
+        #   
+        #   rm(r_4326)
+        #   gc()
+        # }
+        
+        
+        
+        
+        
+        
+        
         
         # Clean up tempory files periodically on long runs
         if ((i %% 3) == 0) {
           try(terra::tmpFiles(remove = TRUE), silent = TRUE)
           gc()
         }
-        
+
         
       } # end of for loop
       
@@ -916,8 +1138,11 @@ classification_module_server <- function(id) {
     return(list(
       rasters = rasters,
       rasters_original = rasters_original,
+      rasters_change   = rasters_change,        # ADD THIS
+      
       areas = areas,
-      years = year_inputs,
+      # years = year_inputs,
+      years = reactive(as.numeric(stored_years$years)),
       process = process_btn, 
       selected_layer = selected_layer,
       lyr_names = lyr_names,

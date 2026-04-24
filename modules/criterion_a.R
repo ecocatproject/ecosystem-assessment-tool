@@ -14,7 +14,7 @@ criterion_a_module_ui <- function(id) {
       height = 150,
       fill = FALSE,
       full_screen = TRUE,
-      card_header("Ecosystem area and change data",
+      card_header(tags$strong("Ecosystem area and change data"),
                   tooltip(
                     bs_icon("info-circle"),
                     tags$p("To view the full table, click the expand button in the bottom‑right corner.",  style = "text-align: left"),
@@ -28,7 +28,7 @@ criterion_a_module_ui <- function(id) {
     card(
       full_screen = TRUE,
       fill= FALSE,
-      card_header("Ecosystem area change trends",
+      card_header(tags$strong("Ecosystem area change trends"),
                   tooltip(
                     bs_icon("info-circle"),
                     tags$p(tags$b("Observed"), "ecosystem areas (solid line) and ",
@@ -230,132 +230,68 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             }
             
             
-        # Prepare hover text
-        results <- rv$area_prediction_data %>%
-          dplyr::ungroup() %>%   # ensures Shiny sees a new object
-          mutate(
-            hover_text = paste0(
-              "Year: ", year, "<br>",
-              "Area: ", round(area,0), "<br>",
-              "Scenario: ", scenario, "<br>",
-              "Method: ", method
-            )
-          )
-        
-        # Define line styles for methods
-        colors <- c("PRC" = "#D55E00",
-                    "ARC" = "#56B4E9")
-        
-        linetypes <-  c("median" = "dot", 
-                        "recent" = "solid",
-                        "worst" = "dash",
-                        "recent/worst" = "dash",
-                        "past" = "longdashdot")
-        
-        # Start Plotly
-        p <- plot_ly()
-        
-        # Add observed line + points
-        p <- p %>%
-          add_trace(
-            data = filter(results, type == "observed"), # results is the rv$area_prediction_data
-            x = ~year, y = ~area, type = 'scatter', mode = 'lines+markers',
-            line = list(color = 'grey20', width = 3),
-            marker = list(color = 'grey10', size = 6),
-            name = 'Observed'
-          )
-        
-        # Add projected lines
-        proj_data <- filter(results, type == "projected")
-        for(scen in unique(proj_data$scenario)) {
-          for(meth in unique(proj_data$method)) {
-            sub <- filter(proj_data, scenario == scen, method == meth)
-            p <- add_trace(
-              p,
-              data = sub,
-              x = ~year, y = ~area, type = 'scatter', mode = 'lines',
-              line = list(color = colors[meth], 
-                          dash = linetypes[scen], width = 3),
-              name = paste(scen, meth, sep = "/")
-            ) 
-          }
-        }
-        
-        # # ---------------------------------------------------------------------
-        # # GAM smoother (only if enough points)
-        # n_points <- NROW(rv$area_change_data)
-        # 
-        # if (n_points > 3) {
-        #   dat <- rv$area_change_data
-        #   
-        #   # fit GAM with try()
-        #   gam_model <- try(
-        #     mgcv::gam(area ~ s(year, k = max(3, n_points - 2)), data=dat),
-        #     silent = TRUE
+        # # Prepare hover text
+        # results <- rv$area_prediction_data %>%
+        #   dplyr::ungroup() %>%   # ensures Shiny sees a new object
+        #   mutate(
+        #     hover_text = paste0(
+        #       "Year: ", year, "<br>",
+        #       "Area: ", round(area,0), "<br>",
+        #       "Scenario: ", scenario, "<br>",
+        #       "Method: ", method
+        #     )
         #   )
-        #   
-        #   if (!inherits(gam_model, "try-error")) {
-        #     new_years <- data.frame(year = seq(min(rv$area_prediction_data$year), max(rv$area_prediction_data$year)))
-        #     pred_gam <- predict(gam_model, newdata = new_years, se.fit = TRUE)
-        #     
-        #     pred_gam <- data.frame(
-        #       year = new_years$year,
-        #       fit = pred_gam$fit,
-        #       lwr = pred_gam$fit - 2 * pred_gam$se.fit,
-        #       upr = pred_gam$fit + 2 * pred_gam$se.fit
-        #     ) %>%
-        #       mutate(across(c(fit, lwr, upr), ~ pmax(., 0)))
-        #      
-        #     # For plotting split data into before/after
-        #     pred_gam_before <- filter(pred_gam, year < min(dat$year))
-        #     pred_gam_after  <- filter(pred_gam, year > max(dat$year))
-        #   
-        #     p <- p %>%
-        #       add_trace(
-        #         data = pred_gam_before,
-        #         x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
-        #         line = list(color = 'blue', width = 3, dash = 'dash'),
-        #         name = "GAM",
-        #         legendgroup = "GAM",
-        #         showlegend = TRUE,
-        #         visible = "legendonly"   # hidden by default, but present in legend
-        #       ) %>%
-        #       add_trace(
-        #         data = pred_gam_after,
-        #         x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
-        #         line = list(color = 'blue', width = 3, dash = 'dash'),
-        #         name = "GAM",
-        #         legendgroup = "GAM",
-        #         showlegend = FALSE       # not shown in legend, but grouped
-        #         # visible will follow the legend item above
-        #       ) %>%
-        #       add_ribbons(
-        #         data = pred_gam,
-        #         x = ~year, ymin = ~lwr, ymax = ~upr,
-        #         fillcolor = 'rgba(0,0,255,0.2)',
-        #         line = list(color = 'transparent'),
-        #         name = '95% CI',
-        #         # If you want the CI to toggle with GAM as well, keep the next two lines.
-        #         legendgroup = "GAM",
-        #         showlegend = FALSE,
-        #         visible = "legendonly"   # start hidden too (even if not in legend)
-        #       )
-        #     
-        #   }
-        # } # end of if >3 points
         
-        # Layout
-        p <- p %>%
-          layout(
-            xaxis = list(title = "Year"),
-            yaxis = list(title = "Area (km<sup>2</sup>)"),
-            legend = list(title = list(text = "<b>Scenario / Method</b>")),
-            font = list(
-              family = "Roboto",
-              size = 14,
-              color = "#333333"
-            )
-          )
+            
+            colour_map <- c(observed = "black", ARC = "steelblue", PRC = "tomato")
+            dash_map   <- c(observed = "solid", recent = "dash", median = "dot")
+            
+            plot_data <- rv$area_prediction_data %>%
+              filter(!(type == "projected" & year > min(rv$area_prediction_data$year[rv$area_prediction_data$type == "observed"]) 
+                       & year < max(rv$area_prediction_data$year[rv$area_prediction_data$type == "observed"]))) %>%
+              mutate(group = interaction(method, scenario, segment))  # unique trace per segment
+            
+            # Split into one trace per group and add to plot
+            p <- plot_ly()
+            
+            for (grp in unique(plot_data$group)) {
+              d <- plot_data %>% filter(group == grp)
+              
+              p <- p %>% add_trace(
+                data      = d,
+                x         = ~year,
+                y         = ~area,
+                type      = "scatter",
+                mode      = if (unique(d$type) == "observed") "lines+markers" else "lines",
+                line      = list(
+                  color = colour_map[unique(d$method)],
+                  dash  = dash_map[unique(d$scenario)],
+                  width = if (unique(d$type) == "observed") 2 else 3
+                ),
+                #marker    = list(color = "black", size = 8),
+                name = if (unique(d$type) == "observed") "observed" else paste(unique(d$method), unique(d$scenario)),
+                legendgroup = if (unique(d$type) == "observed") "observed" else paste(unique(d$method), unique(d$scenario)),
+                showlegend = unique(d$segment) != "past"  # only show legend entry once per method/scenario
+              )
+            }
+            
+           # p <-  p %>% layout(
+           #    xaxis = list(title = "Year"),
+           #    yaxis = list(title = "Area (km²)"),
+           #    legend = list(title = list(text = "Method / Scenario"))
+           #  )
+            p <- p %>%
+              layout(
+                xaxis = list(title = "Year"),
+                yaxis = list(title = "Area (km<sup>2</sup>)"),
+                legend = list(title = list(text = "<b>Method / Scenario</b>")),
+                font = list(
+                  family = "Roboto",
+                  size = 14,
+                  color = "#333333"
+                )
+              )
+            p
         p
         
       })
@@ -371,14 +307,14 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           # actually lets do the assessment tables separately
           results <- rv$area_prediction_data
           obsv.fut <- results %>%
-            group_by(type, method, scenario) %>%
-            filter(scenario != "past") %>%
+            group_by(type, method, segment, scenario) %>%
+            filter(segment != "past") %>%
             slice(n()) # this keeps the most recent observed only (certainly where there are just 2 data points...)
       
       # then get past
       past <- results %>%
-        group_by(type, method, scenario) %>%
-        filter(scenario == "past") %>%
+        group_by(type, method, segment, scenario) %>%
+        filter(segment == "past") %>%
         slice(1)
       
       # then combine
@@ -389,7 +325,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       #-----------------------------------------------------------
       # A1 assessment calculation
       a1_result <- past.obsv.fut %>%
-        filter(scenario %in% "past", method %in% c("ARC", "PRC")) %>%
+        filter(segment %in% "past", method %in% c("ARC", "PRC")) %>%
         group_by(method) %>%
         slice_min(year, n = 1) %>%           # earliest past
         ungroup() %>%
@@ -399,8 +335,8 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           # perc_change = ((area-latest_observed_area) / latest_observed_area)
           
         ) %>%
-        dplyr::select(method, area, latest_observed_area, perc_change) %>%
-        mutate(A1 = dplyr::case_when(
+        dplyr::select(method, scenario, area, latest_observed_area, perc_change) %>%
+        mutate(status = dplyr::case_when(
           (perc_change) < -0.8 ~ "CR",
           (perc_change) < -0.5 ~ "EN",
           (perc_change) < -0.3 ~ "VU",
@@ -411,7 +347,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       #-----------------------------------------------------------
       # A2a assessment
       a2a_result <- past.obsv.fut %>%
-        filter(!scenario %in% "past", method %in% c("ARC", "PRC")) %>%
+        filter(!segment %in% "past", method %in% c("ARC", "PRC")) %>%
         group_by(method) %>%
         slice_max(year, n = 1) %>%           # earliest past
         ungroup() %>%
@@ -420,7 +356,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           perc_change = ((area-latest_observed_area) / latest_observed_area)
         ) %>%
         dplyr::select(method, scenario, area, latest_observed_area, perc_change) %>%
-        mutate(A2a = dplyr::case_when(
+        mutate(status = dplyr::case_when(
           (perc_change) < -0.8 ~ "CR",
           (perc_change) < -0.5 ~ "EN",
           (perc_change) < -0.3 ~ "VU",
@@ -439,13 +375,13 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             
             # Filter and prepare data
             df <- results %>%
-              filter(method %in% c(m, "observed"), scenario %in% c(s, "past", "observed")) %>%
+              filter(method %in% c(m, "observed"), scenario  %in% c(s, "past", "observed")) %>%
               arrange(year, desc(type == "observed")) %>%
               distinct(year, .keep_all = TRUE)
             
             # Define start years
             start_years <- df %>%
-              filter(scenario %in% c("past", "observed")) %>%
+              filter(scenario  %in% c("past", "observed")) %>%
               filter(!(year %in% c(min(year), max(year)))) %>%
               #filter(!(year %in%  max(year))) %>%
               pull(year)
@@ -456,7 +392,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
               year_end <- year_start + 50
               df %>%
                 filter(year %in% c(year_start, year_end)) %>%
-                summarise(perc_change = (area[year == year_end]-area[year == year_start]) / area[year == year_start],
+                reframe(perc_change = (area[year == year_end]-area[year == year_start]) / area[year == year_start],
                           direction =  ifelse(perc_change > 0, "increase", "decrease"))
             })
           }
@@ -469,7 +405,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             mutate(
               method = method_name,
               scenario = scenario_name,
-              A2b = case_when(
+              status = case_when(
                 (perc_change) < -0.8 ~ "CR",
                 (perc_change) < -0.5 ~ "EN",
                 (perc_change) < -0.3 ~ "VU",
@@ -489,7 +425,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         group_by(method, scenario) %>%
         slice_min(perc_change, n = 1, with_ties = FALSE) %>%
         ungroup() %>%
-        dplyr::select(method, scenario, perc_change, A2b)
+        dplyr::select(method, scenario, perc_change, status)
 
       
       #---------------------------------------------------------------------------
@@ -498,10 +434,10 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       a1_box  <- make_value_box(
         title = "Subcriterion A1",
         reactive_data = reactive(a1_result),
-        status_col = "A1",
+        status_col = "status",
         data_col = "perc_change",
         method_col = "method",
-        
+        scenario_col = "scenario",
         method_reactive = method,      # <-- pass the reactive
         
         hover_text = "Past predicted change in geographic distribution (past 50 years)",
@@ -511,7 +447,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       a2a_box <- make_value_box(
         title = "Subcriterion A2a",
         reactive_data = reactive(a2a_result),
-        status_col = "A2a",
+        status_col = "status",
         data_col = "perc_change",
         method_col = "method",
         method_reactive = method,      # <-- pass the reactive
@@ -523,7 +459,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       a2b_box <- make_value_box(
         title = "Subcriterion A2b",
         reactive_data = reactive(worst_cases),
-        status_col = "A2b",
+        status_col = "status",
         data_col = "perc_change",
         method_col = "method",
         method_reactive = method,      # <-- pass the reactive

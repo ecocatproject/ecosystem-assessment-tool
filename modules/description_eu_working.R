@@ -31,7 +31,7 @@ description_module_ui <- function(id) {
       # Ecosystem / ROI map
       card(
         full_screen = TRUE,
-        card_header("Ecosystem Distribution", tooltip(bs_icon("info-circle"),
+        card_header(tags$strong("Ecosystem Distribution"), tooltip(bs_icon("info-circle"),
                                                          "Distribution of uploaded ecosystem from the most recent mapped year"
         )),
         card_body(leafletOutput(ns("eu_map"), height = 500),class = "p-0")),
@@ -43,7 +43,7 @@ description_module_ui <- function(id) {
         # Rainfall 
         card(
           full_screen = TRUE,
-          card_header(tagList( "Rainfall", uiOutput(ns("r_value"), inline = TRUE)),
+          card_header(tagList( tags$strong("Rainfall"), uiOutput(ns("r_value"), inline = TRUE)),
                       tooltip(bs_icon("info-circle"),"Mean monthly rainfall across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")),
 
           card_body(plotlyOutput(ns("rain_graph")),  min_height = 150)
@@ -54,7 +54,7 @@ description_module_ui <- function(id) {
         card(
           full_screen = TRUE,
           card_header(
-            tagList( "Temperature", uiOutput(ns("t_value"), inline = TRUE)),
+            tagList( tags$strong("Temperature"), uiOutput(ns("t_value"), inline = TRUE)),
             tooltip(bs_icon("info-circle"), "Mean monthly temperature across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")),
           card_body(plotlyOutput(ns("temp_graph")),  min_height = 150)
         ),
@@ -63,7 +63,7 @@ description_module_ui <- function(id) {
         # Elevation
         card(
           full_screen = TRUE,
-          card_header(tagList("Elevation", uiOutput(ns("e_value"), inline = TRUE)),
+          card_header(tagList(tags$strong("Elevation"), uiOutput(ns("e_value"), inline = TRUE)),
                        tooltip(bs_icon("info-circle"), "Elevation distribution within the ecosystem extracted from Amazon Web Services Terrain Tiles")),
           card_body(plotlyOutput(ns("elev_graph")),  min_height = 150)
         )
@@ -77,7 +77,7 @@ description_module_ui <- function(id) {
       # Country overlap
       card(
         full_screen = TRUE,
-        card_header("Ecosystem Country Overlap",
+        card_header(tags$strong("Ecosystem Country Overlap"),
                     tooltip(bs_icon("info-circle"), "Proportion of the ecosystem within each country"
         )),
         # card_body(DT::dataTableOutput(ns("roi_country_table")))
@@ -88,7 +88,7 @@ description_module_ui <- function(id) {
       # Typology
       card(
         full_screen = TRUE,
-        card_header(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank"),
+        card_header(tags$strong(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank")),
                     tooltip(bs_icon("info-circle"), "Global Ecosystem Typology (Levels 1-3) within the ecosystem (> 1% of major or minor occurrence)"
         )),
         card_body(uiOutput(ns("get_table")))
@@ -387,44 +387,185 @@ description_module_server <- function(id, upload_module, countries,
     # ========================================================================
     # Render the leaflet map
     # ========================================================================
+   #  observeEvent(upload_module$rasters(), {
+   #    r_list <- upload_module$rasters()
+   #    r_change <- upload_module$rasters_change()
+   #    req(r_list)
+   #    
+   #    # extract name of the latest raster (should be the year, e.g. "2024")
+   #    latest_year <- names(r_list[[length(r_list)]])
+   #    if (is.null(latest_year) || latest_year == "") latest_year <- "Latest"
+   # 
+   #    # Display label for users
+   #    display_label <- paste0(latest_year, " classification")
+   # 
+   #    # overlay groups
+   #    overlay_groups <- display_label  # always include the raster
+   # 
+   #    # get eau extent for mapping zoom
+   #    ext_r <- as.vector(ext(r_list[[length(r_list)]]))
+   # 
+   #    # replot
+   #    dat <- r_list[[length(r_list)]]
+   #    dat <- st_as_stars(dat)
+   #    change <- st_as_stars(r_change)
+   #    leafletProxy(ns("eu_map")) %>%
+   #      clearImages() %>%
+   #      addStarsImage(dat,
+   #                    opacity = 0.7, colors = "#000000",
+   #                    group = display_label,
+   #                    layerId = display_label,
+   #                    project = FALSE) %>%
+   #      addStarsImage(change,
+   #                    opacity = 0.7, colors = "#563369",
+   #                    # group = display_label,
+   #                    # layerId = display_label,
+   #                    project = FALSE) %>%
+   #      addLayersControl(
+   #        baseGroups = c("OSM", "ESRI Satellite"),
+   #        overlayGroups = overlay_groups,
+   #        options = layersControlOptions(collapsed = FALSE)) %>%
+   #      fitBounds(unname(ext_r["xmin"]),
+   #                unname(ext_r["ymin"]),
+   #                unname(ext_r["xmax"]),
+   #                unname(ext_r["ymax"]))
+   # 
+   #    removeModal()
+   # })
+   
+    #  observeEvent(upload_module$rasters(), {
+    #   dat      <- upload_module$rasters()
+    #   r_change <- upload_module$rasters_change()
+    #   req(dat)
+    #   
+    #   # extract year name from the raster layer
+    #   latest_year   <- names(dat)[1]
+    #   if (is.null(latest_year) || latest_year == "") latest_year <- "Latest"
+    #   display_label <- paste0(latest_year, " classification")
+    #   
+    #   # extent for zoom
+    #   ext_r <- as.vector(ext(dat))
+    #   
+    #   # convert to stars
+    #   dat_stars <- st_as_stars(dat)
+    #   
+    #   # base map with classification layer
+    #   proxy <- leafletProxy(ns("eu_map")) %>%
+    #     clearImages() %>%
+    #     addStarsImage(dat_stars,
+    #                   opacity   = 0.7,
+    #                   colors    = "#000000",
+    #                   group     = display_label,
+    #                   layerId   = display_label,
+    #                   project   = FALSE) %>%
+    #     fitBounds(unname(ext_r["xmin"]),
+    #               unname(ext_r["ymin"]),
+    #               unname(ext_r["xmax"]),
+    #               unname(ext_r["ymax"]))
+    #   
+    #   # add change layer only if it exists (i.e. >1 file uploaded)
+    #   overlay_groups <- display_label
+    #   if (!is.null(r_change)) {
+    #     change_stars <- st_as_stars(r_change)
+    #     proxy <- proxy %>%
+    #       addStarsImage(change_stars,
+    #                     opacity = 0.7,
+    #                     colors  = "#563369",
+    #                     group   = "Change map",
+    #                     layerId = "change_map",
+    #                     project = FALSE)
+    #     overlay_groups <- c(display_label, "Change map")
+    #   }
+    #   
+    #   proxy %>%
+    #     addLayersControl(
+    #       baseGroups    = c("OSM", "ESRI Satellite"),
+    #       overlayGroups = overlay_groups,
+    #       options       = layersControlOptions(collapsed = FALSE)
+    #     )
+    #   
+    #   removeModal()
+    # })
+    
     observeEvent(upload_module$rasters(), {
-      r_list <- upload_module$rasters()
-      req(r_list)
+      dat      <- upload_module$rasters()
+      r_change <- upload_module$rasters_change()
+      req(dat)
       
-      # extract name of the latest raster (should be the year, e.g. "2024")
-      latest_year <- names(r_list[[length(r_list)]])
+      # latest year label
+      latest_year   <- names(dat)[1]
       if (is.null(latest_year) || latest_year == "") latest_year <- "Latest"
-
-      # Display label for users
       display_label <- paste0(latest_year, " classification")
-
-      # overlay groups
-      overlay_groups <- display_label  # always include the raster
-
-      # get eau extent for mapping zoom
-      ext_r <- as.vector(ext(r_list[[length(r_list)]]))
-
-      # replot
-      dat <- r_list[[length(r_list)]]
-      dat <- st_as_stars(dat)
-      leafletProxy(ns("eu_map")) %>%
+      
+      # extent for zoom
+      ext_r     <- as.vector(ext(dat))
+      dat_stars <- st_as_stars(dat)
+      
+      # base proxy with classification layer
+      proxy <- leafletProxy(ns("eu_map")) %>%
         clearImages() %>%
-        addStarsImage(dat,
-                      opacity = 0.7, colors = "#000000",
-                      group = display_label,
+        addStarsImage(dat_stars,
+                      opacity = 0.7,
+                      colors  = "#000000",
+                      group   = display_label,
                       layerId = display_label,
                       project = FALSE) %>%
-        addLayersControl(
-          baseGroups = c("OSM", "ESRI Satellite"),
-          overlayGroups = overlay_groups,
-          options = layersControlOptions(collapsed = FALSE)) %>%
         fitBounds(unname(ext_r["xmin"]),
                   unname(ext_r["ymin"]),
                   unname(ext_r["xmax"]),
                   unname(ext_r["ymax"]))
-
+      
+      overlay_groups <- display_label
+      
+      if (!is.null(r_change)) {
+        
+        all_years    <- as.numeric(unlist(upload_module$years()))
+        all_years    <- sort(all_years[!is.na(all_years)])
+        change_label <- if (length(all_years) >= 2) {
+          paste0(min(all_years), " - ", max(all_years), " change")
+        } else {
+          "Change map"
+        }
+        
+        change_stars <- st_as_stars(r_change)
+        
+        # categorical palette for -1, 0, 1
+        change_pal <- colorFactor(
+          palette  = c("#d73027", "#000000", "#1a9850"),  # red=lost, yellow=unchanged, green=gained, "#ffffbf"
+          domain   = c(-1, 0, 1),
+          na.color = "transparent"
+        )
+        
+        proxy <- proxy %>%
+          addStarsImage(change_stars,
+                        opacity = 0.8,
+                        colors  = change_pal,
+                        group   = change_label,
+                        layerId = "change_map",
+                        project = FALSE) %>%
+          addLegend(position  = "bottomright",
+                    pal       = change_pal,
+                    values    = c(-1, 0, 1),
+                    labFormat = labelFormat(
+                      transform = function(x) c("Lost", "No change", "Gained")[match(x, c(-1, 0, 1))]
+                    ),
+                    title     = change_label,
+                    na.label  = "No data",
+                    group     = change_label,
+                    layerId   = "change_legend")
+        
+        overlay_groups <- c(display_label, change_label)
+      }
+      
+      proxy %>%
+        addLayersControl(
+          baseGroups    = c("OSM", "ESRI Satellite"),
+          overlayGroups = overlay_groups,
+          options       = layersControlOptions(collapsed = FALSE)
+        ) %>% hideGroup(change_label) 
+      
       removeModal()
-   })
+    })
 
     # ## attempt 2
     # observeEvent(upload_module$rasters(), {

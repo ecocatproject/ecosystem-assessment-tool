@@ -101,7 +101,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       } else {
         # ext_r <- as.vector(ext(rasters()[[length(rasters())]])) # get eau extent for mapping zoom
         yrs <- year_inputs()
-        latest_year <- max(yrs)
+        latest_year <- max((yrs))
         latest <- rasters()[[length(rasters())]]
         ext_r  <- as.vector(ext(latest))   # get extent for zoom
         
