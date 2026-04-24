@@ -201,14 +201,14 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, meth
   
   #print(data)
   
-  # Only keep one row if scenario values are identical
-  if ("scenario" %in% names(data)) {
-    # Only keep one row if there are exactly 2 rows and values are identical
-    if (nrow(data) == 2 && all(data$perc_change[1] == data$perc_change[2])) {
-      data <- data[1, , drop = FALSE]
-      data$scenario <- NULL                     # Remove scenario column entirely
-    }
-  }
+  # # Only keep one row if scenario values are identical
+  # if ("scenario" %in% names(data)) {
+  #   # Only keep one row if there are exactly 2 rows and values are identical
+  #   if (nrow(data) == 2 && all(data$perc_change[1] == data$perc_change[2])) {
+  #     data <- data[1, , drop = FALSE]
+  #     data$scenario <- NULL                     # Remove scenario column entirely
+  #   }
+  # }
   
   # Build the text per row
   if (!is.null(scenario_col) && scenario_col %in% names(data)) {
@@ -257,7 +257,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
 
     hover_status_text <- status_tooltips[[status$text]]
 
-    description_html <- format_assessment_lines(data, status_col, data_col, method_col, method_selected = method_reactive(), scenario_col,  year_data = year_data)
+    description_html <- format_assessment_lines(data, status_col, data_col, method_col, method_selected = current_method, scenario_col,  year_data = year_data)
 
     # Wrap status text in a small span and attach tooltip
     status_value <- tags$span(
