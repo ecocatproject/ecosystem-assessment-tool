@@ -165,7 +165,7 @@ make_b_value_boxes <- function(title, reactive_data, status_col,
       ),
       value = status_value,
       p(HTML(description_html)),
-      height = 200L,
+      height = 150L,
       style = paste("background-color:", status$color, "; color: black;")
     )
   })
@@ -280,7 +280,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
       # value = status$text,
       value = status_value,
       p(HTML(description_html)),
-      height = 200L,
+      height = 150L,
       # theme = "bg-gradient-green-orange",
       style = paste("background-color:", status$color, "; color: black;")
     )
@@ -360,7 +360,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
 #       ),
 #       value = status_value,
 #       p(HTML(description_html)),
-#       height = 200L,
+#       height = 150L,
 #       style = paste("background-color:", status$color, "; color: black;")
 #     )
 #   })
