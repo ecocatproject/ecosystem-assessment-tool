@@ -555,14 +555,15 @@ description_module_server <- function(id, upload_module, countries,
                     layerId   = "change_legend")
         
         overlay_groups <- c(display_label, change_label)
-      }
-      
+    
       proxy %>%
         addLayersControl(
           baseGroups    = c("OSM", "ESRI Satellite"),
           overlayGroups = overlay_groups,
           options       = layersControlOptions(collapsed = FALSE)
         ) %>% hideGroup(change_label) 
+        
+      }
       
       removeModal()
     })
