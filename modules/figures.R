@@ -238,7 +238,7 @@ make_fig_a_plotly <- function(area_prediction_data,
                   PRC = fig_cols[["PRC"]])
 
   p <- plotly::plot_ly()
-
+print(paste0("bounds - ", is_bound))
   if (is_bound) {
     obs_years <- dplyr::filter(area_prediction_data,
                                Bound == "opt", type == "observed")$year
