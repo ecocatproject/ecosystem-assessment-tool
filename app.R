@@ -23,6 +23,7 @@ source("modules/report_wthumb.R")
 source("modules/data_download.R")
 source("modules/about.R")
 source("modules/script_export.R")
+source("modules/figures.R")
 
 # -------------------------------------------------------
 # load  helpers
@@ -41,6 +42,7 @@ source("helpers/modals.R")
 links_menu <- nav_menu(
   title = "Links",
   align = "right",
+  nav_item(kew_ecocat_url),
   nav_item(get_url),
   nav_item(rle_url)
 )
@@ -56,8 +58,8 @@ ui <- page_navbar(
   id = "main_tab",
   title = tagList(
     tags$a(
-      tags$img(src = "logo.png", height = "30px", style = "margin-right:10px;"),
-      tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
+      tags$img(src = "ecology.png", height = "50px", style = "margin-right:10px;")#, was logo.png
+      # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
     ),
     "EcoCAT RLE Assessment Tool"
   ),
@@ -72,6 +74,10 @@ ui <- page_navbar(
   criterion_b_module_ui("criteria_b"),
   report_module_ui("report"),
   about_module_ui("about"),
+  
+# add links ----------------------------------------------------------------
+  nav_spacer(),
+  links_menu,
   
   # Add custom CSS -----------------------------------------------------------
   tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"))
@@ -163,6 +169,7 @@ server <- function(input, output, session) {
                        organisation = input$organisation,
                        #email = input$email,
                        rasters = upload_module$rasters,
+                       rasters_change = upload_module$rasters_change,
                        areas = upload_module$areas,
                        years = upload_module$years,
                        countries = description_module$countries,
@@ -180,7 +187,7 @@ server <- function(input, output, session) {
                        b2_poly = criterion_b_module$b2_poly
   )
   
-  # script_excport  --------------------------------------------------------
+  # script_export  --------------------------------------------------------
   script_export_server("script_export",
                        upload_module       = upload_module,
                        criterion_a_module  = criterion_a_module,

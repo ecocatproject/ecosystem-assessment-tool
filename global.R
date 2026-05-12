@@ -65,7 +65,8 @@ get_logo <- dataURI(file = "www/logo_GET.png", mime = "image/png")
 #default_files <- list.files("www/data/example", full.names = TRUE)
 
 # links
-get_url <- tags$a(div(img(src=get_logo, height = "40px")), "GET", href = "https://global-ecosystems.org/page/typology", target = "_blank")
+kew_ecocat_url <- tags$a(div(img(src="logo.png", height = "40px")), "RBG Kew EcoCAT project", href = "https://www.kew.org/science/our-science/projects/EcoCAT", target = "_blank")
+get_url <- tags$a(div(img(src=get_logo, height = "40px")), "Global Ecosstem Typology", href = "https://global-ecosystems.org/page/typology", target = "_blank")
 rle_url <- tags$a(div(img(src=rle_logo, height = "40px")), "IUCN Red List", href = "https://www.iucnrle.org/", target = "_blank")
 
 # # Load static data
