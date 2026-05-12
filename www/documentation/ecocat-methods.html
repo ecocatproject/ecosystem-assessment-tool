@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Rob Critchlow">
-<meta name="dcterms.date" content="2026-04-20">
+<meta name="dcterms.date" content="2026-05-12">
 
 <title>EcoCAT Red List of Ecosystems Assessment Tool</title>
 <style>
@@ -3167,7 +3167,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 20, 2026</p>
+      <p class="date">May 12, 2026</p>
     </div>
   </div>
   
@@ -3185,7 +3185,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="descriptive-data">Descriptive data</h3>
 <section id="rainfall" class="level4">
 <h4 class="anchored" data-anchor-id="rainfall">Rainfall</h4>
-<p>Historical rainfall data is derived from<a href="https://www.worldclim.org/data/worldclim21.html" target="_blank" rel="noopener noreferrer" title="url link to the worldclim datasets">WorldClim verison 2.1</a> <span class="citation" data-cites="fick2017">(<a href="#ref-fick2017" role="doc-biblioref">Fick &amp; Hijmans 2017</a>)</span> at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the <code>spatSample</code> function in the <code>terra</code> package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.</p>
+<p>Historical rainfall data is derived from <a href="https://www.worldclim.org/data/worldclim21.html" target="_blank" rel="noopener noreferrer" title="url link to the worldclim datasets">WorldClim verison 2.1</a> <span class="citation" data-cites="fick2017">(<a href="#ref-fick2017" role="doc-biblioref">Fick &amp; Hijmans 2017</a>)</span> at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the <code>spatSample</code> function in the <code>terra</code> package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.</p>
 </section>
 <section id="temperature" class="level4">
 <h4 class="anchored" data-anchor-id="temperature">Temperature</h4>
