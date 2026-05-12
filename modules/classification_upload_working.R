@@ -862,6 +862,8 @@ classification_module_server <- function(id) {
       gc()
       req(tifs())                    # see app.R server for tifs_inputs
       files <- tifs()$datapath
+
+      print(is_bound_raster())
       
       # check <- check_resolution(tifs()$datapath)
       # if (!check$ok) {
