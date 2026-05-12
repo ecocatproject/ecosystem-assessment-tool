@@ -4,10 +4,11 @@
 # About Module
 # =============================================================================
 
-# This module renders html documetns on 
-# 1) example data (itigi thicket report summary)
-# 2) RLE guidelines
-# 3) tool guidance
+# This module renders html documents on: 
+# 1) intro/guidance
+# 2) methods
+# 3) example data (itigi thicket treport summary)
+# 4) RLE guidelines
 
 # ==============================================================================
 # UI
@@ -15,7 +16,7 @@
 about_module_ui <- function(id) {
   ns <- NS(id)
   
-  nav_panel("About/Help",
+  nav_panel("About & Help",
             navset_card_pill(
               # ----------------------------------------------------------------
               # about
@@ -60,7 +61,18 @@ about_module_ui <- function(id) {
                   height = "100%",
                   style = "border:none;"
                 )
-              )
+              )#,
+              # # ----------------------------------------------------------------
+              # # Glossary
+              # nav_panel(
+              #   "RLE",
+              #   tags$iframe(
+              #     src = "documentation/glossary.html",
+              #     width = "100%",
+              #     height = "100%",
+              #     style = "border:none;"
+              #   )
+              # )
              
             ))
 }
@@ -71,3 +83,6 @@ about_module_ui <- function(id) {
 about_module_server <- function(input, output, session) {}
 
 shinyApp(about_module_ui, about_module_server)
+
+
+

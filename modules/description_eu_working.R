@@ -157,13 +157,13 @@ description_module_server <- function(id, upload_module, countries,
     # Outputs - graphs and tables
     # =========================================================================
     # blank plot when varibles calcualtion not selected
-    biotic_blank <- plot_ly() %>%
+    biotic_blank <- plot_ly(type = "scatter") %>%
       layout(
         xaxis = list(visible = FALSE),
         yaxis = list(visible = FALSE),
         annotations = list(
           list(
-            text = "Upload data to view data",
+            text = "Upload data to view results",
             x = 0.5,
             y = 0.5,
             xref = "paper",
@@ -190,6 +190,7 @@ description_module_server <- function(id, upload_module, countries,
     # rainfall graph 
     output$rain_graph <- renderPlotly({
      # req(rv$rainfall)
+      print(str(rv$rainfall))
       p <- tryCatch(rv$rainfall, error = function(e) NULL)
       if (is.null(p)) {
         biotic_blank
@@ -235,7 +236,7 @@ description_module_server <- function(id, upload_module, countries,
       if (is.null(p)) {
         biotic_blank
       } else {
-      plot_ly(rv$temperature, x = ~month) %>%
+      plot_ly(rv$temperature, x = ~month ) %>%
         add_ribbons(
           ymin = ~min_smooth,
           ymax = ~max_smooth,
@@ -487,86 +488,72 @@ description_module_server <- function(id, upload_module, countries,
     #   removeModal()
     # })
     
-    observeEvent(upload_module$rasters(), {
-      dat      <- upload_module$rasters()
-      r_change <- upload_module$rasters_change()
-      req(dat)
-      
-      # latest year label
-      latest_year   <- names(dat)[1]
-      if (is.null(latest_year) || latest_year == "") latest_year <- "Latest"
-      display_label <- paste0(latest_year, " classification")
-      
-      # extent for zoom
-      ext_r     <- as.vector(ext(dat))
-      dat_stars <- st_as_stars(dat)
-      
-      # base proxy with classification layer
-      proxy <- leafletProxy(ns("eu_map")) %>%
-        clearImages() %>%
-        addStarsImage(dat_stars,
-                      opacity = 0.7,
-                      colors  = "#000000",
-                      group   = display_label,
-                      layerId = display_label,
-                      project = FALSE) %>%
-        fitBounds(unname(ext_r["xmin"]),
-                  unname(ext_r["ymin"]),
-                  unname(ext_r["xmax"]),
-                  unname(ext_r["ymax"]))
-      
-      overlay_groups <- display_label
-      
-      if (!is.null(r_change)) {
-        
-        all_years    <- as.numeric(unlist(upload_module$years()))
-        all_years    <- sort(all_years[!is.na(all_years)])
-        change_label <- if (length(all_years) >= 2) {
-          paste0(min(all_years), " - ", max(all_years), " change")
-        } else {
-          "Change map"
-        }
-        
-        change_stars <- st_as_stars(r_change)
-        
-        # categorical palette for -1, 0, 1
-        change_pal <- colorFactor(
-          palette  = c("#d73027", "#000000", "#1a9850"),  # red=lost, yellow=unchanged, green=gained, "#ffffbf"
-          domain   = c(-1, 0, 1),
-          na.color = "transparent"
-        )
-        
-        proxy <- proxy %>%
-          addStarsImage(change_stars,
-                        opacity = 0.8,
-                        colors  = change_pal,
-                        group   = change_label,
-                        layerId = "change_map",
-                        project = FALSE) %>%
-          addLegend(position  = "bottomright",
-                    pal       = change_pal,
-                    values    = c(-1, 0, 1),
-                    labFormat = labelFormat(
-                      transform = function(x) c("Lost", "No change", "Gained")[match(x, c(-1, 0, 1))]
-                    ),
-                    title     = change_label,
-                    na.label  = "No data",
-                    group     = change_label,
-                    layerId   = "change_legend")
-        
-        overlay_groups <- c(display_label, change_label)
+    # observeEvent(upload_module$rasters(), {
+    #   dat    <- upload_module$rasters()
+    #   r_loss <- upload_module$rasters_change()
+    #   req(dat)
+    #   
+    #   all_years   <- sort(as.numeric(na.omit(unlist(upload_module$years()))))
+    #   latest_year <- if (length(all_years) > 0) max(all_years) else "Latest"
+    #   class_label <- paste0(latest_year, " classification")
+    #   
+    #   ext_r     <- as.vector(ext(dat))
+    #   dat_stars <- st_as_stars(dat)
+    #   
+    #   proxy <- leafletProxy(ns("eu_map")) %>%
+    #     clearImages() %>%
+    #     clearControls() %>%                          # clears old legend + layer control
+    #     addStarsImage(dat_stars, opacity = 0.7, colors = "#000000",
+    #                   group = class_label, layerId = class_label, project = FALSE) %>%
+    #     fitBounds(unname(ext_r["xmin"]), unname(ext_r["ymin"]),
+    #               unname(ext_r["xmax"]), unname(ext_r["ymax"]))
+    #   
+    #   overlay_groups <- class_label
+    #   
+    #   if (!is.null(r_loss)) {
+    #     loss_label <- if (length(all_years) >= 2) {
+    #       paste0(min(all_years), "\u2013", max(all_years), " loss")
+    #     } else "Loss map"
+    #     
+    #     loss_pal <- colorFactor(palette = "#d73027", domain = 1, na.color = "transparent")
+    #     
+    #     proxy <- proxy %>%
+    #       addStarsImage(st_as_stars(r_loss), opacity = 0.85, colors = loss_pal,
+    #                     group = loss_label, layerId = "loss_map", project = FALSE) %>%
+    #       addLegend(position = "bottomright", colors = "#d73027", labels = "Loss",
+    #                 title = loss_label, opacity = 0.85,
+    #                 group = loss_label, layerId = "loss_legend")
+    #     
+    #     overlay_groups <- c(class_label, loss_label)
+    #   }
+    #   
+    #   proxy %>%
+    #     addLayersControl(
+    #       baseGroups    = c("OSM", "ESRI Satellite"),
+    #       overlayGroups = overlay_groups,
+    #       options       = layersControlOptions(collapsed = FALSE)
+    #     ) %>%
+    #     hideGroup(overlay_groups[overlay_groups != class_label])   # loss hidden by default
+    #   
+    #   removeModal()
+    # })
     
-      proxy %>%
-        addLayersControl(
-          baseGroups    = c("OSM", "ESRI Satellite"),
-          overlayGroups = overlay_groups,
-          options       = layersControlOptions(collapsed = FALSE)
-        ) %>% hideGroup(change_label) 
-        
-      }
+    
+    observeEvent(upload_module$rasters(), {
+      req(upload_module$rasters())
+      
+      output$eu_map <- renderLeaflet({
+        make_fig_distribution_leaflet(
+          r_map  = upload_module$rasters(),
+          r_loss = upload_module$rasters_change(),
+          years  = upload_module$years()
+        )
+      })
       
       removeModal()
     })
+    
+    
 
     # ## attempt 2
     # observeEvent(upload_module$rasters(), {

@@ -132,6 +132,7 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
         folder_provided      = !is.null(fp),
         years                = tryCatch(upload_module$years(),          error = function(e) NULL),
         selected_layer       = tryCatch(upload_module$selected_layer(), error = function(e) NULL),
+        is_bound_raster      = isTRUE(tryCatch(upload_module$is_bound_raster(), error = function(e) FALSE)),
         area_change_data     = tryCatch(criterion_a_module$area_change_data(),     error = function(e) NULL),
         area_prediction_data = tryCatch(criterion_a_module$area_prediction_data(), error = function(e) NULL),
         mcp_table            = tryCatch(criterion_b_module$mcp_table(), error = function(e) NULL),
@@ -186,8 +187,11 @@ dir.create("figures", showWarnings = FALSE)
 )
 
       # ---- functions ----------------------------------------------------------------
-      
-functions_block <- 
+      # Read figures.R from disk and inline it verbatim so the exported script
+      # is fully self-contained (no source() calls to app files).
+      figures_src <- paste(readLines("modules/figures.R"), collapse = "\n")
+
+functions_block <- paste0(
   '
 # =============================================================================
 # STEP 0.2 - Load functions
@@ -195,45 +199,57 @@ functions_block <-
 
 # -----------------------------------------------------------------------------
 # 1) calculate area change
+#    Handles standard data (Year, Area_km2) and bound data (Year, Bound, Area_km2)
 calc_area_change <- function(area.data) {
-  # calculate stats for observed changes 
-  area.data <- area.data %>%
-    dplyr::select(Year, Area_km2) %>%
-    dplyr::mutate(year = round(as.numeric(Year),0), area = Area_km2, Year = NULL, Area_km2 = NULL) %>%
-    dplyr::arrange(year)
   
-  obsv_change <- area.data %>%
-    dplyr::mutate(
-      dt = year - lag(year),
-      area_change = area - lag(area),   # later - earlier (signed correctly)
-      proportional_rate_change = ((area / lag(area))^(1 / dt) - 1) * 100,
-      absolute_rate_change = area_change / dt,
-    )
-    
-  return(obsv_change)
+  has_bound <- "Bound" %in% names(area.data)
+  
+  if (has_bound) {
+    area.data %>%
+      dplyr::select(Bound, Year, Area_km2) %>%
+      dplyr::mutate(year = round(as.numeric(Year), 0), area = Area_km2,
+                    Year = NULL, Area_km2 = NULL) %>%
+      dplyr::group_by(Bound) %>%
+      dplyr::arrange(year, .by_group = TRUE) %>%
+      dplyr::mutate(
+        dt                       = year - lag(year),
+        area_change              = area - lag(area),
+        proportional_rate_change = ((area / lag(area))^(1 / dt) - 1) * 100,
+        absolute_rate_change     = area_change / dt
+      )
+  } else {
+    area.data %>%
+      dplyr::select(Year, Area_km2) %>%
+      dplyr::mutate(year = round(as.numeric(Year), 0), area = Area_km2,
+                    Year = NULL, Area_km2 = NULL) %>%
+      dplyr::arrange(year) %>%
+      dplyr::mutate(
+        dt                       = year - lag(year),
+        area_change              = area - lag(area),
+        proportional_rate_change = ((area / lag(area))^(1 / dt) - 1) * 100,
+        absolute_rate_change     = area_change / dt
+      )
+  }
 }
 
 # -----------------------------------------------------------------------------
-# 2) Function to calculate decline statistics + projections
-predict_area_change <- function(obsv_change, horizon = 50) {
+# 2) Internal workhorse — single bound / ungrouped data
+predict_area_change_single <- function(obsv_change, horizon = 50) {
   
-  # helper data for projections
-  oldest <- cbind(
-    obsv_change %>% slice(1) %>% dplyr::select(year, area),                        # select the 1st row of year and area data, but need the next decline stat
-    obsv_change %>% slice(2) %>% dplyr::select(absolute_rate_change, proportional_rate_change) # # select the  1st set of decline stats
-  )
-  recent <- obsv_change %>% slice(n())                                      # choose the most recent row
-  nYearsPast <- (horizon - (max(obsv_change$year) - min(obsv_change$year))) # oldest data
-  if (nYearsPast < 0) nYearsPast <- 0                                       # safeguard if there happens to be early estimates?
+  obsv_change <- dplyr::ungroup(obsv_change) %>% dplyr::arrange(year)
+  if (nrow(obsv_change) < 2) return(data.frame())
   
-  # projection function
-  # this is used separately for future and past projections
-  # and is applied to future projections using imap (purrr package)
-  # project_seq <- function(start_area, rate, type, years, direction = "future") {
-    project_seq <- function(start_area, rate, type, years, direction = c("future", "past")) {
-      direction <- match.arg(direction)
-      
-    seq_df <- data.frame(i = 0:years) %>%
+  oldest       <- obsv_change %>% slice(1)
+  oldest_rates <- obsv_change %>% slice(2)
+  if (nrow(oldest_rates) == 0 || is.na(oldest_rates$proportional_rate_change) ||
+      is.na(oldest_rates$absolute_rate_change)) oldest_rates <- obsv_change %>% slice(n())
+  recent      <- obsv_change %>% slice(n())
+  nYearsPast  <- max(0, horizon - (max(obsv_change$year) - min(obsv_change$year)))
+  
+  project_seq <- function(start_area, rate, type, years,
+                          direction = c("future", "past")) {
+    direction <- match.arg(direction)
+    data.frame(i = 0:years) %>%
       mutate(
         area = case_when(
           type == "PRC" & direction == "future" ~ start_area * (1 + rate/100)^i,
@@ -242,80 +258,70 @@ predict_area_change <- function(obsv_change, horizon = 50) {
           type == "ARC" & direction == "past"   ~ start_area - rate * i,
           TRUE ~ NA_real_
         ),
-      area = pmax(area, 0),   # this prevents negative values
-      #  area = area,
-        year = if (direction == "future") recent$year + i else oldest$year - i,
-      ptype = "projected",
-      method = type
-      ) 
-    return(seq_df)
+        area   = pmax(area, 0),
+        year   = if (direction == "future") recent$year + i else oldest$year - i,
+        method = type
+      )
   }
   
-  # Past extrapolation (using oldest rate)
-  past_proj <- bind_rows(
-    # project_seq(oldest$area, -oldest$annual_rate_change, "ARC", nYearsPast, "past"),
-    project_seq(oldest$area, oldest$proportional_rate_change, "PRC", nYearsPast, "past"),
-    project_seq(oldest$area, oldest$absolute_rate_change, "ARC", nYearsPast, "past")
-  ) %>% mutate(scenario = "past") %>%
-    dplyr::select(year, area,  type = ptype, method, scenario) %>%
-    dplyr::arrange(year)
+  med_PRC <- median(obsv_change$proportional_rate_change, na.rm = TRUE)
+  med_ARC <- median(obsv_change$absolute_rate_change,     na.rm = TRUE)
   
-  # Future projections
-  scenarios <- list(
-    median = list(
-      PRC = median(obsv_change$proportional_rate_change, na.rm = TRUE),
-      ARC = median(obsv_change$absolute_rate_change, na.rm = TRUE)
-    ),
-    recent = list(
-      PRC = recent$proportional_rate_change,
-      ARC = recent$absolute_rate_change
-    ),
-    worst = list(
-      PRC = min(0, min(obsv_change$proportional_rate_change, na.rm = TRUE)), # clamped to 0 to prevent increases
-      ARC = min(0, min(obsv_change$absolute_rate_change, na.rm = TRUE))
-    )
-  )
-  
-  # If recent and worst are the same, merge them into "recent/worst"
-  equal_check <- all.equal(scenarios$recent, scenarios$worst, tolerance = 1e-8)
-  if (isTRUE(equal_check)) {
-    scenarios$`recent/worst` <- scenarios$worst
-    scenarios$recent <- NULL
-    scenarios$worst <- NULL
-  }
-  
-  future_proj <- imap_dfr(scenarios, function(rates, scen) { # this iterates over 2 arguments at a time (a bit like seq_along...)
+  proj <- imap_dfr(list(recent = NULL, median = NULL), function(., scen) {
+    past_PRC <- if (scen == "recent") oldest_rates$proportional_rate_change else med_PRC
+    past_ARC <- if (scen == "recent") oldest_rates$absolute_rate_change     else med_ARC
+    fut_PRC  <- if (scen == "recent") recent$proportional_rate_change       else med_PRC
+    fut_ARC  <- if (scen == "recent") recent$absolute_rate_change           else med_ARC
+    
     bind_rows(
-      project_seq(recent$area, rates$PRC, "PRC", horizon, "future"),
-      project_seq(recent$area, rates$ARC, "ARC", horizon, "future")
-    ) %>% mutate(scenario = scen) %>%
-      dplyr::select(year, area,  type = ptype, method, scenario) %>%
-      arrange(year)
+      project_seq(oldest$area, past_PRC, "PRC", nYearsPast, "past")   %>% mutate(segment = "past"),
+      project_seq(oldest$area, past_ARC, "ARC", nYearsPast, "past")   %>% mutate(segment = "past"),
+      project_seq(recent$area, fut_PRC,  "PRC", horizon,    "future") %>% mutate(segment = "future"),
+      project_seq(recent$area, fut_ARC,  "ARC", horizon,    "future") %>% mutate(segment = "future")
+    ) %>%
+      mutate(scenario = scen, type = "projected") %>%
+      dplyr::select(year, area, type, method, scenario, segment) %>%
+      dplyr::arrange(method, year)
   })
   
-  # Combine observed + projections
-  observed <- obsv_change %>% 
-    dplyr::select(year, area) %>%                                                # select the data required for combining
-    mutate(type = "observed", method = "observed", scenario = "observed") # force names to comply with other data
+  observed <- obsv_change %>%
+    dplyr::select(year, area) %>%
+    mutate(type = "observed", method = "observed", scenario = "observed", segment = "observed")
   
-  out <- bind_rows(past_proj, observed,  future_proj)                     # combine the 3 sets of data
-  
-  return(out)
+  bind_rows(observed, proj)
+}
+
+# 3) Public dispatcher — routes to single or per-bound
+predict_area_change <- function(obsv_change, horizon = 50) {
+  if ("Bound" %in% names(obsv_change)) {
+    purrr::map_dfr(unique(dplyr::pull(obsv_change, Bound)), function(b) {
+      predict_area_change_single(
+        obsv_change %>% dplyr::filter(Bound == b) %>% dplyr::ungroup(),
+        horizon
+      ) %>% dplyr::mutate(Bound = b)
+    })
+  } else {
+    predict_area_change_single(dplyr::ungroup(obsv_change), horizon)
+  }
 }
 
 # -----------------------------------------------------------------------------
-# 3) function needed for MCP calculation
+# 4) function needed for MCP calculation
 makeEOO.SpatRaster <- function(input.data, year){
   EOO.polygon <- as.polygons(input.data, na.rm=T)
   EOO.poly <- convHull(EOO.polygon)
-  # add attributes directly
   EOO.poly$year <- year
   EOO.poly$area_km2 <- terra::expanse(EOO.poly, unit = "km")
-  
   return(EOO.poly)
 }
 
-      '
+# -----------------------------------------------------------------------------
+# 5) Shared figure functions (ggplot2 static + plotly interactive)
+#    Inlined from modules/figures.R
+',
+  figures_src,
+  "\n"
+)
             
       # ---- Input files -----------------------------------------------------------
       if (isTRUE(p$using_example)) {
@@ -392,41 +398,68 @@ order_idx    <- order(as.numeric(years))
 raster_files <- raster_files[order_idx]
 years        <- years[order_idx]
 
-raster_list <- lapply(seq_along(raster_files), function(i) {
-  r <- terra::rast(raster_files[i])
+# Detect whether rasters have min/opt/max bound layers
+is_bound_raster <- identical(
+  sort(names(terra::rast(raster_files[1]))),
+  c("max", "min", "opt")
+)
 
-  if (!is.null(selected_layer) && nzchar(selected_layer)) {
-    if (selected_layer %in% names(r)) {
-      r <- r[[selected_layer]]
-    } else if (terra::nlyr(r) == 1) {
-      r_single <- r[[1]]
-      uvals    <- terra::unique(r_single)[, 1]
-      uvals    <- uvals[!is.na(uvals)]
-      if (length(uvals) > 1) {
-        sel_num <- suppressWarnings(as.numeric(selected_layer))
-        if (!is.na(sel_num)) r <- terra::ifel(r_single == sel_num, 1, NA)
+if (is_bound_raster) {
+  # ---- Bound raster path: compute area for all three bounds -----------------
+  areas <- do.call(rbind, lapply(seq_along(raster_files), function(i) {
+    r_all <- terra::rast(raster_files[i])
+    do.call(rbind, lapply(c("min", "opt", "max"), function(b) {
+      r_b <- r_all[[b]]
+      if (terra::global(r_b, "isNA")[1, 1] == 0)
+        r_b <- terra::classify(r_b, matrix(c(0, NA), ncol = 2))
+      if (!is.na(terra::crs(r_b)) && !terra::is.lonlat(r_b)) {
+        area_m2 <- terra::global(r_b, "sum", na.rm = TRUE)[1, 1] * prod(terra::res(r_b))
+      } else {
+        area_m2 <- terra::expanse(r_b, unit = "m")[, 2]
       }
+      data.frame(Year = years[i], Bound = b,
+                 Area_ha = area_m2 / 10000, Area_km2 = area_m2 / 1e6)
+    }))
+  }))
+  
+} else {
+  # ---- Standard path: single representative layer per file -----------------
+  raster_list <- lapply(seq_along(raster_files), function(i) {
+    r <- terra::rast(raster_files[i])
+
+    if (!is.null(selected_layer) && nzchar(selected_layer)) {
+      if (selected_layer %in% names(r)) {
+        r <- r[[selected_layer]]
+      } else if (terra::nlyr(r) == 1) {
+        r_single <- r[[1]]
+        uvals    <- terra::unique(r_single)[, 1]
+        uvals    <- uvals[!is.na(uvals)]
+        if (length(uvals) > 1) {
+          sel_num <- suppressWarnings(as.numeric(selected_layer))
+          if (!is.na(sel_num)) r <- terra::ifel(r_single == sel_num, 1, NA)
+        }
+      }
+    } else {
+      r <- r[[1]]
     }
-  } else {
-    r <- r[[1]]
-  }
 
-  if (terra::global(r, "isNA")[1, 1] == 0)
-    r <- terra::classify(r, matrix(c(0, NA), ncol = 2))
+    if (terra::global(r, "isNA")[1, 1] == 0)
+      r <- terra::classify(r, matrix(c(0, NA), ncol = 2))
 
-  names(r) <- years[i]
-  r
-})
+    names(r) <- years[i]
+    r
+  })
 
-areas <- do.call(rbind, lapply(seq_along(raster_list), function(i) {
-  r <- raster_list[[i]]
-  if (!is.na(terra::crs(r)) && !terra::is.lonlat(r)) {
-    area_m2 <- terra::global(r, "sum", na.rm = TRUE)[1, 1] * prod(terra::res(r))
-  } else {
-    area_m2 <- terra::expanse(r, unit = "m")[, 2]
-  }
-  data.frame(Year = years[i], Area_ha = area_m2 / 10000, Area_km2 = area_m2 / 1e6)
-}))
+  areas <- do.call(rbind, lapply(seq_along(raster_list), function(i) {
+    r <- raster_list[[i]]
+    if (!is.na(terra::crs(r)) && !terra::is.lonlat(r)) {
+      area_m2 <- terra::global(r, "sum", na.rm = TRUE)[1, 1] * prod(terra::res(r))
+    } else {
+      area_m2 <- terra::expanse(r, unit = "m")[, 2]
+    }
+    data.frame(Year = years[i], Area_ha = area_m2 / 10000, Area_km2 = area_m2 / 1e6)
+  }))
+}
 
 cat("\nArea summary:\n")
 print(areas)
@@ -434,28 +467,93 @@ print(areas)
       
       # ---- Criterion A -----------------------------------------------------------
       if (run_a) {
-        crit_a_block <-
-          '# =============================================================================
+        
+        if (isTRUE(p$is_bound_raster)) {
+          # ------------------------------------------------------------------
+          # BOUND RASTER PATH: min / opt / max layers
+          # ------------------------------------------------------------------
+          crit_a_block <- '# =============================================================================
+# STEP 2 - Criterion A (decline in ecosystem distribution) — bound raster
+# =============================================================================
+area_change_data     <- calc_area_change(areas)          # returns Bound column
+area_prediction_data <- predict_area_change(area_change_data) |> dplyr::ungroup()
+
+# Assessment on \'opt\' bound only (central estimate)
+results_opt <- area_prediction_data |> dplyr::filter(Bound == "opt")
+obs_years   <- results_opt$year[results_opt$type == "observed"]
+
+past.obsv.fut <- dplyr::bind_rows(
+  results_opt |> dplyr::group_by(type, method, scenario, segment) |>
+    dplyr::filter(segment == "future") |> dplyr::slice(dplyr::n()),
+  results_opt |> dplyr::group_by(type, method, scenario, segment) |>
+    dplyr::filter(segment == "past") |> dplyr::slice(1)
+) |> dplyr::arrange(year)
+
+latest_obs_area <- results_opt$area[results_opt$type == "observed" &
+                                    results_opt$year == max(obs_years)][1]
+
+a1_result <- past.obsv.fut |>
+  dplyr::filter(segment == "past", method %in% c("ARC", "PRC")) |>
+  dplyr::group_by(method) |> dplyr::slice_min(year, n = 1) |> dplyr::ungroup() |>
+  dplyr::mutate(
+    latest_observed_area = latest_obs_area,
+    perc_change          = (latest_observed_area - area) / area,
+    A1 = dplyr::case_when(
+      perc_change < -0.8  ~ "CR", perc_change < -0.5  ~ "EN",
+      perc_change < -0.3  ~ "VU", perc_change < -0.27 ~ "NT", TRUE ~ "LC"
+    )
+  )
+
+cat("\nCriterion A1 result (opt bound):\n")
+print(a1_result[, c("method", "perc_change", "A1")])
+
+# ---------------------------------------------------------------------------
+# FIGURE 1 - Criterion A: opt line + min/max ribbons (observed + projected)
+# ---------------------------------------------------------------------------
+# Interactive plotly (show_ribbon = TRUE — toggle to FALSE to hide ribbons)
+p_plotly <- make_fig_a_plotly(area_prediction_data, is_bound = TRUE, show_ribbon = TRUE)
+print(p_plotly)
+htmlwidgets::saveWidget(p_plotly, "figures/criterion_a_area_change.html", selfcontained = TRUE)
+cat("Saved: figures/criterion_a_area_change.html\n")
+
+# Static ggplot2 (for reports / publication)
+p_gg <- make_fig_a(area_prediction_data, is_bound = TRUE)
+ggplot2::ggsave("figures/criterion_a_area_change.png", p_gg,
+                width = 8, height = 5, dpi = 300)
+cat("Saved: figures/criterion_a_area_change.png\n")
+'
+
+        } else {
+          # ------------------------------------------------------------------
+          # STANDARD PATH: single representative layer
+          # ------------------------------------------------------------------
+          crit_a_block <- '# =============================================================================
 # STEP 2 - Criterion A (decline in ecosystem distribution)
 # =============================================================================
 area_change_data     <- calc_area_change(areas)
 area_prediction_data <- predict_area_change(area_change_data) |> dplyr::ungroup()
 
-# A1 assessment
+obs_years <- area_prediction_data$year[area_prediction_data$type == "observed"]
+
+# A1 / A2a assessment
 past.obsv.fut <- dplyr::bind_rows(
   area_prediction_data |>
-    dplyr::group_by(type, method, scenario) |>
-    dplyr::filter(scenario != "past") |> dplyr::slice(dplyr::n()),
+    dplyr::group_by(type, method, scenario, segment) |>
+    dplyr::filter(segment == "future") |> dplyr::slice(dplyr::n()),
   area_prediction_data |>
-    dplyr::group_by(type, method, scenario) |>
-    dplyr::filter(scenario == "past") |> dplyr::slice(1)
+    dplyr::group_by(type, method, scenario, segment) |>
+    dplyr::filter(segment == "past") |> dplyr::slice(1)
 ) |> dplyr::arrange(year)
 
+latest_obs_area <- area_prediction_data$area[
+  area_prediction_data$type == "observed" &
+  area_prediction_data$year == max(obs_years)][1]
+
 a1_result <- past.obsv.fut |>
-  dplyr::filter(scenario == "past", method %in% c("ARC", "PRC")) |>
+  dplyr::filter(segment == "past", method %in% c("ARC", "PRC")) |>
   dplyr::group_by(method) |> dplyr::slice_min(year, n = 1) |> dplyr::ungroup() |>
   dplyr::mutate(
-    latest_observed_area = past.obsv.fut$area[past.obsv.fut$scenario == "observed"],
+    latest_observed_area = latest_obs_area,
     perc_change          = (latest_observed_area - area) / area,
     A1 = dplyr::case_when(
       perc_change < -0.8  ~ "CR", perc_change < -0.5  ~ "EN",
@@ -467,120 +565,22 @@ cat("\nCriterion A1 result:\n")
 print(a1_result[, c("method", "perc_change", "A1")])
 
 # ---------------------------------------------------------------------------
-# FIGURE 1 - Criterion A: area change and projections (interactive + static)
+# FIGURE 1 - Criterion A: area change and projections
 # ---------------------------------------------------------------------------
-colors    <- c("PRC" = "#D55E00", "ARC" = "#56B4E9")
-linetypes <- c("median" = "dot", "recent" = "solid", "worst" = "dash",
-               "recent/worst" = "dash", "past" = "longdashdot")
-
-results <- area_prediction_data |>
-  dplyr::mutate(hover_text = paste0("Year: ", year, "<br>Area: ", round(area, 0),
-                                    "<br>Scenario: ", scenario, "<br>Method: ", method))
-
-# -- Interactive plotly (mirrors the app) --
-p_plotly <- plotly::plot_ly()
-
-p_plotly <- p_plotly |>
-  plotly::add_trace(
-    data = dplyr::filter(results, type == "observed"),
-    x = ~year, y = ~area, type = "scatter", mode = "lines+markers",
-    line   = list(color = "grey20", width = 3),
-    marker = list(color = "grey10", size = 6),
-    name   = "Observed"
-  )
-
-proj_data <- dplyr::filter(results, type == "projected")
-for (scen in unique(proj_data$scenario)) {
-  for (meth in unique(proj_data$method)) {
-    sub <- dplyr::filter(proj_data, scenario == scen, method == meth)
-    p_plotly <- plotly::add_trace(
-      p_plotly, data = sub,
-      x = ~year, y = ~area, type = "scatter", mode = "lines",
-      line = list(color = colors[meth], dash = linetypes[scen], width = 3),
-      name = paste(scen, meth, sep = "/")
-    )
-  }
-}
-
-# Optional GAM smoother (only fitted with >3 observed points)
-n_points <- nrow(area_change_data)
-if (n_points > 3) {
-  gam_model <- tryCatch(
-    mgcv::gam(area ~ s(year, k = max(3, n_points - 2)), data = area_change_data),
-    error = function(e) NULL
-  )
-  if (!is.null(gam_model)) {
-    new_years <- data.frame(year = seq(min(area_prediction_data$year),
-                                       max(area_prediction_data$year)))
-    pred_gam  <- predict(gam_model, newdata = new_years, se.fit = TRUE)
-    pred_gam  <- data.frame(
-      year = new_years$year,
-      fit  = pred_gam$fit,
-      lwr  = pmax(pred_gam$fit - 2 * pred_gam$se.fit, 0),
-      upr  = pred_gam$fit + 2 * pred_gam$se.fit
-    )
-    p_plotly <- p_plotly |>
-      plotly::add_trace(
-        data = dplyr::filter(pred_gam, year < min(area_change_data$year)),
-        x = ~year, y = ~fit, type = "scatter", mode = "lines",
-        line = list(color = "blue", width = 3, dash = "dash"),
-        name = "GAM", legendgroup = "GAM", visible = "legendonly"
-      ) |>
-      plotly::add_trace(
-        data = dplyr::filter(pred_gam, year > max(area_change_data$year)),
-        x = ~year, y = ~fit, type = "scatter", mode = "lines",
-        line = list(color = "blue", width = 3, dash = "dash"),
-        name = "GAM", legendgroup = "GAM", showlegend = FALSE
-      ) |>
-      plotly::add_ribbons(
-        data = pred_gam, x = ~year, ymin = ~lwr, ymax = ~upr,
-        fillcolor = "rgba(0,0,255,0.2)", line = list(color = "transparent"),
-        name = "95% CI", legendgroup = "GAM", showlegend = FALSE, visible = "legendonly"
-      )
-  }
-}
-
-p_plotly <- p_plotly |>
-  plotly::layout(
-    xaxis  = list(title = "Year"),
-    yaxis  = list(title = "Area (km\u00b2)"),
-    legend = list(title = list(text = "<b>Scenario / Method</b>")),
-    font   = list(family = "Roboto", size = 14, color = "#333333")
-  )
-
+# Interactive plotly
+p_plotly <- make_fig_a_plotly(area_prediction_data, is_bound = FALSE)
 print(p_plotly)
 htmlwidgets::saveWidget(p_plotly, "figures/criterion_a_area_change.html", selfcontained = TRUE)
 cat("Saved: figures/criterion_a_area_change.html\n")
 
-# -- Static ggplot2 version (suitable for publication / report) --
-p_gg <- ggplot2::ggplot() +
-  ggplot2::geom_line(
-    data = dplyr::filter(results, type == "observed"),
-    ggplot2::aes(x = year, y = area), colour = "grey20", linewidth = 1.2
-  ) +
-  ggplot2::geom_point(
-    data = dplyr::filter(results, type == "observed"),
-    ggplot2::aes(x = year, y = area), colour = "grey10", size = 3
-  ) +
-  ggplot2::geom_line(
-    data = dplyr::filter(results, type == "projected"),
-    ggplot2::aes(x = year, y = area, colour = method, linetype = scenario), linewidth = 1
-  ) +
-  ggplot2::scale_colour_manual(values = colors) +
-  ggplot2::scale_linetype_manual(values = c(
-    "median" = "dotted", "recent" = "solid", "worst" = "dashed",
-    "recent/worst" = "dashed", "past" = "longdash"
-  )) +
-  ggplot2::labs(
-    x = "Year", y = expression("Area (km"^2*")"),
-    colour = "Method", linetype = "Scenario"
-  ) +
-  ggplot2::theme_bw(base_size = 13)
-
+# Static ggplot2
+p_gg <- make_fig_a(area_prediction_data, is_bound = FALSE)
 ggplot2::ggsave("figures/criterion_a_area_change.png", p_gg,
                 width = 8, height = 5, dpi = 300)
 cat("Saved: figures/criterion_a_area_change.png\n")
 '
+        }
+
       } else {
         crit_a_block <-
           '# =============================================================================
@@ -615,53 +615,16 @@ cat("\nCriterion B1 (EOO) result:\n")
 print(eoo_df)
 
 # ---------------------------------------------------------------------------
-# FIGURE 2 - Criterion B1: EOO map (interactive leaflet + static ggplot2)
+# FIGURE 2 - Criterion B1: EOO map
 # ---------------------------------------------------------------------------
-eoo_sf      <- sf::st_as_sf(terra::project(eoo_poly, "EPSG:4326"))
-raster_4326 <- terra::project(latest_raster, "EPSG:4326")
-
-# -- Interactive leaflet map (mirrors the app) --
-ext_r <- as.vector(terra::ext(raster_4326))
-
-map_b1 <- leaflet::leaflet() |>
-  leaflet::addTiles() |>
-  leaflet::fitBounds(ext_r["xmin"], ext_r["ymin"], ext_r["xmax"], ext_r["ymax"]) |>
-  leaflet::addRasterImage(
-    raster_4326, opacity = 0.7, colors = "#000000",
-    group = paste0(latest_year, " classification")
-  ) |>
-  leaflet::addPolygons(
-    data = eoo_sf, fillOpacity = 0.3, color = "black", weight = 2,
-    group = paste0(latest_year, " EOO (MCP)"),
-    label = ~paste0("Year: ", year, " | Area: ", round(area_km2, 2), " km\u00b2")
-  ) |>
-  leaflet::addProviderTiles(leaflet::providers$Esri.WorldImagery, group = "ESRI Satellite") |>
-  leaflet::addLayersControl(
-    baseGroups   = c("OSM", "ESRI Satellite"),
-    overlayGroups = c(paste0(latest_year, " EOO (MCP)"),
-                      paste0(latest_year, " classification")),
-    options = leaflet::layersControlOptions(collapsed = FALSE)
-  )
-
+# Interactive leaflet map
+map_b1 <- make_fig_b1_leaflet(eoo_poly, latest_raster, latest_year)
 print(map_b1)
 htmlwidgets::saveWidget(map_b1, "figures/criterion_b1_eoo_map.html", selfcontained = TRUE)
 cat("Saved: figures/criterion_b1_eoo_map.html\n")
 
-# -- Static ggplot2 map --
-raster_df <- as.data.frame(raster_4326, xy = TRUE) |> stats::na.omit()
-
-p_b1 <- ggplot2::ggplot() +
-  ggplot2::geom_raster(data = raster_df,
-                       ggplot2::aes(x = x, y = y), fill = "grey30", alpha = 0.7) +
-  ggplot2::geom_sf(data = eoo_sf, fill = NA, colour = "black", linewidth = 0.8) +
-  ggplot2::coord_sf() +
-  ggplot2::labs(
-    title = paste0("Criterion B1 - EOO (", latest_year, ")"),
-    subtitle = paste0("Area: ", round(eoo_df$area_km2, 1), " km\u00b2  |  Assessment: ", eoo_df$assessment),
-    x = "Longitude", y = "Latitude"
-  ) +
-  ggplot2::theme_bw(base_size = 13)
-
+# Static ggplot2 map
+p_b1 <- make_fig_b1(list(eoo_poly), list(latest_raster), years)
 ggplot2::ggsave("figures/criterion_b1_eoo_map.png", p_b1,
                 width = 8, height = 6, dpi = 300)
 cat("Saved: figures/criterion_b1_eoo_map.png\n")
@@ -729,74 +692,27 @@ cat("\nCriterion B2 (AOO) result:\n")
 print(n_cells)
 
 # ---------------------------------------------------------------------------
-# FIGURE 3 - Criterion B2: AOO map (interactive leaflet + static ggplot2)
+# FIGURE 3 - Criterion B2: AOO map
 # ---------------------------------------------------------------------------
 grid_sf_4326 <- sf::st_transform(grid_poly_sf, crs = 4326)
-raster_4326  <- terra::project(latest_raster, "EPSG:4326")
-
-# Identify all occupied cells and cells exceeding the 1% AOO threshold
-all_ids <- aoo_cumulative |>
-  dplyr::filter(cum_prop > 0) |>
-  dplyr::group_by(year) |>
-  dplyr::summarise(cell_ids = list(cell_id))
-
-sel_ids <- aoo_cumulative |>
-  dplyr::filter(cum_prop > 0.01) |>
-  dplyr::group_by(year) |>
-  dplyr::summarise(cell_ids = list(cell_id))
 
 dat_all <- grid_sf_4326[grid_sf_4326$cell_id %in% all_ids$cell_ids[[1]], ]
 dat_sel <- grid_sf_4326[grid_sf_4326$cell_id %in% sel_ids$cell_ids[[1]], ]
 
-# -- Interactive leaflet map (mirrors the app) --
-map_b2 <- leaflet::leaflet() |>
-  leaflet::addTiles() |>
-  leaflet::addRasterImage(raster_4326, opacity = 0.7, colors = "#000000",
-                          group = "Ecosystem classification") |>
-  leaflet::addPolygons(
-    data = dat_all, group = "10x10 km grid",
-    fillColor = "black", fillOpacity = 0.2, color = "black", weight = 0.5
-  ) |>
-  leaflet::addPolygons(
-    data = dat_sel, group = "AOO (>1% occupancy)",
-    fillColor = "orange", fillOpacity = 0.5, color = "black", weight = 0.5
-  ) |>
-  leaflet::addProviderTiles(leaflet::providers$Esri.WorldImagery, group = "ESRI Satellite") |>
-  leaflet::addLayersControl(
-    baseGroups    = c("OSM", "ESRI Satellite"),
-    overlayGroups = c("Ecosystem classification", "10x10 km grid", "AOO (>1% occupancy)"),
-    options = leaflet::layersControlOptions(collapsed = FALSE)
-  ) |>
-  leaflet::addLegend(
-    position = "bottomright",
-    colors   = c("black", "orange"),
-    labels   = c("10x10 km grid", "AOO (>1% occupancy)"),
-    opacity  = 0.7, title = "AOO layers"
-  )
-
+# Interactive leaflet map
+map_b2 <- make_fig_b2_leaflet(dat_all, dat_sel, latest_raster, max(years))
 print(map_b2)
 htmlwidgets::saveWidget(map_b2, "figures/criterion_b2_aoo_map.html", selfcontained = TRUE)
 cat("Saved: figures/criterion_b2_aoo_map.html\n")
 
-# -- Static ggplot2 map --
-raster_df <- as.data.frame(raster_4326, xy = TRUE) |> stats::na.omit()
-
-p_b2 <- ggplot2::ggplot() +
-  ggplot2::geom_raster(data = raster_df,
-                       ggplot2::aes(x = x, y = y), fill = "grey30", alpha = 0.6) +
-  ggplot2::geom_sf(data = dat_all,
-                   fill = "black", alpha = 0.15, colour = "black", linewidth = 0.3) +
-  ggplot2::geom_sf(data = dat_sel,
-                   fill = "orange", alpha = 0.5, colour = "black", linewidth = 0.3) +
-  ggplot2::coord_sf() +
-  ggplot2::labs(
-    title    = paste0("Criterion B2 - AOO (", max(years), ")"),
-    subtitle = paste0("Total cells: ", n_cells$n, "  |  Cells >1% occupancy: ",
-                      n_cells$n_exceed, "  |  Assessment: ", n_cells$assessment),
-    x = "Longitude", y = "Latitude"
-  ) +
-  ggplot2::theme_bw(base_size = 13)
-
+# Static ggplot2 map — build a SpatVector with $type column as make_fig_b2 expects
+b2_poly_export <- rbind(
+  cbind(sf::st_drop_geometry(dat_all), type = "all") |>
+    sf::st_set_geometry(sf::st_geometry(dat_all)),
+  cbind(sf::st_drop_geometry(dat_sel), type = "assessment") |>
+    sf::st_set_geometry(sf::st_geometry(dat_sel))
+)
+p_b2 <- make_fig_b2(terra::vect(b2_poly_export), list(latest_raster), years)
 ggplot2::ggsave("figures/criterion_b2_aoo_map.png", p_b2,
                 width = 8, height = 6, dpi = 300)
 cat("Saved: figures/criterion_b2_aoo_map.png\n")

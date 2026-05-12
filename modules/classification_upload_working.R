@@ -10,17 +10,20 @@ classification_module_ui <- function(id) {
   ns <- NS(id)
   
   sidebar(
-    width = 300,
+    width = 320,
     
     # 1) File upload (hidden when example = TRUE)
     conditionalPanel(
       condition = "!input.example",
       tags$span(
-        tags$strong(style = "font-size:14px;", "1) Upload Ecosystem map(s)"),
-        tooltip(
+        tags$strong(style = "font-size:14px;", "1) Upload your ecosystem map(s)"), tooltip(
           bs_icon("info-circle"),
-          "The file must be a raster format - e.g. .tif"
+          "The files must be in raster format (e.g., GeoTIFF, .tif). You can also try the tool using our example ecosystem maps.​"
         ),
+        tags$p(style = "margin:0 0 3px; font-size:13px; color:#6b7280; line-height:1.5;",
+               "Upload maps from multiple years to assess changes in ecosystem distribution (Criterion A)."),
+  
+       
         # fileInput(ns("tifs"), "", multiple = TRUE, accept = ".tif")
         uiOutput(ns("tifs_ui"))
       )
@@ -28,11 +31,11 @@ classification_module_ui <- function(id) {
     
     # 2) Example dataset toggle option
     checkboxInput(ns("example"),
-                  tags$span( tags$strong(style = "font-size:14px;","Or use example dataset?"),
-                            tooltip(bs_icon("info-circle"),
-                                    "Classification of the Itigi-Sumbu thicket ecosystem in Zambia. Further details can be
-              found in the 'Example dataset' section of the 'About' Tab"
-                            )), value = FALSE),
+                  tags$span( tags$strong(style = "font-size:14px;","Or use our example ecosystem maps"),
+                             tooltip(bs_icon("info-circle"),
+                                     "Classification of the Itigi-Sumbu thicket ecosystem in Zambia. Further details can be
+              found in the 'Example dataset' section of the 'About & Help' Tab"
+                             )), value = FALSE),
     
     # 4) separator line is better than hr()  - less white space
     div(style = "border-top: 1px solid #ccc; margin: 10px 0;"),
@@ -101,9 +104,9 @@ classification_module_server <- function(id) {
     })
     
     observeEvent(data_source(), {
-
+      
       # ---- Reset stored years immediately so example years don't bleed ----
-      stored_years$years <- list()          # <-- ADD THIS LINE
+      stored_years$years <- list()  
       
       # ---- Reset reactiveVals ----
       rasters(NULL)
@@ -130,7 +133,7 @@ classification_module_server <- function(id) {
     # --------------------------------------------------------------------------
     # Persistent year store — add near the top of your module server
     stored_years <- reactiveValues(years = list())
-
+    
     # --------------------------------------------------------------------------
     # Reset + open modal whenever tifs() changes
     observeEvent(tifs(), {
@@ -254,6 +257,15 @@ classification_module_server <- function(id) {
     })
     
     # --------------------------------------------------------------------------
+    # TRUE when the uploaded raster(s) use min/opt/max layer names.
+    # All downstream logic branches on this single reactive.
+    is_bound_raster <- reactive({
+      r <- r_rast()
+      if (inherits(r, "try-error")) return(FALSE)
+      identical(sort(names(r)), c("max", "min", "opt"))
+    })
+    
+    # --------------------------------------------------------------------------
     # Conditionally render years ui
     output$year_sidebar_section <- renderUI({
       req(tifs())
@@ -363,7 +375,7 @@ classification_module_server <- function(id) {
         tags$hr(style = "margin:8px 0;")
       )
     })
-        
+    
     # --------------------------------------------------------------------------
     # Conditionally render dropdown
     output$ecosystem_dropdown <- renderUI({
@@ -372,7 +384,20 @@ classification_module_server <- function(id) {
       # Return NULL if raster loading failed
       if (inherits(r_rast(), "try-error")) return(NULL)
       
-      # Only proceed if >1 layer
+      # # ---- min/opt/max bound raster: no layer selection needed ---------------
+      if (!is_bound_raster()) {
+      #   return(tagList(
+      #     tags$div(
+      #       class = "alert alert-info",
+      #       style = "font-size:13px; padding:8px; margin-bottom:6px;",
+      #       bs_icon("info-circle"), " ",
+      #       tags$strong("Min / Opt / Max layers detected."),
+      #       " All three bounds will be processed automatically — no layer selection required."
+      #     ),
+      #     div(style = "border-top: 1px solid #ccc; margin: 0;")
+      #   ))
+     # return(NULL)
+      # }
       if (NROW(r_freq()) > 1) {
         if (nlyr(r_rast()) > 1) {
           # # Multiple raster layers
@@ -415,6 +440,8 @@ classification_module_server <- function(id) {
           )
           
         }
+      }
+      
       }
     })
     
@@ -504,7 +531,7 @@ classification_module_server <- function(id) {
           label <- unique(label)
           
           raster_vals <- sort(terra::freq(r_rast)[,1])
-
+          
           if (length(label) != length(raster_vals)) {
             validate(
               paste(
@@ -561,22 +588,47 @@ classification_module_server <- function(id) {
     
     # --------------------------------------------------------------------------
     # resolved selection
+    # resolved_selection <- eventReactive(process_btn(), {
+    #   # If single-value raster, just return the raster value or first layer
+    #   r <- r_rast()
+    #   if (nlyr(r) == 1 && length(terra::unique(r)[,1]) <= 1) {
+    #     return(as.character(terra::unique(r)[,1]))
+    #   }
+    #   
+    #   # For categorical rasters or XML/CSV categories
+    #   if (!is.null(input$cat_source) && input$cat_source %in% c("csv","xml")) {
+    #     req(input$class)
+    #     return(as.numeric(input$class))
+    #   } else if (!is.null(input$selected_layer)) {
+    #     return(input$selected_layer)
+    #   } else {
+    #     return(names(r)[1]) # fallback
+    #   }
+    # })
+    
     resolved_selection <- eventReactive(process_btn(), {
-      # If single-value raster, just return the raster value or first layer
+      
       r <- r_rast()
-      if (nlyr(r) == 1 && length(terra::unique(r)[,1]) <= 1) {
-        return(as.character(terra::unique(r)[,1]))
+      req(r)
+      
+      # ---- 1. special case: min/opt/max → no selection needed ----
+      if (identical(sort(names(r)), c("max","min","opt"))) {
+        return(NULL)
       }
       
-      # For categorical rasters or XML/CSV categories
+      # ---- 2. categorical via CSV/XML ----
       if (!is.null(input$cat_source) && input$cat_source %in% c("csv","xml")) {
         req(input$class)
         return(as.numeric(input$class))
-      } else if (!is.null(input$selected_layer)) {
-        return(input$selected_layer)
-      } else {
-        return(names(r)[1]) # fallback
       }
+      
+      # ---- 3. layer selection ----
+      if (!is.null(input$selected_layer) && nzchar(input$selected_layer)) {
+        return(input$selected_layer)
+      }
+      
+      # ---- 4. fallback ----
+      return(NULL)
     })
     
     # --------------------------------------------------------------------------
@@ -633,46 +685,12 @@ classification_module_server <- function(id) {
         )
       })
       
-      showModal(
-        modalDialog(
-          title     = tags$div(
-            style = "font-size:18px; font-weight:bold; color:#2c3e50;",
-            icon("calendar"), " Classification years", #icon("calendar")
-          ),
-          size      = "m",
-          easyClose = FALSE,
-          footer    = tagList(
-            actionButton(ns("confirm_years"), "Confirm & Close",
-                         class = "btn-primary"),
-            modalButton("Cancel")
-          ),
-          tags$div(
-            style = "margin-bottom:12px; color:#34495e; font-size:13px;",
-            "Years were auto-extracted from file names.",
-            tagList(tags$strong(" Type or adjust any year below, then click Confirm & Close."),
-            " Reopen anytime via the",icon("pencil-alt")," Edit button in section 2 of the sidebar.")
-          ),
-          tags$table(
-            style = "width:100%; border-collapse:collapse; font-size:14px;",
-            tags$thead(
-              tags$tr(
-                style = "background:#f5f6fa;",
-                tags$th("Filename",
-                        style = "text-align:left; padding:8px 10px;
-                             border-bottom:2px solid #ddd;"),
-                tags$th("Year",
-                        style = "text-align:left; padding:8px 10px;
-                             border-bottom:2px solid #ddd;")
-              )
-            ),
-            tags$tbody(lapply(rows, identity))
-          )
-        )
-      )
+      # show the modal of editable years - see helpers/modals.R
+      showModal(years_modal(rows, ns))
     }
     
-
-  
+    
+    
     # Render a compact summary in the sidebar (refreshes on confirm)
     output$year_summary_sidebar <- renderUI({
       req(tifs())
@@ -738,9 +756,16 @@ classification_module_server <- function(id) {
     output$run_description <- renderUI({
       req(tifs())
       tags$span(
-        ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
-               tagList(tags$strong(style = "font-size:14px;", "4) Select here for calculation of descriptive variables")),
-                       tagList( tags$strong(style = "font-size:14px;","3) Select here for calculation of descriptive variables"))),
+        if (isTRUE(is_bound_raster())) {
+          tagList(tags$strong(style = "font-size:14px;",
+                              "3) Select here for calculation of descriptive variables"))
+        } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
+          tagList(tags$strong(style = "font-size:14px;",
+                              "4) Select here for calculation of descriptive variables"))
+        } else {
+          tagList(tags$strong(style = "font-size:14px;",
+                              "3) Select here for calculation of descriptive variables"))
+        },
         
         tooltip(bs_icon("info-circle"),
                 "Uncheck this box to skip calculating descriptive variables (this will speed up processing time).",
@@ -750,6 +775,7 @@ classification_module_server <- function(id) {
                     tags$li(("Rainfall")), #tags$b
                     tags$li(("Temperature")),
                     tags$li(("Elevation")),
+                    tags$li(("Country overlap")),
                     tags$li(("Global Ecosystem Typology"))
                   ))),
         checkboxInput(ns("run_description"),label = NULL, value = TRUE),
@@ -764,9 +790,21 @@ classification_module_server <- function(id) {
       req(tifs())
       
       tags$span(
-        ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
-               tagList(tags$strong(style = "font-size:14px;",  "5) Click the process button below to start the ecosystem assessment: ")),
-               tagList(tags$strong(style = "font-size:14px;", "4) Click the process button below to start the ecosystem assessment: "))),
+        # ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
+        #        tagList(tags$strong(style = "font-size:14px;",  "5) Click the process button below to start the ecosystem assessment: ")),
+        #        tagList(tags$strong(style = "font-size:14px;", "4) Click the process button below to start the ecosystem assessment: "))),
+        if (isTRUE(is_bound_raster())) {
+          tagList(tags$strong(style = "font-size:14px;",
+                              "4) Click the process button below to start the ecosystem assessment:"))
+        } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
+          tagList(tags$strong(style = "font-size:14px;",
+                              "5) Click the process button below to start the ecosystem assessment:"))
+        } else {
+          tagList(tags$strong(style = "font-size:14px;",
+                              "4) Click the process button below to start the ecosystem assessment:"))
+        },
+        
+        
         tooltip(bs_icon("info-circle"),
                 "The 'Process ecosystem maps' button will only be selectable when 
                 a year for each classifcation map (section 2) has been entered."
@@ -787,8 +825,8 @@ classification_module_server <- function(id) {
         !is.na(yr_num) && yr_num >= 1750 && yr_num <= 2150
       }))
       
-      # Layer selection also required when applicable
-      layer_valid <- is.null(input$selected_layer) || nzchar(input$selected_layer)
+      # Layer selection also required when applicable, but NOT for bound rasters
+      layer_valid <- is_bound_raster() || is.null(input$selected_layer) || nzchar(input$selected_layer)
       
       actionButton(
         ns("process"),
@@ -797,7 +835,7 @@ classification_module_server <- function(id) {
       )
     })
     
-  
+    
     # -----------------------------------------------------------------------------
     # process rasters 
     # -----------------------------------------------------------------------------
@@ -850,7 +888,7 @@ classification_module_server <- function(id) {
       progress <- shiny::Progress$new(min = 0, max = length(files))
       progress$set(message = "Processing classification maps...", value = 0)
       
-     
+      
       
       # ------------------------------------------------------------------------
       # reset previous data
@@ -869,8 +907,9 @@ classification_module_server <- function(id) {
       
       
       # ------------------------------------------------------------------------
-      # identify selected layer
-      sel_name <- resolved_selection()
+      # identify selected layer + whether this is a bound raster
+      sel_name          <- resolved_selection()
+      is_bound_raster_val <- is_bound_raster()   # snapshot — don't call reactive inside loop
       
       # ------------------------------------------------------------------------
       # layer selection or mask function
@@ -954,171 +993,184 @@ classification_module_server <- function(id) {
       for (i in seq_along(files)) {
         print("going through files ")
         r_all <- rast(files[i])
-        r_orig <- select_layer_or_mask(r_all, sel_name)
         
-        print("select layer complete")
-        if (global(r_orig, "isNA") == 0) {
-          # if (terra::global(!is.na(r_orig), "sum")[1,1] == ncell(r_orig)) {
-          print("going through files - 1st if")
-          r_orig <- classify(r_orig, matrix(c(0, NA), ncol = 2))
-        }
-        
-        # # ADD: save oldest raster to a temp file (avoids keeping SpatRaster object in memory)
-        # if (i == 1 && length(files) > 1) {
-        #   oldest_tmp <- tempfile(fileext = ".tif")
-        #   writeRaster(r_orig, oldest_tmp, overwrite = TRUE)
-        # }
-        
-        print("doing mask")
-        #mask <- r_orig == 1
-        print("mask complete")
-        
-        if (!is.na(crs(r_orig)) && !is.lonlat(r_orig)) {
-          print("going through files - 2nd if")
-          cell_area <- prod(res(r_orig))
-          # area_vals[i] <- sum(values(mask, na.rm = TRUE)) * cell_area
-          n_cells <- terra::global(r_orig, "sum", na.rm = TRUE)[1,1]
-          area_vals[i] <- n_cells * cell_area
+        # ----------------------------------------------------------------------
+        # BRANCH A: min/opt/max bound raster — calculate area for all 3 bounds
+        # ----------------------------------------------------------------------
+        if (is_bound_raster_val) {
+          
+          bound_names <- c("min", "opt", "max")
+          
+          for (b in bound_names) {
+            r_b <- r_all[[b]]
+            
+            if (global(r_b, "isNA") == 0) {
+              r_b <- classify(r_b, matrix(c(0, NA), ncol = 2))
+            }
+            
+            if (!is.na(crs(r_b)) && !is.lonlat(r_b)) {
+              cell_area <- prod(res(r_b))
+              n_cells   <- terra::global(r_b, "sum", na.rm = TRUE)[1, 1]
+              area_m2   <- n_cells * cell_area
+            } else {
+              area_m2 <- expanse(r_b, unit = "m")[, 2]
+            }
+            
+            area_df_b <- data.frame(
+              Year     = years[i],
+              Bound    = b,
+              Area_ha  = area_m2 / 10000,
+              Area_km2 = area_m2 / 1e6
+            )
+            
+            areas(if (is.null(areas())) area_df_b else rbind(areas(), area_df_b))
+          }
+          
+          # Use "opt" layer as the representative raster for display / change map
+          r_orig <- r_all[["opt"]]
+          if (global(r_orig, "isNA") == 0) {
+            r_orig <- classify(r_orig, matrix(c(0, NA), ncol = 2))
+          }
+          
         } else {
-          print("area calc")
-          area_vals[i] <- expanse(r_orig, unit = "m")[,2]
-        }
-        
-        print(area_vals)
-        
-        area_df <- data.frame(
-          Year = years[i],
-          Area_ha = area_vals[i] / 10000,
-          Area_km2 = area_vals[i] / 1e6
-        )
-        
-        # now add row(s)
-        if (is.null(areas())) {
-          areas(area_df)
-        } else {
-          print("areas 1")
+          # ----------------------------------------------------------------------
+          # BRANCH B: standard single-layer / categorical path (existing logic)
+          # ----------------------------------------------------------------------
+          r_orig <- select_layer_or_mask(r_all, sel_name)
+          
+          print("select layer complete")
+          if (global(r_orig, "isNA") == 0) {
+            print("going through files - 1st if")
+            r_orig <- classify(r_orig, matrix(c(0, NA), ncol = 2))
+          }
+          
+          print("doing mask")
+          print("mask complete")
+          
+          if (!is.na(crs(r_orig)) && !is.lonlat(r_orig)) {
+            print("going through files - 2nd if")
+            cell_area <- prod(res(r_orig))
+            n_cells   <- terra::global(r_orig, "sum", na.rm = TRUE)[1, 1]
+            area_vals[i] <- n_cells * cell_area
+          } else {
+            print("area calc")
+            area_vals[i] <- expanse(r_orig, unit = "m")[, 2]
+          }
+          
+          print(area_vals)
+          
+          area_df <- data.frame(
+            Year     = years[i],
+            Area_ha  = area_vals[i] / 10000,
+            Area_km2 = area_vals[i] / 1e6
+          )
+          
+          if (is.null(areas())) {
+            areas(area_df)
+          } else {
+            print("areas 1")
+            print(areas())
+            areas(rbind(areas(), area_df))
+          }
+          
+          print("areas all")
           print(areas())
           
-          areas(rbind(areas(), area_df))
-        }
-        
-        print("areas all")
-        print(areas())
+        } # end BRANCH B
         
         
-       
-        
-        # Only sample the most recent raster (last in sequence)
-        # this is the plotted map on leaflet
-        if (i == length(files)) {
-          print("sampling raster")
-          names(r_orig) <- years[i]
-          r_map <- spatSample(r_orig, 1000000, method = "regular", as.raster = TRUE, na.rm=T)
-          r_map <- tryCatch({
-            project(r_map, "EPSG:4326") # project(r_map, "EPSG:3857", method = "near")
-          }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map }) # project(r_map, "EPSG:3857", method = "near")
-
-
-
-        # ADD: compute change map if more than one file
-        # Change map: re-read oldest file directly from its original path
-          if (length(files) > 1) {
-            r_oldest  <- rast(files[1])
-            r_oldest  <- select_layer_or_mask(r_oldest, sel_name)
-
-            # replace NA with 0 for subtraction
-            r_oldest_rc <- classify(r_oldest, matrix(c(NA, 0), ncol = 2))
-            r_newest_rc <- classify(r_orig,   matrix(c(NA, 0), ncol = 2))
-
-            r_change <- r_newest_rc - r_oldest_rc
-
-            # restore NA where BOTH rasters had no data — these are outside the study area
-            both_na  <- is.na(r_oldest) & is.na(r_orig)
-            r_change <- ifel(both_na, NA, r_change)
-
-            r_change_map <- spatSample(r_change, 1000000, method = "regular",
-                                       as.raster = TRUE, na.rm = FALSE)
-            r_change_map <- tryCatch({
-              project(r_change_map, "EPSG:4326")
-            }, error = function(e) { crs(r_change_map) <- "EPSG:4326"; r_change_map })
-
-            rasters_change(r_change_map)
-            rm(r_oldest, r_oldest_rc, r_newest_rc, r_change, r_change_map, both_na)
-            gc()
-          }
-
-        }
-
-        
-        
+        # # Only sample the most recent raster (last in sequence)
+        # # r_orig is either the standard layer (B) or the "opt" layer (A)
         # if (i == length(files)) {
+        #   print("sampling raster")
         #   names(r_orig) <- years[i]
+        #   r_map <- spatSample(r_orig, 1000000, method = "regular", as.raster = TRUE, na.rm = T)
+        #   r_map <- tryCatch({
+        #     project(r_map, "EPSG:4326")
+        #   }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map })
         #   
-        #   r_4326 <- tryCatch({
-        #     project(r_orig, "EPSG:4326", method = "near")
-        #   }, error = function(e) { crs(r_orig) <- "EPSG:4326"; r_orig })
-        #   
-        #   total_cells <- ncell(r_4326)
-        #   
-        #   # Target ~500k cells max for plotting
-        #   # If raster is smaller, use it as-is (no sampling needed)
-        #   target_cells <- 1000000
-        #   
-        #   if (total_cells <= target_cells) {
-        #     # Small raster — use directly, no memory issue
-        #     r_map <- r_4326
-        #     
-        #   } else {
-        #     # Large raster — aggregate by factor rather than random sample
-        #     # aggregation preserves spatial structure better than spatSample
-        #     agg_factor <- ceiling(sqrt(total_cells / target_cells))
-        #     r_map <- aggregate(r_4326, fact = agg_factor, fun = "modal")
-        #   }
-        #   
-        #   rasters(r_map)
-        #   
-        #   # change map
+        #   # ADD: compute change map if more than one file
+        #   # For bound rasters, change map uses "opt" layer (r_orig already = opt).
+        #   # Change map: re-read oldest file directly from its original path
         #   if (length(files) > 1) {
-        #     r_oldest    <- rast(files[1])
-        #     r_oldest    <- select_layer_or_mask(r_oldest, sel_name)
+        #     r_oldest <- rast(files[1])
+        #     r_oldest <- if (is_bound_raster_val) r_oldest[["opt"]] else select_layer_or_mask(r_oldest, sel_name)
+        #     
+        #     # replace NA with 0 for subtraction
         #     r_oldest_rc <- classify(r_oldest, matrix(c(NA, 0), ncol = 2))
         #     r_newest_rc <- classify(r_orig,   matrix(c(NA, 0), ncol = 2))
-        #     r_change    <- r_newest_rc - r_oldest_rc
-        #     both_na     <- is.na(r_oldest) & is.na(r_orig)
-        #     r_change    <- ifel(both_na, NA, r_change)
         #     
-        #     r_change_4326 <- tryCatch({
-        #       project(r_change, "EPSG:4326", method = "near")
-        #     }, error = function(e) { crs(r_change) <- "EPSG:4326"; r_change })
+        #     r_change <- r_newest_rc - r_oldest_rc
         #     
-        #     # same adaptive aggregation for change map
-        #     if (ncell(r_change_4326) > target_cells) {
-        #       agg_factor_c  <- ceiling(sqrt(ncell(r_change_4326) / target_cells))
-        #       r_change_4326 <- aggregate(r_change_4326, fact = agg_factor_c, fun = "modal")
-        #     }
+        #     # restore NA where BOTH rasters had no data — these are outside the study area
+        #     both_na  <- is.na(r_oldest) & is.na(r_orig)
+        #     r_change <- ifel(both_na, NA, r_change)
         #     
-        #     rasters_change(r_change_4326)
-        #     rm(r_oldest, r_oldest_rc, r_newest_rc, r_change, both_na)
+        #     r_change_map <- spatSample(r_change, 1000000, method = "regular",
+        #                                as.raster = TRUE, na.rm = FALSE)
+        #     r_change_map <- tryCatch({
+        #       project(r_change_map, "EPSG:4326")
+        #     }, error = function(e) { crs(r_change_map) <- "EPSG:4326"; r_change_map })
+        #     
+        #     rasters_change(r_change_map)
+        #     rm(r_oldest, r_oldest_rc, r_newest_rc, r_change, r_change_map, both_na)
         #     gc()
         #   }
         #   
-        #   rm(r_4326)
-        #   gc()
         # }
         
         
+        # Only sample the most recent raster (last in sequence)
+        # r_orig is either the standard layer (B) or the "opt" layer (A)
+        if (i == length(files)) {
+          print("sampling raster")
+          names(r_orig) <- years[i]
+          
+          # Sample latest raster — defines the display grid for all further work
+          r_map <- spatSample(r_orig, 1000000, method = "regular", as.raster = TRUE, na.rm = TRUE)
+          r_map <- tryCatch({
+            project(r_map, "EPSG:4326")
+          }, error = function(e) { crs(r_map) <- "EPSG:4326"; r_map })
+          
+          rasters(r_map)
+          
+          # Loss map: work entirely on small sampled rasters to avoid memory issues.
+          # Loss = cell was present (value == 1) in oldest but absent (NA) in latest.
+          if (length(files) > 1) {
+            r_oldest_raw <- rast(files[1])
+            r_oldest_raw <- if (is_bound_raster_val) {
+              r_oldest_raw[["opt"]]
+            } else {
+              select_layer_or_mask(r_oldest_raw, sel_name)
+            }
+            
+            # Sample oldest at same density BEFORE projecting — keeps memory low.
+            # na.rm = FALSE retains absence/outside cells so loss areas stay visible.
+            r_oldest_samp <- spatSample(r_oldest_raw, 1000000, method = "regular",
+                                        as.raster = TRUE, na.rm = FALSE)
+            r_oldest_samp <- tryCatch({
+              project(r_oldest_samp, "EPSG:4326", method = "near")
+            }, error = function(e) { crs(r_oldest_samp) <- "EPSG:4326"; r_oldest_samp })
+            
+            # Snap to r_map's exact grid — all further ops are on small rasters only
+            r_oldest_grid <- resample(r_oldest_samp, r_map, method = "near")
+            
+            # Loss: present in oldest and absent (NA) in latest sample
+            r_loss <- ifel(r_oldest_grid == 1 & is.na(r_map), 1L, NA)
+            
+            rasters_change(r_loss)
+            rm(r_oldest_raw, r_oldest_samp, r_oldest_grid, r_loss)
+            gc()
+          }
+        }
         
         
         
-        
-        
-        
-        # Clean up tempory files periodically on long runs
+        # Clean up temporary files periodically on long runs
         if ((i %% 3) == 0) {
           try(terra::tmpFiles(remove = TRUE), silent = TRUE)
           gc()
         }
-
         
       } # end of for loop
       
@@ -1138,16 +1190,16 @@ classification_module_server <- function(id) {
     return(list(
       rasters = rasters,
       rasters_original = rasters_original,
-      rasters_change   = rasters_change,        # ADD THIS
+      rasters_change   = rasters_change,
       
       areas = areas,
-      # years = year_inputs,
       years = reactive(as.numeric(stored_years$years)),
       process = process_btn, 
       selected_layer = selected_layer,
       lyr_names = lyr_names,
-      tifs             = tifs,                          # ADD THIS
-      example          = reactive(input$example),       # ADD THIS
+      tifs             = tifs,
+      example          = reactive(input$example),
+      is_bound_raster  = is_bound_raster,              # NEW: lets criterion_a branch on data type
       run_description = reactive({input$run_description})
     ))
     

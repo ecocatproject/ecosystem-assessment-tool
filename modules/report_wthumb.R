@@ -19,7 +19,7 @@ report_module_ui <- function(id) {
   ns <- NS(id)
   
   nav_panel(
-    "Report/Data download",
+    "Report & Data",
     
     page_fluid(navset_card_pill(
       # -----------------------------------------------------------------------
@@ -83,6 +83,15 @@ report_module_ui <- function(id) {
             style = "color: #555; font-size: 0.9em;"
           ),
           fluidRow(
+            # current distribution and change (if available)
+            column(
+              width = 4,
+              tags$b("Distribution"),
+              uiOutput(ns("fig_change_preview")),
+              tags$br(),
+              downloadButton(ns("dl_fig_change"), "Download PNG", disabled = length(years()) <1,
+                             style = "width:100%; margin-top: 4px;")
+            ),
             # Criterion A trend figure
             column(
               width = 4,
@@ -128,6 +137,7 @@ report_module_server <- function(datasets,
                                  id,
                                  ecosystem_name, author, organisation,# email,
                                  rasters,
+                                 rasters_change,
                                  areas,
                                  years,
                                  countries,
@@ -196,7 +206,6 @@ report_module_server <- function(datasets,
           }
         }
         
-        
         # Build params list for R Markdown ------------------------------------
         params_list <- list(
           ecosystem_name = input$ecosystem_name,
@@ -257,160 +266,58 @@ report_module_server <- function(datasets,
         }
         )
         
-        # # Remove modal after successful render --------------------------------
+        # # Remove modal after successful render -------------------------------
         removeModal()
         
       }
     )
     
-    # -------------------------------------------------------------------------
-    # Figure rendering helpers
-    # -------------------------------------------------------------------------
     
-    # Colors matching the app
-    plot_colors    <- c("PRC" = "#D55E00", "ARC" = "#56B4E9")
-    plot_linetypes <- c("median" = "dotted", "recent" = "solid",
-                        "worst" = "dashed", "recent/worst" = "dashed",
-                        "past" = "longdash")
+    # =========================================================================
+    # Thumbnails
+    # =========================================================================
+    
+    # =========================================================================
+    # Distribution change
+    # =========================================================================
+    fig_change <- reactive({
+      req(rasters())
+      # req(rasters_change())
+      # make_fig_change(rasters_change(), years)
+      make_fig_loss(r_map = rasters(), r_loss = rasters_change(), years())
+      
+    })
     
     # =========================================================================
     # Criterion A: area change trend
     # =========================================================================
     fig_a <- reactive({
       req(area_prediction_data())
-      results <- area_prediction_data()
-      
-      ggplot2::ggplot() +
-        ggplot2::geom_line(
-          data = dplyr::filter(results, type == "observed"),
-          ggplot2::aes(x = year, y = area),
-          colour = "grey20", linewidth = 1.2
-        ) +
-        ggplot2::geom_point(
-          data = dplyr::filter(results, type == "observed"),
-          ggplot2::aes(x = year, y = area),
-          colour = "grey10", size = 3
-        ) +
-        ggplot2::geom_line(
-          data = dplyr::filter(results, type == "projected"),
-          ggplot2::aes(x = year, y = area, colour = method, linetype = scenario),
-          linewidth = 1
-        ) +
-        ggplot2::scale_colour_manual(values = plot_colors) +
-        ggplot2::scale_linetype_manual(values = plot_linetypes) +
-        ggplot2::labs(
-          x = "Year", y = expression("Area (km"^2*")"),
-          colour = "Method", linetype = "Scenario",
-          caption = "Generated with EcoCAT Assessment tool",
-        ) +
-        ggplot2::theme_bw(base_size = 13)
+      make_fig_a(area_prediction_data())
     })
     
     # =========================================================================
     # Criterion B1: EOO
     # =========================================================================
+    #   make_fig_b1 from figures_ggplot.R
     fig_b1 <- reactive({
       req(mcp_poly(), rasters())
-      
-      eoo_sf      <- sf::st_as_sf(terra::project(mcp_poly()[[1]], "EPSG:4326"))
-      raster_4326 <- terra::project(rasters()[[length(rasters())]], "EPSG:4326")
-      raster_df   <- as.data.frame(raster_4326, xy = TRUE) |> stats::na.omit()
-      
-      latest_year <- max(years(), na.rm = TRUE)
-      eoo_area    <- round(as.data.frame(mcp_poly()[[1]])$area_km2, 1)
-      
-      ggplot2::ggplot() +
-        ggplot2::geom_raster(
-          data = raster_df,
-          ggplot2::aes(x = x, y = y),
-          fill = "black", #alpha = 0.7
-        ) +
-        ggplot2::geom_sf(
-          data = eoo_sf,
-          # fill =  "#8B2323",
-          aes(fill  = "Extent of Occurrance (EOO)"),
-          alpha=0.1,
-          colour = "#8B2323", linewidth = 0.8
-        ) +
-        scale_fill_manual(
-          name   = NULL,
-          values = c("Extent of Occurrance (EOO)" = "#8B2323"),
-          guide  = guide_legend(
-            override.aes = list(alpha = c(.3), color = "#8B2323"),
-            position = "bottom",
-            direction = "horizontal"
-          )
-        ) +
-        
-        ggplot2::coord_sf() +
-        ggplot2::labs(
-          title    = paste0("Criterion B1 \u2014 Extent of Occurrence (", latest_year, ")"),
-          subtitle = paste0("EOO area: ", eoo_area, " km\u00b2"),
-          caption = "Generated with EcoCAT Assessment tool",
-          x = NULL, y = NULL
-        ) +
-        ggplot2::theme_minimal(base_size = 12) +
-        theme(plot.margin=grid::unit(c(0.2,0,0,0), "mm"))
+      make_fig_b1(mcp_poly(), rasters(), years())#
     })
     
     # =========================================================================
     # Criterion B2: AOO
     # =========================================================================-
     fig_b2 <- reactive({
-      req(b2_poly(), rasters(), aoo_sel_ids(), aoo_all_ids())
-      
-      raster_4326 <- terra::project(rasters()[[length(rasters())]], "EPSG:4326")
-      raster_df   <- as.data.frame(raster_4326, xy = TRUE) |> stats::na.omit()
-    
-      # b2_poly stores combined all+sel rows with a $type column set in criterion_b.R
-      cells_sf  <- sf::st_as_sf(b2_poly())
-      dat_all   <- dplyr::filter(cells_sf, type == "all")
-      dat_sel   <- dplyr::filter(cells_sf, type == "assessment")
-      n_all <- nrow(dat_all)
-      n_sel <- nrow(dat_sel)
-      
-      ggplot2::ggplot() +
-      geom_sf(data      = dat_all,
-              aes(fill  = "10 x 10 km grid\n(<1% occupancy)"),
-              alpha     = 0.2,
-              color     = "black",
-              linewidth = 0.3,
-              inherit.aes = FALSE) +
-        geom_sf(data      = dat_sel,
-                aes(fill  = "AOO\n(>1% occupancy)"),
-                alpha     = 0.7,
-                color     = "black",
-                linewidth = 0.3,
-                inherit.aes = FALSE) +
-        geom_raster(data = raster_df, aes(x = x, y = y)) + # the sampled data
-        scale_fill_manual(
-          name   = NULL,
-          values = c("10 x 10 km grid\n(<1% occupancy)"       = "black",
-                     "AOO\n(>1% occupancy)" = "orange"),
-           guide  = guide_legend(
-             override.aes = list(alpha = c(0.2, 0.7), color = "black"),
-             position = "bottom",
-             direction = "horizontal"
-           )
-        ) +
-        ggplot2::coord_sf() +
-        ggplot2::labs(
-          title    = paste0("Criterion B2 \u2014 Area of Occupancy (", max(years(), na.rm = TRUE), ")"),
-          subtitle = paste0("Total occupied cells: ", n_all,
-                            ", cells >1% occupancy (AOO): ", n_sel),
-          caption = "Generated with EcoCAT Assessment tool",
-          x = NULL, y = NULL
-        ) +
-        ggplot2::theme_minimal(base_size = 12) +
-        theme(plot.margin=grid::unit(c(0.2,0,0,0), "mm"))
+      req(b2_poly(), rasters())
+      make_fig_b2(b2_poly(), rasters(), years() )
     })
     
-
     # =========================================================================
     # Figure preview thumbnails (PNG inline)
     # =========================================================================
 
-    # Helper: render a ggplot to a temp PNG and show it, or show a placeholder
+    # render a ggplot to a temp PNG and show it, or show a placeholder
     make_preview <- function(fig_reactive, ns_id) {
       output[[ns_id]] <- renderUI({
         p <- tryCatch(fig_reactive(), error = function(e) NULL)
@@ -432,16 +339,16 @@ report_module_server <- function(datasets,
       })
     }
     
+    make_preview(fig_change,  "fig_change_preview")
     make_preview(fig_a,  "fig_a_preview")
     make_preview(fig_b1, "fig_b1_preview")
     make_preview(fig_b2, "fig_b2_preview")
-    
     
     # =========================================================================
     # Figure download handlers
     # =========================================================================
     
-    # Helper: create a downloadHandler for a ggplot reactive
+    # create a downloadHandler for a ggplot reactive
     make_dl <- function(ns_id, fig_reactive, filename) {
       output[[ns_id]] <- downloadHandler(
         filename = function() {
@@ -457,6 +364,7 @@ report_module_server <- function(datasets,
       )
     }
     
+    make_dl("dl_fig_change",  fig_change,  "distribution_change")
     make_dl("dl_fig_a",  fig_a,  "criterion_a_trend")
     make_dl("dl_fig_b1", fig_b1, "criterion_b1_eoo_map")
     make_dl("dl_fig_b2", fig_b2, "criterion_b2_aoo_map")
