@@ -5,74 +5,160 @@
 # =============================================================================
 # This script creates the modals used throughout the app:
 
-# 1) start up 
-# 2) upload_modal
-# 3) a quick
-# 4) b quick
-# 5) b help
-# 6) b1
-# 7) b2
+# 1. start up 
+# 2. upload_modal
+# 3. a quick
+# 4. b quick
+# 5. b help
+# 6. b1
+# 7. b2
 
 # currently not the report modal..... 
 # =============================================================================
 
 
 # =============================================================================
-# 1) start up modal
+# 1.  start up modal
 # =============================================================================
 start_up_modal <- modalDialog(
-    title = div(
-      style = "font-size: 20px; font-weight: bold; text-align:center;",
-      "Welcome to the EcoCAT RLE Assessment Tool"
-    ),
-    
-    tagList(
-      tags$div(
-        style = "padding: 10px;",
-        
-        tags$p(
-          style = "font-size: 16px;",
-          "This interactive tool assists with IUCN Red List of Ecosystems assessments."
-        ),
-        
-        tags$hr(),
-        
-        tags$h4("To get started:", style = "text-align:left;"),
-        
-        tags$ul(
-          style = "font-size: 15px;",
-          tags$li("Use the sidebar to upload your own ecosystem map(s) (ideally in a raster format)."),
-          tags$li("Once loaded, explore summary statistics and spatial outputs."),
-          tags$li("Navigate through the tabs to explore different parts of the assessment."),
-          tags$li("Criteria A assessment is generated automatically."),
-          tags$li("Criteria B assessment requires the user to select the relevent buttons at the bottom of the page."),
-          tags$li("A report and all the data can be downloaded in the 'Report/Data download' tab"),
-        ),
-        
-        tags$hr(),
-        
-        tags$p(
-          style = "font-size: 12px; font-style: italic; color: #7f8c8d;",
-          tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
+  title = div(
+    style = "text-align:center; padding-bottom:0.25rem; ",
+    tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+           "Welcome to the EcoCAT RLE Assessment Tool​"),
+    tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
+           "An interactive tool for RLE ecosystem assessments")
+  ),
+  tagList(
+    tags$div(
+      style = "padding:0.5rem 0.25rem;",
+      
+      tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.9rem;",
+             "To get started:"),
+      
+      # Step rows
+      purrr::pmap(list(
+        n     = 1:3,
+        title = c("Upload your ecosystem map(s)",
+                  "Review the ecosystem map and classification",
+                  "Run the assessment and generate a report"),
+        body  = c(
+          "GeoTIFF (.tif) format via the sidebar. Upload multiple years to analyse changes in distribution (Criterion A), or try the built-in example dataset.",
+          "Explore the distribution map, summary statistics, and ecosystem description in the Description tab.",
+          "Use the Criterion A and Criterion B tabs, then download results and a full report from the Report & Data tab."
         )
-      )
-    ),
-    
-    easyClose = FALSE,
-    footer = modalButton("Start")
-  )
+      ), function(n, title, body) {
+        tags$div(
+          style = "display:flex; gap:1rem; align-items:flex-start; margin-bottom:1rem;",
+          tags$div(
+            style = "flex-shrink:0; width:40px; height:40px; border-radius:50%;
+                     background:#CBD421; display:flex; align-items:center;
+                     justify-content:center;",
+            tags$span(style = "font-size:17px; font-weight:500; color:#275e37;", n)
+          ),
+          tags$div(
+            style = "padding-top:6px;",
+            tags$p(style = "margin:0 0 3px; font-size:15px; font-weight:500;", title),
+            tags$p(style = "margin:0; font-size:13px; color:#6b7280; line-height:1.5;", body)
+          )
+        )
+      }),
+      
+      # Tip box
+              tags$p(
+                style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+                tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
+              )
+    )
+  ),
+  easyClose = FALSE,
+  footer = modalButton("Start")
+)
 
 # =============================================================================
-# 2) upload modal 
+# 2.  years modal 
+# =============================================================================
+years_modal <-  function(rows, ns){
+  modalDialog(
+    # title     = tags$div(
+    #   style = "font-size:18px; font-weight:bold; color:#2c3e50;",
+    #   icon("calendar"), " Classification years", #icon("calendar")
+    # ),
+    
+    # Option 1 — file in www/ folder (simplest)
+    tags$div(
+      style = "font-size:20px; font-weight:500; margin:0 0 0.2rem; text-align:center; padding-bottom:0.25rem; ",
+      tags$img(src = "calendar.png", height = "22px", width = "22px"),
+      "Classification years"
+    ),
+    tags$hr(),
+    # 
+    # title = div(
+    #   style = "text-align:center; padding-bottom:0.25rem; ",
+    #   tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+    #          "Welcome to the EcoCAT RLE Assessment Tool​"),
+    #   tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
+    #          "An interactive tool for RLE ecosystem assessments")
+    # ),
+    
+    size      = "m",
+    easyClose = FALSE,
+    footer    = tagList(
+      actionButton(ns("confirm_years"), "Confirm & Close",
+                   class = "btn-primary"),
+      modalButton("Cancel")
+    ),
+    tags$div(
+      style = "margin-bottom:12px; color:#34495e; font-size:14px;",
+      "Years were auto-extracted from file names.",
+      tagList(tags$strong(" Type or adjust any year below, then click Confirm & Close."),
+              " Reopen anytime via the",icon("pencil-alt")," Edit button in section 2 of the sidebar.")
+    ),
+    tags$table(
+      style = "width:100%; border-collapse:collapse; font-size:14px;",
+      tags$thead(
+        tags$tr(
+          style = "background:#f5f6fa;",
+          tags$th("Filename",
+                  style = "text-align:left; padding:8px 10px;
+                             border-bottom:2px solid #ddd;"),
+          tags$th("Year",
+                  style = "text-align:left; padding:8px 10px;
+                             border-bottom:2px solid #ddd;")
+        )
+      ),
+      tags$tbody(lapply(rows, identity))
+    )
+  )
+}
+
+
+
+
+
+# =============================================================================
+# 2.  upload modal 
 # =============================================================================
 upload_modal <- modalDialog(
-  title = "Processing classification maps",
+  title = div(
+    style = "text-align:center; padding-bottom:0.25rem; ",
+    tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+           "Processing classification maps")
+  ),
+
   tagList(
     div(style = "text-align:center;",
         tags$h4("Please wait... "),
         # tags$p("This will take approximately 15 seconds per classification map"),
-        tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
-        withSpinner(uiOutput("dummy_spinner"), type = 5)  # CSS spinner
+        # tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
+        tags$p("The ecosystem map and description will be available after completion"),
+        
+        withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
+        tags$hr(),
+        # Tip box
+        tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+          tags$b("Tip:"), "Use map layers to explore changes in ecosystem distribution."
+    )
+        
     )
   ),
   easyClose = FALSE,
@@ -82,53 +168,71 @@ upload_modal <- modalDialog(
 
 
 # =============================================================================
-# 3) criterion a quick modal 
+# 3.  criterion a quick modal 
 # =============================================================================
 a_quick_modal <- modalDialog(
-  title = "Criterion A – quick guide",
-  tagList(
-    tags$p("Criterion A Assessement - reduction in geographic distribution over ANY of the following time periods:"),
-    tags$ul(
-      tags$li(tags$b("A1 - the past 50 years")),
-      tags$li(tags$b("A2a - the next 50 years")),
-      tags$li(tags$b("A2b - any 50-year period including the past, present and future"))
+  title = div(
+    style = "text-align:center; padding-bottom:0.25rem; ",
+    tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+           "Criterion A - quick guide")
+    # tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
+    #        "Quick guide")
     ),
-    # link to RLE guidelines
-    tags$p(
-      tags$b("Source: "),
-      tags$a(
-        href = "https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf",
-        "IUCN RLE Guidelines",
-        target = "blank",
-        style = "color: #2c7fb8;"
-      )
-    ),
+    
+  # tagList(
+  #   tags$p("Criterion A Assessement - reduction in geographic distribution over ANY of the following time periods:"),
+  #   tags$ul(
+  #     tags$li(tags$b("A1 - the past 50 years")),
+  #     tags$li(tags$b("A2a - the next 50 years")),
+  #     tags$li(tags$b("A2b - any 50-year period including the past, present and future"))
+  #   ),
+
     # image of Criterion A criterion taken from the RLE guidelines
     tags$img(
       src = "a_table.png",
       width = "100%",
      style = "margin-top: 15px;margin-bottom: 50px"
     ),
-    tags$hr(),
-    tags$p("Tip: The lines of each legend item can be removed/shown by selecting them in the legend.")
+  # link to RLE guidelines
+  tags$p(
+    tags$b("Source: "),
+    tags$a(
+      href = "https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf",
+      "IUCN RLE Guidelines",
+      target = "blank",
+      style = "color: #2c7fb8;"
+    )
   ),
+    tags$hr(),
+    # Tip box
+    tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+            tags$b("Tip:"), "The lines of each legend item can be removed/shown by selecting them in the legend."
+    ),
   easyClose = TRUE,
   footer = tagList(modalButton("Close")),
   size = "l"
 )
 
 # =============================================================================
-# criterion b quick 
+# 4.  criterion b quick 
 # =============================================================================
 b_quick_modal <- modalDialog(
-  title = "Criterion B – quick guide",
+  title = div(
+    style = "text-align:center; padding-bottom:0.25rem; ",
+    tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+           "Criterion B - quick guide")
+    # tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
+    #        "Quick guide")
+  ),
   tagList(
-    tags$p("Criterion B Assessement"),
+    tags$p("Criterion B Assessement - Restricted geographic distribution"),
     tags$ul(
       tags$li(tags$b("B1 (EOO): "), "Click 'Calculate EOO - Subcriteria B1' to compute the minimum convex polygon area."),
       tags$li(tags$b("B2 (AOO): "), "Click 'Calculate AOO - Subcriteria B2' to compute the occupied grid cell area.")
     ),
-    tags$p("Tip: Pan/zoom the map; results will appear in the boxes below.")
+    # Tip box
+    tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+            tags$b("Tip:"), "Pan/zoom the map; results will appear in the boxes below.")
   ),
   easyClose = TRUE,
   footer = tagList(
@@ -139,7 +243,7 @@ b_quick_modal <- modalDialog(
 )
 
 # =============================================================================
-# criterion b more help
+# 5.  criterion b more help
 # =============================================================================
 b_help_modal <- modalDialog(
   title = "Criterion B – quick guide",
@@ -149,7 +253,9 @@ b_help_modal <- modalDialog(
       tags$li(tags$b("B1 (EOO): "), "Click 'Calculate EOO - Subcriteria B1' to compute the minimum convex polygon area."),
       tags$li(tags$b("B2 (AOO): "), "Click 'Calculate AOO - Subcriteria B2' to compute the occupied grid cell area.")
     ),
-    tags$p("Tip: Pan/zoom the map; results will appear in the boxes below.")
+    # Tip box
+    tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+            tags$b("Tip:"), "Pan/zoom the map; results will appear in the boxes below.")
   ),
   easyClose = TRUE,
   footer = tagList(
@@ -160,24 +266,8 @@ b_help_modal <- modalDialog(
 )
 
 # =============================================================================
-# subcriterion b1
+# 6.  subcriterion b1
 # =============================================================================
-# b1_modal <- modalDialog(
-#   title = "Subcriteria B1",
-#   tagList(
-#     tags$p("Extent of Occurrence (EOO)"),
-#     tags$ul(
-#       tags$li(tags$b("B1 (EOO): "), "Computing the minimum convex polygon (MCP) area to measure the ecosystem Extent of Occurrence (EOO)")),
-#     tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab."),
-#     tagList(p("Please wait..."))
-#   ),
-#   easyClose = FALSE,
-#   footer = tagList(
-#     modalButton("Close")#,
-#     # actionButton(("open_help"), "More help")
-#   ),
-#   size = "m"
-# )
 b1_modal <- modalDialog(
   title = "Subcriteria B1 Assessment",
   tagList(
@@ -187,7 +277,9 @@ b1_modal <- modalDialog(
         # tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
         tags$p("Computing the minimum convex polygon (MCP) area to measure the ecosystem Extent of Occurrence (EOO)"),
         withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
-        tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
+        # Tip box
+        tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+                tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
     )
   ),
   easyClose = FALSE,
@@ -195,25 +287,8 @@ b1_modal <- modalDialog(
 )
 
 # =============================================================================
-# subcriterion b2 
+# 7.  subcriterion b2 
 # =============================================================================
-# b2_modal <- modalDialog(
-#   title = "Criterion B – quick guide",
-#   tagList(
-#     tags$p("Area of Occurrence (AOO)"),
-#     tags$ul(
-#       tags$li(tags$b("B2 (AOO): "), "Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occurrence (AOO)")),
-#   tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab."),
-#   tagList(p("Please wait..."))
-#   ),
-#   easyClose = FALSE,
-#   footer = tagList(
-#     modalButton("Close")#,
-#     #actionButton(("open_help"), "More help")
-#   ),
-#   size = "m"
-# )
-
 b2_modal <- modalDialog(
   title = "Subcriteria B2 Assessment",
   tagList(
@@ -221,7 +296,8 @@ b2_modal <- modalDialog(
         tags$h4("Please wait... "),
         tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occurrence (AOO)"),
         withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
-        tags$p("Tip: Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
+        tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+                tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
         
 
     )
