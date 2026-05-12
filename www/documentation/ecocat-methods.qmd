@@ -13,7 +13,7 @@ format:
     self-contained: true
     self-contained-math: true
     embed-resources: true
-    bibliography: guidance-references.bib
+    bibliography: methods-references.bib
     csl: conservation-biology.csl
     link-citations: true
     link-external-icon: true
@@ -24,12 +24,12 @@ execute:
 ---
 
 ## Methods
-  
+
 ### Descriptive data
-  
+
 #### Rainfall
-  
-  Historical rainfall data is derived from[WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} [@fick2017] at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.
+
+Historical rainfall data is derived from [WorldClim verison 2.1](https://www.worldclim.org/data/worldclim21.html "url link to the worldclim datasets"){target="_blank" rel="noopener noreferrer"} [@fick2017] at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.
 
 #### Temperature
 
@@ -56,14 +56,14 @@ The assessments for Criterion A and B are implemented following the [IUCN Red Li
 #### Criterion A
 
 Observed changes in ecosystem area between time periods were calculated as both an absolute rate of change and a proportional rate of change. The absolute rate of change ($\text{ARC}$, km² yr⁻¹) is calculated as:
-  
-  $$\text{ARC} = \frac{A_t - A_{t-1}}{\Delta t}$$
-  
-  where $A_t$ is the area at time $t$ and $\Delta t$ is the number of years between observations. The proportional rate of change ($\text{PRC}$, % yr⁻¹) is calculated as a compound annual rate to account for unequal intervals between survey years:
-  
-  $$\text{PRC} = \left(\left(\frac{A_t}{A_{t-1}}\right)^{1/\Delta t} - 1\right) \times 100$$
-  
-  Past and future trajectories were then projected over a 50-year horizon using both methods in parallel. Under the ARC method, area at year $i$ is projected as $A_0 + \text{ARC} \times i$, and under the PRC method as $A_0 \times (1 + \text{PRC}/100)^i$, where $A_0$ is the starting area.
+
+$$\text{ARC} = \frac{A_t - A_{t-1}}{\Delta t}$$
+
+where $A_t$ is the area at time $t$ and $\Delta t$ is the number of years between observations. The proportional rate of change ($\text{PRC}$, % yr⁻¹) is calculated as a compound annual rate to account for unequal intervals between survey years:
+
+$$\text{PRC} = \left(\left(\frac{A_t}{A_{t-1}}\right)^{1/\Delta t} - 1\right) \times 100$$
+
+Past and future trajectories were then projected over a 50-year horizon using both methods in parallel. Under the ARC method, area at year $i$ is projected as $A_0 + \text{ARC} \times i$, and under the PRC method as $A_0 \times (1 + \text{PRC}/100)^i$, where $A_0$ is the starting area.
 
 #### Criterion B
 
@@ -82,6 +82,5 @@ Area of occupancy (AOO) counts the number of 10km^2^ grid cells occupied by the 
 Area of Occupancy (AOO) is calculated using a 10 km × 10 km grid overlaid on the ecosystem map. The grid is created to match the spatial extent of the input raster, with a two-cell buffer added to ensure full coverage at the edges. Grid cells were converted to polygons and the area of ecosystem coverage within each cell is extracted using the `exact_extract` function from the `exactextractr` package, which accounts for partial cell coverage. This is repeated for each year layer in the input raster stack.
 
 To exclude cells with negligible ecosystem presence, a 1% rule is applied: cells were ranked by their coverage area in ascending order and the cumulative proportion of total area is calculated. Only cells exceeding the bottom 1% cumulative area threshold were retained. AOO is then summarised per year with both the total number of occupied cells (coverage area \> 0) and the number of cells passing the 1% threshold.
-
 
 ## References
