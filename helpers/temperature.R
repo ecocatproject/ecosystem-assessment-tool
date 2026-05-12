@@ -17,7 +17,7 @@ compute_temperature <- function(x,
     #x <- vect(x) # needed of use name an not already a terra object
     t_10 <- t_files |> rast(win = terra::ext(x)) |> crop(x) |> mask(x)
     
-    stats <- terra::global(t_10_crop, c("mean", "range"), na.rm = TRUE)
+    stats <- terra::global(t_10, c("mean", "range"), na.rm = TRUE)
     stats$month <- lubridate::month(1:12, label = TRUE)
     
     monthly_avg <- stats %>%
