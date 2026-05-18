@@ -499,7 +499,7 @@ description_module_server <- function(id, upload_module, countries,
       rv$rainfall <- compute_precipitation(latest)
 
       # hide modal once done
-      progress$close
+      progress$close()
       
       end_desc_task()   # closes modal only when ALL tasks finish
       
