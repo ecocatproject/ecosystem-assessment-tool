@@ -14,8 +14,8 @@ source("global.R")
 # Load all modules
 # source("modules/classification_upload.R")
 # source("modules/description_eu.R")
-source("modules/classification_upload_working.R")
-source("modules/description_eu_working.R")    # was description.R
+source("modules/classification_upload_working2.R")
+source("modules/description_eu_working2.R")    # was description.R
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
 # source("modules/report.R")
@@ -23,12 +23,13 @@ source("modules/report_wthumb.R")
 source("modules/data_download.R")
 source("modules/about.R")
 source("modules/script_export.R")
-source("modules/figures.R")
+source("modules/figures1.R")
 
 # -------------------------------------------------------
 # load  helpers
-source("helpers/helpers.R")              # info_icon, get_box_status, format_assessment_lines, make_b_value_boxes, make_value_box, criterion_b_card_ui, criterion_b_card_server, empty_assess_table
+source("helpers/helpers.R")              # info_icon, get_box_status, empty_assess_table
 source("helpers/analysis_functions.R")   # calc_area_change, predict_area_change, makeEOO.SpatRaster   
+source("helpers/value_boxes.R")          # format_assessment_lines, make_b_value_boxes, make_value_box, 
 
 # -------------------------------------------------------
 # description variable helpers currently loaded in description_eu.R
@@ -58,7 +59,7 @@ ui <- page_navbar(
   id = "main_tab",
   title = tagList(
     tags$a(
-      tags$img(src = "ecology.png", height = "50px", style = "margin-right:10px;")#, was logo.png
+      tags$img(src = "logo.png", height = "30px", style = "margin-right:10px;")#, was logo.png
       # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
     ),
     "EcoCAT RLE Assessment Tool"
@@ -99,7 +100,7 @@ server <- function(input, output, session) {
   showModal(start_up_modal)
   
   # classification upload module -----------------------------------------------
-  upload_module <- classification_module_server("upload")
+  upload_module <- classification_module_server("upload", drawn_poly = description_module$drawn_poly )
   
   # Description module --------------------------------------------------------
   description_module <- description_module_server("description",
@@ -108,24 +109,24 @@ server <- function(input, output, session) {
                                                   tifs_input = upload_module$tifs,
                                                   year_inputs = upload_module$years,
                                                   countries = countries)#,
-                                                 # clear_trigger = upload_module$clear_aoi_trigger)
-
-  # # Wire drawn AOI from description module → classification module
-  # observeEvent(description_module$drawn_aoi(), {
-  #   print("=== APP.R AOI WIRING FIRED ===")
-  #   print(paste("drawn_aoi is NULL:", is.null(description_module$drawn_aoi())))
-  #   req(description_module$drawn_aoi())
-  #   upload_module$aoi_polygon(description_module$drawn_aoi())
-  #   print(paste("aoi_polygon set:", !is.null(upload_module$aoi_polygon())))
-  # })
-  # 
-  # observeEvent(description_module$map_rendered(), {
-  #   req(description_module$map_rendered() > 0)
-  #   upload_module$trigger_aoi_modal(
-  #     upload_module$trigger_aoi_modal() + 1
-  #   )
-  # }, ignoreInit = TRUE)
-  
+                                                  # clear_trigger = upload_module$clear_aoi_trigger)
+# 
+#   # Wire drawn AOI from description module → classification module
+#   observeEvent(description_module$drawn_aoi(), {
+#     print("=== APP.R AOI WIRING FIRED ===")
+#     print(paste("drawn_aoi is NULL:", is.null(description_module$drawn_aoi())))
+#     req(description_module$drawn_aoi())
+#     upload_module$aoi_polygon(description_module$drawn_aoi())
+#     print(paste("aoi_polygon set:", !is.null(upload_module$aoi_polygon())))
+#   })
+# 
+#   observeEvent(description_module$map_rendered(), {
+#     req(description_module$map_rendered() > 0)
+#     upload_module$trigger_aoi_modal(
+#       upload_module$trigger_aoi_modal() + 1
+#     )
+#   }, ignoreInit = TRUE)
+#   
   # Run Criterion A module ----------------------------------------------------
   main_tab <- reactive(input$main_tab)  # or whatever your navbar id is
   criterion_a_module <- criterion_A_module_server("criteria_a",
