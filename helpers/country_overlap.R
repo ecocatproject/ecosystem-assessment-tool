@@ -71,25 +71,34 @@ compute_countries <- function(x, countries) {
     eau_r <- terra::rasterize(countries_eau, eau_agg, field = "admin")
     
     # 4. Zonal count of non-NA raster pixels
-    z_result <- terra::zonal(eau_agg, eau_r, fun = "notNA", na.rm = TRUE)
+    # z_result <- terra::zonal(eau_agg, eau_r, fun = "notNA", na.rm = TRUE)
     
     # 5. Compute area per country zone
     area_per_country <- terra::expanse(eau_agg, zones = eau_r, unit = "km")
     
+    country_totals <- data.frame(
+      zone             = countries_eau$admin,
+      country_area_km2 = terra::expanse(countries_eau, unit = "km")
+    )
+    
     total_area <- sum(area_per_country$area)
     
     result <- area_per_country %>%
+      dplyr::left_join(country_totals, by = "zone") |>
+      dplyr::mutate(pct_cover = round(area / country_area_km2 * 100, 2)) %>%
       dplyr::mutate(
         perc_roi = 100 * area / total_area,
         area_km2 = format(round(area, 0), big.mark = ","),
-        perc_roi = format(round(perc_roi, 1))
+        perc_roi = format(round(perc_roi, 1)),
+        pct_cover = format(round(pct_cover, 2))
       ) %>%
       dplyr::arrange(desc(perc_roi)) %>%
-      dplyr::select(zone, area_km2, perc_roi) %>%
+      dplyr::select(zone, area_km2, perc_roi, pct_cover) %>%
       dplyr::rename(
         Country = zone,
         `Area (km²)` = area_km2,
-        `% of Ecosystem` = perc_roi
+        `% of Ecosystem` = perc_roi,
+        `% Country coverage` = pct_cover
       )
     
     return(result)
@@ -99,9 +108,13 @@ compute_countries <- function(x, countries) {
 }
 
 # # # # test function
-# eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
-# result_eau <- compute_countries(eau, countries)
-# result_eau
+eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924.tif")
+result_eau <- compute_countries(eau, countries)
+result_eau
+
+
+
+
 # # test function
 # # roi <- vect("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiSumbuThicketEcoregion20kmBuffer.shp")
 # # result_shp <- compute_country_overlap_roi(roi, countries)

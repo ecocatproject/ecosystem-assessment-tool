@@ -7,6 +7,8 @@
 
 # 1. start up 
 # 2. upload_modal
+# 2b.years
+# 2c. draw instructions for subsetting
 # 3. a quick
 # 4. b quick
 # 5. b help
@@ -104,8 +106,7 @@ years_modal <-  function(rows, ns){
     easyClose = FALSE,
     footer    = tagList(
       actionButton(ns("confirm_years"), "Confirm & Close",
-                   class = "btn-primary"),
-      modalButton("Cancel")
+                   class = "btn-primary")
     ),
     tags$div(
       style = "margin-bottom:12px; color:#34495e; font-size:14px;",
@@ -130,10 +131,6 @@ years_modal <-  function(rows, ns){
     )
   )
 }
-
-
-
-
 
 # =============================================================================
 # 2.  upload modal 
@@ -164,6 +161,120 @@ upload_modal <- modalDialog(
   easyClose = FALSE,
   footer = NULL
 )
+
+# =============================================================================
+# 2c. draw instructions
+# =============================================================================
+# draw_instructions_modal <- modalDialog(
+#   title = tags$div(
+#     style = "font-size:18px; font-weight:bold;",
+#     icon("draw-polygon"), " Refine the analysis area"
+#   ),
+#   tagList(
+#     tags$p("You can restrict the analysis to a specific area using the drawing tools on the map:"),
+#     tags$ol(
+#       style = "font-size:14px; line-height:1.8;",
+#       tags$li(tags$strong("Go to the Description tab")),
+#       tags$li("Select the ", tags$strong("rectangle or polygon tool"),
+#               " from the toolbar in the top-left corner of the map"),
+#       tags$li("Draw around your area of interest"),
+#       tags$li("Return to the sidebar and click ",
+#               tags$strong("'Re-process refined area'"))
+#     ),
+#     tags$hr(),
+#     tags$p(style = "font-size:13px; color:#555;",
+#            icon("info-circle"),
+#            " Use ", tags$strong("'Revert to full extent'"),
+#            " to instantly restore the original results — no reprocessing needed.")
+#   ),
+#   easyClose = FALSE,
+#   footer    = modalButton("Got it")
+# )
+
+# square - f0c8 or square
+# pentagon - e790 or pentagon
+# draw polygon - f5ee or draw-polygon
+# edit  - f044 or pen-to-square
+# delete - f2ed or trash-can
+
+draw_instructions_modal  <- modalDialog(
+  title = div(
+    style = "text-align:center; padding-bottom:0.25rem; ",
+    tags$p(icon("draw-polygon"), " Refine the assessment area (optional)"),
+    tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
+           "You can restrict the assessment to a specific area using the drawing tools on the map:")
+  ),
+  tagList(
+    tags$div(
+      style = "padding:0.5rem 0.25rem;",
+      
+      tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.9rem;",
+             "Instructions:"),
+      
+      # Step rows
+      purrr::pmap(list(
+        n     = 1:3,
+        title = c("Find drawing tools",
+                  "Draw the area(s) of interest",
+                  "Return to sidebar"),
+        body  = list(
+          # tagList mixes text and icon() inline
+          tagList(
+            # "The ", "\u2B1F", " polygon and/or ",
+            "The ", tags$span(style = "font-size:1.3em; line-height:1;", "\u2B1F"), 
+            " polygon and/or ",
+            tags$i(class = "fas fa-square"), " rectangle tools can be found on the ",
+            "left-hand side of the map."
+          ),
+          tagList(
+            "Multiple areas can be drawn to restrict the classification to areas ",
+            "within the polygons. Drawn areas can also be ",
+            tags$i(class = "fas fa-pen-to-square"), " edited or ",
+            tags$i(class = "fas fa-trash-alt"), " deleted using the relevant tools."
+          ),
+          tagList(
+            "Return to the sidebar and click '",
+            tags$i(class = "fas fa-crop"),
+            tags$strong("Re-process refined area'"),
+            " at the bottom of the sidebar. ",
+            "To revert to original, click '",
+            tags$i(class = "fas fa-rotate-left"),
+            tags$strong(" Revert to full extent'"), ". These buttons will be available once data has been uploaded and drawing tools have been used."
+          )
+        )
+       ), function(n, title, body) {
+        tags$div(
+          style = "display:flex; gap:1rem; align-items:flex-start; margin-bottom:1rem;",
+          tags$div(
+            style = "flex-shrink:0; width:40px; height:40px; border-radius:50%;
+                     background:#CBD421; display:flex; align-items:center;
+                     justify-content:center;",
+            tags$span(style = "font-size:17px; font-weight:500; color:#275e37;", n)
+          ),
+          tags$div(
+            style = "padding-top:6px;",
+            tags$p(style = "margin:0 0 3px; font-size:15px; font-weight:500;", title),
+            tags$p(style = "margin:0; font-size:13px; color:#6b7280; line-height:1.5;", body)
+          )
+        )
+      }),
+      
+      # # Tip box
+      # tags$p(
+      #   style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+      #   tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
+      # )
+    )
+  ),
+  easyClose = FALSE,
+  footer = modalButton("Got it")
+)
+
+
+
+
+
+
 
 
 
@@ -294,7 +405,7 @@ b2_modal <- modalDialog(
   tagList(
     div(style = "text-align:center;",
         tags$h4("Please wait... "),
-        tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occurrence (AOO)"),
+        tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occupancy (AOO)"),
         withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
                 tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
