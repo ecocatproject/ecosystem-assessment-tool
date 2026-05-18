@@ -36,9 +36,12 @@ criterion_a_module_ui <- function(id) {
                    tags$b("extrapolated"), "areas (coloured dashed lines) across the timeframes relevant to the Red List of Ecosystems assessment.
                   Extrapolated rates of change differ by method.", style = "text-align: left"),
             tags$p(tags$b("Near-term trend:"), "continues the nearest observed rate of change (proportional or absolute).", style = "text-align: left"),
-            tags$p(tags$b("Long-term trend:"), "applies the mean rate of change calculated across the entire observation period.", style = "text-align: left"),
+            tags$p(tags$b("Long-term trend:"), "applies the median rate of change calculated across the entire observation period.", style = "text-align: left"),
             tags$p(tags$b("PRC:"), "Proportional rate of change.", style = "text-align: left"),
-            tags$p(tags$b("ARC:"), "Absolute rate of change.", style = "text-align: left")
+            tags$p(tags$b("ARC:"), "Absolute rate of change.", style = "text-align: left"),
+            # Tip box
+            tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+                    tags$b("Tip:"), "You can remove plot lines by clicking on the items in the legend.")
           )
         ),
         uiOutput(ns("ribbon_toggle_ui"))
@@ -202,20 +205,23 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           )
       } else {
         act <-  rv$area_change_data %>%
-        mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
-               area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
-               proportional_rate_change = round(proportional_rate_change, 2),
-               absolute_rate_change = round(absolute_rate_change, 2)) %>%
-        dplyr::select(!dt) %>%
-        dplyr::rename(
-          `Year` = year,
-          `Area (km²)` = area,
-          `Area change (km²)` = area_change,
-          `Proportional rate of change (%/year)` = proportional_rate_change,
-          `Absolute rate of change (km²/year)` = absolute_rate_change
-        )
+          mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
+                 area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
+                 proportional_rate_change = round(proportional_rate_change, 2),
+                 absolute_rate_change = round(absolute_rate_change, 2)) %>%
+          dplyr::select(!dt) %>%
+          dplyr::rename(
+            `Year` = year,
+            `Area (km²)` = area,
+            `Area change (km²)` = area_change,
+            `Proportional rate of change (%/year)` = proportional_rate_change,
+            `Absolute rate of change (km²/year)` = absolute_rate_change
+          )
       }
-  
+      
+      # order by descending year
+      act <- act %>% dplyr::arrange(desc(Year))
+      
       # formatting of table (no longer a DT table)
       shiny::tags$table(
         class = "table table-sm table-striped",
@@ -296,6 +302,11 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
       } else {
         rv$area_prediction_data
       }
+      
+      # Observed year range — used to derive date labels for each box
+      obs_years    <- results$year[results$type == "observed"]
+      max_obs_year <- max(obs_years, na.rm = TRUE)
+      min_obs_year <- min(obs_years, na.rm = TRUE)
       obsv.fut <- results %>%
         group_by(type, method, segment, scenario) %>%
         filter(segment != "past") %>%
@@ -371,7 +382,7 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
           
           # Define start years
           start_years <- df %>%
-            filter(scenario  %in% c("past", "observed")) %>%
+            filter(segment  %in% c("past", "observed")) %>%
             filter(!(year %in% c(min(year), max(year)))) %>%
             #filter(!(year %in%  max(year))) %>%
             pull(year)
@@ -382,8 +393,12 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
             year_end <- year_start + 50
             df %>%
               filter(year %in% c(year_start, year_end)) %>%
-              reframe(perc_change = (area[year == year_end]-area[year == year_start]) / area[year == year_start],
-                      direction =  ifelse(perc_change > 0, "increase", "decrease"))
+              reframe(
+                year_start  = year_start,
+                year_end    = year_end,
+                perc_change = (area[year == year_end]-area[year == year_start]) / area[year == year_start],
+                direction   = ifelse(perc_change > 0, "increase", "decrease")
+              )
           })
         }
       }
@@ -415,47 +430,52 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
         group_by(method, scenario) %>%
         slice_min(perc_change, n = 1, with_ties = FALSE) %>%
         ungroup() %>%
-        dplyr::select(method, scenario, perc_change, status)
-      
+        dplyr::select(method, scenario, perc_change, status, year_start, year_end)
       
       #---------------------------------------------------------------------------
       # create value boxes 
       #---------------------------------------------------------------------------
       a1_box  <- make_value_box(
-        title = "Subcriterion A1",
+        title         = "Subcriterion A1",
         reactive_data = reactive(a1_result),
-        status_col = "status",
-        data_col = "perc_change",
-        method_col = "method",
-        scenario_col = "scenario",
-        method_reactive = method,      # <-- pass the reactive
-        
-        hover_text = "Past predicted change in geographic distribution (past 50 years)",
-        year_data = rv$area_prediction_data
+        status_col    = "status",
+        data_col      = "perc_change",
+        method_col    = "method",
+        scenario_col  = "scenario",
+        method_reactive = method,
+        date_range    = paste0("(", max_obs_year - 50, " - ", max_obs_year, ")"),
+        hover_text    = "Past predicted change in geographic distribution (past 50 years)",
+        year_data     = rv$area_prediction_data
       )
       
       a2a_box <- make_value_box(
-        title = "Subcriterion A2a",
+        title         = "Subcriterion A2a",
         reactive_data = reactive(a2a_result),
-        status_col = "status",
-        data_col = "perc_change",
-        method_col = "method",
-        method_reactive = method,      # <-- pass the reactive
-        
-        scenario_col = "scenario",
-        hover_text = "Future predicted change in geographic distribution (next 50 years)"
+        status_col    = "status",
+        data_col      = "perc_change",
+        method_col    = "method",
+        method_reactive = method,
+        scenario_col  = "scenario",
+        date_range    = paste0("(", max_obs_year, " - ", max_obs_year + 50, ")"),
+        hover_text    = "Future predicted change in geographic distribution (next 50 years)"
       )
       
       a2b_box <- make_value_box(
-        title = "Subcriterion A2b",
-        reactive_data = reactive(worst_cases),
-        status_col = "status",
-        data_col = "perc_change",
-        method_col = "method",
-        method_reactive = method,      # <-- pass the reactive
-        
-        scenario_col = "scenario" ,
-        hover_text = "Predicted change in geographic distribution over any 50 year period (including the past, present and future)"
+        title         = "Subcriterion A2b",
+        reactive_data = reactive(worst_cases %>% dplyr::select(method, scenario, perc_change, status)),
+        status_col    = "status",
+        data_col      = "perc_change",
+        method_col    = "method",
+        method_reactive = method,
+        scenario_col  = "scenario",
+        # Dynamic: shows the worst window for whichever method is currently selected
+        date_range    = function(data) {
+          paste0("(",
+                 min(worst_cases$year_start, na.rm = TRUE), " - ",
+                 max(worst_cases$year_end,   na.rm = TRUE), ")")
+        },
+        hover_text    = "Predicted change in geographic distribution over any 50 year period including the past, present and future.
+                          Values presented are from the predicted worst case scenario 50 year period."
       )
       
       # combine the value boxes for ui rendering ------------------------------

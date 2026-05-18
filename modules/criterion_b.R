@@ -20,8 +20,8 @@ criterion_b_module_ui <- function(id) {
     layout_column_wrap(
       width = "250px",
       fill = FALSE,
-      actionButton(ns("get_mcp"), "Calculate EOO - Subcriteria B1", width = "100%"),
-      actionButton(ns("get_AOO"), "Calculate AOO - Subcriteria B2", width = "100%")),
+      actionButton(ns("get_mcp"), "Calculate the Extent of Occurrence (EOO) – Subcriterion B1", width = "100%"),
+      actionButton(ns("get_AOO"), "Calculate the Area of Occupancy (AOO) – Subcriterion B2", width = "100%")),
       
     # subcriterion value boxes -----------------------------------------------
     layout_column_wrap(
@@ -212,12 +212,12 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       # show value box -------------------------------------------------------
       if (!is.null(mcp_table())) {
         b1_box <- make_b_value_boxes(
-          title = "Subcriterion B1",
+          title = "Subcriterion B1 - Restricted EOO",
           reactive_data = reactive(mcp_table()),
           status_col = "assessment",
           data_col = "area_km2",
           hover_text = "EOO (km2)",
-          type = "single"
+          type = "b1"
         )
         
         output$criterion_boxes_b1 <- renderUI({
@@ -409,13 +409,13 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
 
       # show value boxes ----------------------------------------------------
       b2_box <- make_b_value_boxes(
-        title = "Subcriterion B2",
+        title = "Subcriterion B2 - Restricted AOO",
         reactive_data = reactive(b2_table()),
         status_col = "assessment",
         data_col_1 = "n",
         data_col_2 = "n_exceed",
         hover_text = "AOO (10x10 km cells)",
-        type = "double"
+        type = "b2"
       )
       output$criterion_boxes_b2 <- renderUI({
         layout_column_wrap(width = "250px", b2_box())
