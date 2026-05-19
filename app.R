@@ -91,16 +91,21 @@ ui <- page_navbar(
 # -------------------------------------------------------
 #########################################################
 
-
-
-
 server <- function(input, output, session) {
+  
+  # Session-scoped temp directory — isolated per user, cleaned up on exit
+  session_tmp <- file.path(tempdir(), session$token)
+  dir.create(session_tmp, showWarnings = FALSE)
+  session$onSessionEnded(function() {
+    unlink(session_tmp, recursive = TRUE)
+  })
   
   # show instruction modal on start -------------------------------------------  
   showModal(start_up_modal)
   
   # classification upload module -----------------------------------------------
-  upload_module <- classification_module_server("upload", drawn_poly = description_module$drawn_poly )
+  upload_module <- classification_module_server("upload", drawn_poly = description_module$drawn_poly,
+                                                session_tmp = session_tmp )
   
   # Description module --------------------------------------------------------
   description_module <- description_module_server("description",
