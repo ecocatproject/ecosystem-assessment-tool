@@ -46,9 +46,9 @@ make_fig_loss <- function(r_map, r_loss = NULL, years) {
   scalebar_buffer <- min(0.15, max(0.05, 0.08 / sqrt(aspect_ratio)))
   y_buffer        <- diff(y_range) * scalebar_buffer
   
-  
-  
+  # the plot
   p <- ggplot2::ggplot() +
+    # ggspatial::annotation_map_tile(zoomin=0) +
     ggplot2::geom_raster(data = df_latest,
                          ggplot2::aes(x = x, y = y), fill = "black") +
     # ggplot2::coord_sf(crs = 4326) +
@@ -60,10 +60,14 @@ make_fig_loss <- function(r_map, r_loss = NULL, years) {
       pad_y      = ggplot2::unit(0.15, "cm"),
       text_cex   = 0.8
     ) +
+    # ggplot2::coord_sf(
+    #   ylim = c(y_range[1] - y_buffer, y_range[2])  # extra space at bottom
+    # ) +
     ggplot2::coord_sf(
-        crs  = sf::st_crs(4326),
-      ylim = c(y_range[1] - y_buffer, y_range[2])  # extra space at bottom
-    ) +
+      # xlim   = range(df_latest$x),
+      ylim   = c(y_range[1] - y_buffer, y_range[2]),
+      crs    = sf::st_crs(4326)
+    )
     ggplot2::labs(x = NULL, y = NULL,
                   caption = "Generated with EcoCAT Assessment tool") +
     ggplot2::theme_minimal(base_size = 12) +
@@ -508,6 +512,7 @@ make_fig_b1 <- function(mcp_poly_list, rasters_list, years) {
   
   
   ggplot2::ggplot() +
+    # ggspatial::annotation_map_tile(zoomin=0) +
     ggplot2::geom_raster(data = raster_df,
                          ggplot2::aes(x = x, y = y), fill = "black") +
     ggplot2::geom_sf(data = eoo_sf,
@@ -530,7 +535,9 @@ make_fig_b1 <- function(mcp_poly_list, rasters_list, years) {
       text_cex   = 0.8
     ) +
     ggplot2::coord_sf(
-      ylim = c(y_range[1] - y_buffer, y_range[2])  # extra space at bottom
+      xlim   = range(raster_df$x),
+      ylim   = c(y_range[1] - y_buffer, y_range[2]),
+      crs    = sf::st_crs(4326)
     ) +
     ggplot2::scale_fill_manual(
       name   = NULL,
@@ -617,6 +624,7 @@ make_fig_b2 <- function(b2_poly, rasters_list, years) {
   y_buffer        <- diff(y_range) * scalebar_buffer
   
   ggplot2::ggplot() +
+    # ggspatial::annotation_map_tile(zoomin=0) +
     ggplot2::geom_sf(data = dat_all,
                      ggplot2::aes(fill = "10 x 10 km grid\n(<1% occupancy)"),
                      alpha = 0.2, color = "black", linewidth = 0.3) +
@@ -633,8 +641,13 @@ make_fig_b2 <- function(b2_poly, rasters_list, years) {
       pad_y      = ggplot2::unit(0.15, "cm"),
       text_cex   = 0.8
     ) +
+    # ggplot2::coord_sf(
+    #   ylim = c(y_range[1] - y_buffer, y_range[2])  # extra space at bottom
+    # ) +
     ggplot2::coord_sf(
-      ylim = c(y_range[1] - y_buffer, y_range[2])  # extra space at bottom
+      xlim   = range(raster_df$x),
+      ylim   = c(y_range[1] - y_buffer, y_range[2]),
+      crs    = sf::st_crs(4326)
     ) +
     ggplot2::scale_fill_manual(
       name   = NULL,
@@ -643,7 +656,7 @@ make_fig_b2 <- function(b2_poly, rasters_list, years) {
       guide  = ggplot2::guide_legend(
         override.aes = list(alpha = c(0.2, 0.7), color = "black"),
         position = "bottom", direction = "horizontal")) +
-    ggplot2::coord_sf() +
+    # ggplot2::coord_sf() +
     ggplot2::labs(
       title    = paste0("Criterion B2 \u2014 Area of Occupancy (", max(years, na.rm = TRUE), ")"),
       subtitle = paste0("Total occupied cells: ", nrow(dat_all),

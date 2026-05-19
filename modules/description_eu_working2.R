@@ -140,8 +140,11 @@ description_module_ui <- function(id) {
       # Typology
       card(
         full_screen = TRUE,
-        card_header(tags$strong(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank")),
-                    tooltip(bs_icon("info-circle"), "Global Ecosystem Typology (Levels 1-3) within the ecosystem (> 1% of major or minor occurrence)"
+        card_header(tags$strong(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank"), " overlap"),
+                    tooltip(bs_icon("info-circle"), 
+                            "Shows overlap between the classified map and the IUCN Global Ecosystem Typology (v. 2.1, Levels 1–3).
+                            Only ecosystem functional groups with overlap exceeding 1% of major or minor occurrence are included. Results are indicative due to the coarse resolution and ongoing development of the global typology. 
+                            The assessor should determine the most appropriate ecosystem typology."
         )),
         card_body(uiOutput(ns("get_table")))
       )
@@ -498,11 +501,12 @@ description_module_server <- function(id, upload_module, countries,
       progress$inc(6/6, detail = "monthly rainfall") # update progress
       rv$rainfall <- compute_precipitation(latest)
 
-      # hide modal once done
+      # # hide modal once done
       progress$close()
       
       end_desc_task()   # closes modal only when ALL tasks finish
-      
+      # hide modal once done
+     
     })
 
     # ========================================================================

@@ -75,13 +75,17 @@ report_module_ui <- function(id) {
       # -----------------------------------------------------------------------
       # Thumbnails 
       nav_panel(
-        "Figures",
+        tags$span("Figures", tooltip(bs_icon("info-circle"),
+                                       "Static publication-ready figures generated from your assessment.",
+                                       "Select figures to preview and download as PNG.",
+                                       style = "color: #555; font-size: 0.9em;"
+                                     )),
         card_body(
-          tags$p(
-            "Static publication-ready figures generated from your assessment.",
-            "Select figures to preview and download as PNG.",
-            style = "color: #555; font-size: 0.9em;"
-          ),
+          # tags$p(
+          #   "Static publication-ready figures generated from your assessment.",
+          #   "Select figures to preview and download as PNG.",
+          #   style = "color: #555; font-size: 0.9em;"
+          # ),
           fluidRow(
             # current distribution and change (if available)
             column(
