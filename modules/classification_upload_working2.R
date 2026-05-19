@@ -53,7 +53,7 @@ classification_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # SERVER
 # -----------------------------------------------------------------------------
-classification_module_server <- function(id, drawn_poly=reactive(NULL)) {
+classification_module_server <- function(id, drawn_poly=reactive(NULL), session_tmp = tempdir()) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -1098,30 +1098,90 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL)) {
         print("going through files ")
         r_all <- rast(files[i])
         
-        # ---- Crop to subset polygon if one is active ----
-        if (!is.null(subset_poly())) {
-          crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
-
-        #   # Guard: if extents don't overlap (e.g. new upload in different region)
-        #   # clear the stale polygon and fall back to full extent silently
+        # # ---- Crop to subset polygon if one is active ----
+        # if (!is.null(subset_poly())) {
+        #   crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
+        # 
+        # #   # Guard: if extents don't overlap (e.g. new upload in different region)
+        # #   # clear the stale polygon and fall back to full extent silently
+        # #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
+        # #     subset_poly(NULL)
+        # #     is_subsetted(FALSE)
+        # #   } else {
+        # #     r_all <- terra::crop(r_all, crop_vect)
+        # #     r_all <- terra::mask(r_all, crop_vect)
+        # #   }
+        # # }
+        # 
         #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
         #     subset_poly(NULL)
         #     is_subsetted(FALSE)
         #   } else {
-        #     r_all <- terra::crop(r_all, crop_vect)
-        #     r_all <- terra::mask(r_all, crop_vect)
+        #     r_all <- terra::mask(r_all, crop_vect)   # cells outside any polygon → NA
+        # 
         #   }
         # }
-
+        
+        # if (!is.null(subset_poly())) {
+        #   crop_vect <- subset_poly() |>
+        #     terra::vect() |>
+        #     terra::project(terra::crs(r_all))
+        #   
+        #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
+        #     subset_poly(NULL)
+        #     is_subsetted(FALSE)
+        #   } else {
+        #     # Write mask and cropped result to disk immediately
+        #     # — avoids holding full-res raster + mask + result in RAM simultaneously
+        #     tmp_mask   <- tempfile(fileext = ".tif")
+        #     tmp_result <- tempfile(fileext = ".tif")
+        #     
+        #     poly_mask <- terra::rasterize(crop_vect, r_all, field = 1, background = NA)
+        #     terra::writeRaster(poly_mask, tmp_mask, overwrite = TRUE)
+        #     poly_mask <- terra::rast(tmp_mask)          # file-backed — frees RAM
+        #     rm(crop_vect); gc()
+        #     
+        #     terra::writeRaster(
+        #       terra::mask(r_all, poly_mask),
+        #       tmp_result, overwrite = TRUE
+        #     )
+        #     r_all <- terra::trim(terra::rast(tmp_result)) # file-backed
+        #     rm(poly_mask); gc()
+        #   }
+        # }
+        # 
+        
+        if (!is.null(subset_poly())) {
+          # poly      <- subset_poly()
+          # crop_vect <- if (inherits(poly, "SpatVector")) poly else terra::vect(poly)
+          # crop_vect <- terra::project(crop_vect, terra::crs(r_all))
+          crop_vect <- subset_poly() |>
+            # terra::vect() |>
+            terra::project(terra::crs(r_all))
+          
           if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
             subset_poly(NULL)
             is_subsetted(FALSE)
           } else {
-            r_all <- terra::mask(r_all, crop_vect)   # cells outside any polygon → NA
-
+            tmp_crop   <- file.path(session_tmp, paste0("crop_", i, ".tif"))
+            tmp_result <- file.path(session_tmp, paste0("masked_", i, ".tif"))
+            
+            # 1. Crop to extent first — reduces object size before masking
+            r_cropped <- terra::crop(r_all, crop_vect)
+            terra::writeRaster(r_cropped, tmp_crop, overwrite = TRUE)
+            r_cropped <- terra::rast(tmp_crop)
+            rm(r_all); gc()
+            
+            # 2. Rasterize and mask on the smaller cropped object
+            poly_mask <- terra::rasterize(crop_vect, r_cropped, field = 1, background = NA)
+            terra::writeRaster(
+              terra::mask(r_cropped, poly_mask),
+              tmp_result, overwrite = TRUE
+            )
+            r_all <- terra::trim(terra::rast(tmp_result))
+            rm(r_cropped, poly_mask); gc()
           }
         }
-        
 
         
         
