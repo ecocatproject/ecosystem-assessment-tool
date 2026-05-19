@@ -61,6 +61,7 @@ make_fig_loss <- function(r_map, r_loss = NULL, years) {
       text_cex   = 0.8
     ) +
     ggplot2::coord_sf(
+        crs  = sf::st_crs(4326),
       ylim = c(y_range[1] - y_buffer, y_range[2])  # extra space at bottom
     ) +
     ggplot2::labs(x = NULL, y = NULL,
