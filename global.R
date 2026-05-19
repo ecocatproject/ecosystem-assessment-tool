@@ -52,6 +52,7 @@ library(rstac)
 library(xml2)
 library(stars)
 library(quarto)
+library(ggspatial)
 
 
 # memory options
