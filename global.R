@@ -1,7 +1,7 @@
 # global.R
-
+# 
 # renv::snapshot(exclude=c("climateR", "RNetCDF", "rnz", "ncmeta")) # creates lockfile
-# # renv::snapshot() # creates lockfile
+# # renv::snapshot(exclude = "rosm") # creates lockfile
 # # renv::dependencies()
 # # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
 # rsconnect::writeManifest() #captures dependencies from lockfile
@@ -62,6 +62,7 @@ terraOptions(progress = 1, memfrac = 0.8, tempdir = tempdir())
 # logos
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
 get_logo <- dataURI(file = "www/logo_GET.png", mime = "image/png")
+cat_logo <- dataURI(file = "www/cat1.png", mime = "image/png")
 # kew_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
 #default_files <- list.files("www/data/example", full.names = TRUE)
 
