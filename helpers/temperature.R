@@ -29,21 +29,47 @@ compute_temperature <- function(x,
       ) %>%
       dplyr::arrange(match(month, month.abb))
     
+  # } else if (inherits(x, "SpatRaster")) {
+    
+    # if(crs(rast(t_files)) != crs(x)){
+    #   x <- project(x, crs(rast(t_files)))
+    # }
+    # 
+    # # -------------------------------------------------------------------------
+    # # spatraster
+    # #x <- rast(x) # needed of use name an not already a terra object
+    # t_10 <- t_files |> rast(win = terra::ext(x))
+    # 
+    # pts <- spatSample(x, n_sample, method = "regular",
+    #                   as.points = TRUE, na.rm = TRUE)
+    # 
+    # vals <- terra::extract(t_10, pts)[ , -1]  # remove ID col
+    # 
+    # monthly_avg <- data.frame(
+    #   month = lubridate::month(1:12, label = TRUE),
+    #   mean  = apply(vals, 2, mean, na.rm = TRUE),
+    #   min   = apply(vals, 2, min, na.rm = TRUE),
+    #   max   = apply(vals, 2, max, na.rm = TRUE)
+    # )
+    # 
   } else if (inherits(x, "SpatRaster")) {
     
-    if(crs(rast(t_files)) != crs(x)){
-      x <- project(x, crs(rast(t_files)))
+    # 1. Sample points in NATIVE CRS first (cheap — no full-raster projection)
+    pts <- terra::spatSample(x, n_sample, method = "regular",
+                             as.points = TRUE, na.rm = TRUE)
+    
+    if (nrow(pts) == 0) return(data.frame())
+    
+    # 2. Project just the points (~thousands of points vs millions of cells)
+    t_crs <- terra::crs(terra::rast(t_files[1]))
+    if (!terra::same.crs(pts, t_crs)) {
+      pts <- terra::project(pts, t_crs)
     }
-
-    # -------------------------------------------------------------------------
-    # spatraster
-    #x <- rast(x) # needed of use name an not already a terra object
-    t_10 <- t_files |> rast(win = terra::ext(x))
     
-    pts <- spatSample(x, n_sample, method = "regular",
-                      as.points = TRUE, na.rm = TRUE)
+    # 3. Load temperature using the (small) projected points' extent
+    t_10 <- t_files |> terra::rast(win = terra::ext(pts))
     
-    vals <- terra::extract(t_10, pts)[ , -1]  # remove ID col
+    vals <- terra::extract(t_10, pts)[ , -1]
     
     monthly_avg <- data.frame(
       month = lubridate::month(1:12, label = TRUE),
@@ -51,7 +77,6 @@ compute_temperature <- function(x,
       min   = apply(vals, 2, min, na.rm = TRUE),
       max   = apply(vals, 2, max, na.rm = TRUE)
     )
-    
   } else {
     stop("Input must be a SpatVector or SpatRaster.")
   }

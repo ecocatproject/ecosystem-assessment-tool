@@ -18,7 +18,9 @@
 #------------------------------------------------------------------------------
 # Helper: build descriptive lines for each row (handles optional 'scenario') - Criteria A 
 
-format_assessment_lines <- function(data, status_col, data_col, method_col, method_selected, scenario_col = NULL, year_data = NULL) {
+format_assessment_lines <- function(data, status_col, data_col, method_col, method_selected, scenario_col = NULL,
+                                    year_data = NULL, n_obs_years = NULL,
+                                    year_start_col = NULL, year_end_col = NULL) {
   
   method_names <- c(
     ARC = "Absolute rate of change",
@@ -40,35 +42,51 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, meth
 
   scenario_labels <- c("recent" = "Near-term", "median" = "Long-term")
   
+
   # Build the text per row
   if (!is.null(scenario_col) && scenario_col %in% names(data)) {
     
     # If all scenarios produce the same perc_change, collapse to one line
     # without the scenario label (happens with only 2 years of data)
-    all_same <- length(unique(round(data[[data_col]], 6))) == 1
+    # all_same <- length(unique(round(data[[data_col]], 6))) == 1
+    # Collapse to one line when only 2 observed years
+    all_same <- !is.null(n_obs_years) && n_obs_years <= 2
+    
+    # Build year range suffix per row if columns provided
+    has_year_range <- !is.null(year_start_col) && 
+      all(c(year_start_col, year_end_col) %in% names(data))
     
     if (all_same) {
-      data <- data %>% dplyr::slice(1)   # keep one representative row
-      data <- data %>%
-        dplyr::mutate(
-          line = paste0(
-            method_selected, " \u2013 ",
-            perc_label, " ", direction,
-            " \u2013 ", .data[[status_col]])
-        )
+      data <- data |> dplyr::slice(1) |>
+        dplyr::mutate(line = paste0(
+          method_selected, " \u2013 ", perc_label, " ", direction,
+          " \u2013 ", .data[[status_col]],
+          if (has_year_range) 
+            paste0(
+              " <span style='color:#555;'>(",
+              .data[[year_start_col]], "\u2013", .data[[year_end_col]],
+              ")</span>"
+            )
+          else ""
+        ))
     } else {
-    
-    data <- data %>%
-      dplyr::mutate(
-        scenario_display = ifelse(
-          .data[[scenario_col]] %in% names(scenario_labels),
-          scenario_labels[.data[[scenario_col]]],
-          .data[[scenario_col]]
-        ),
-        line = paste0(
-          scenario_display," ", method_selected," - ",
-          perc_label, " ", direction, " - ", .data[[status_col]])
-      )
+      data <- data |>
+        dplyr::mutate(
+          scenario_display = ifelse(
+            .data[[scenario_col]] %in% names(scenario_labels),
+            scenario_labels[.data[[scenario_col]]],
+            .data[[scenario_col]]
+          ),
+          line = paste0(
+            method_selected, " (", scenario_display, ") \u2013 ",
+            perc_label, " ", direction,
+            if (has_year_range)       paste0(
+              " <span style='color:#555;'>(",
+              .data[[year_start_col]], "\u2013", .data[[year_end_col]],
+              ")</span>"
+            ) else ""
+          )
+        )
     }
   } else {
     data <- data %>%
@@ -87,9 +105,10 @@ format_assessment_lines <- function(data, status_col, data_col, method_col, meth
 # 2.  criterion a value boxes
 # =============================================================================
 # Generalized helper to build a value_box for criteria A
+
 make_value_box <- function(title, reactive_data, status_col, data_col, method_col, method_reactive,
                            scenario_col = NULL, hover_text = NULL, year_data = NULL,
-                           date_range = NULL) {
+                           date_range = NULL, n_obs_years = NULL, year_start_col = NULL, year_end_col = NULL) {
   reactive({
     data <- reactive_data()
     current_method <- method_reactive()
@@ -109,7 +128,8 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
     description_html <- format_assessment_lines(
       data, status_col, data_col, method_col,
       method_selected = current_method, scenario_col,
-      year_data = year_data
+      year_data = year_data,  n_obs_years = n_obs_years,
+      year_start_col = year_start_col, year_end_col = year_end_col
     )
     
     status_value <- tags$span(

@@ -57,8 +57,28 @@ compute_countries <- function(x, countries) {
   # spatraster
   if (inherits(x, "SpatRaster")) {
     
-    # 1. Reduce country polygons to raster extent
-    countries_eau <- terra::mask(countries, terra::ext(x))
+    # # 0. Match CRS first — every spatial op below needs them aligned
+    # if (!terra::same.crs(countries, x)) {
+    #   countries <- terra::project(countries, terra::crs(x))
+    # }
+    
+    # # 1. Reduce country polygons to raster extent
+    # countries_eau <- terra::mask(countries, terra::ext(x))
+    
+    # Project the raster's extent to the countries CRS (cheap — just 4 corners)
+    # then crop countries before projecting (avoids domain errors for far countries)
+    x_extent_in_countries_crs <- terra::project(
+      terra::as.polygons(terra::ext(x), crs = terra::crs(x)),
+      terra::crs(countries)
+    )
+    countries_cropped <- terra::crop(countries, x_extent_in_countries_crs)
+    
+    # Now project just the cropped countries to match raster CRS
+    if (!terra::same.crs(countries_cropped, x)) {
+      countries_eau <- terra::project(countries_cropped, terra::crs(x))
+    } else {
+      countries_eau <- countries_cropped
+    }
     
     # 2. Aggregate raster (speed)
     # eau_agg <- terra::aggregate(x, 2, fun = "min", na.rm = TRUE)
@@ -82,6 +102,9 @@ compute_countries <- function(x, countries) {
     )
     
     total_area <- sum(area_per_country$area)
+    
+    str(area_per_country)
+    print(area_per_country)
     
     result <- area_per_country %>%
       dplyr::left_join(country_totals, by = "zone") |>

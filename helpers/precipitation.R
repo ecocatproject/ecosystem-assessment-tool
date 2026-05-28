@@ -33,14 +33,29 @@ compute_precipitation <- function(x,
     # -------------------------------------------------------------------------
     # spatraster
     
-    if(crs(rast(data_files)) != crs(x)){
-      x <- project(x, crs(rast(data_files)))
-    }
-
-    data_10m <- data_files |> rast(win = terra::ext(x))
+    # if(crs(rast(data_files)) != crs(x)){
+    #   x <- project(x, crs(rast(data_files)))
+    # }
+    # 
+    # data_10m <- data_files |> rast(win = terra::ext(x))
+    # 
+    # pts <- spatSample(x, n_sample, method = "regular",
+    #                   as.points = TRUE, na.rm = TRUE)
     
-    pts <- spatSample(x, n_sample, method = "regular",
-                      as.points = TRUE, na.rm = TRUE)
+    # 1. Sample points in NATIVE CRS first (cheap — no full-raster projection)
+    pts <- terra::spatSample(x, n_sample, method = "regular",
+                             as.points = TRUE, na.rm = TRUE)
+    
+    if (nrow(pts) == 0) return(data.frame())
+    
+    # 2. Project just the points (~thousands of points vs millions of cells)
+    t_crs <- terra::crs(terra::rast(data_files[1]))
+    if (!terra::same.crs(pts, t_crs)) {
+      pts <- terra::project(pts, t_crs)
+    }
+    
+    # 3. Load temperature using the (small) projected points' extent
+    data_10m <- data_files |> terra::rast(win = terra::ext(pts))
     
     vals <- terra::extract(data_10m, pts)[ , -1]  # remove ID col
     
