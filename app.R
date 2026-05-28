@@ -18,7 +18,6 @@ source("modules/classification_upload_working2.R")
 source("modules/description_eu_working2.R")    # was description.R
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
-# source("modules/report.R")
 source("modules/report_wthumb.R")
 source("modules/data_download.R")
 source("modules/about.R")
@@ -105,7 +104,8 @@ server <- function(input, output, session) {
   
   # classification upload module -----------------------------------------------
   upload_module <- classification_module_server("upload", drawn_poly = description_module$drawn_poly,
-                                                session_tmp = session_tmp )
+                                                session_tmp = session_tmp,
+                                                elev_data   = reactive(description_module$elevation()))
   
   # Description module --------------------------------------------------------
   description_module <- description_module_server("description",

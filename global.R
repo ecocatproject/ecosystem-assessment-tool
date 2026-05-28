@@ -67,11 +67,31 @@ cat_logo <- dataURI(file = "www/cat1.png", mime = "image/png")
 #default_files <- list.files("www/data/example", full.names = TRUE)
 
 # links
-kew_ecocat_url <- tags$a(div(img(src="logo.png", height = "40px")), "RBG Kew EcoCAT project", href = "https://www.kew.org/science/our-science/projects/EcoCAT", target = "_blank")
-get_url <- tags$a(div(img(src=get_logo, height = "40px")), "Global Ecosstem Typology", href = "https://global-ecosystems.org/page/typology", target = "_blank")
-rle_url <- tags$a(div(img(src=rle_logo, height = "40px")), "IUCN Red List", href = "https://www.iucnrle.org/", target = "_blank")
+kew_ecocat_url <- tags$a(
+  href = "https://www.kew.org/science/our-science/projects/EcoCAT",
+  target = "_blank",
+  style = "display:flex; align-items:center; gap:8px;",
+  img(src = "logo.png", height = "40px"),
+  "RBG Kew EcoCAT project"
+)
 
-# # Load static data
+get_url <- tags$a(
+  href = "https://global-ecosystems.org/page/typology",
+  target = "_blank",
+  style = "display:flex; align-items:center; gap:8px;",
+  img(src = get_logo, height = "50px"),
+  "Global Ecosystem Typology"
+)
+
+rle_url <- tags$a(
+  href = "https://www.iucnrle.org/",
+  target = "_blank",
+  style = "display:flex; align-items:center; gap:8px;",
+  img(src = rle_logo, height = "50px"),
+  "IUCN Red List of Ecosystems"
+)
+
+ # Load static data
 efg_lookup <- read.csv("data/ecosystem_typology_lookup_table.csv")
 # #ecor <- terra::vect("data/Ecoregions/Ecoregions2017.shp")
 # realms <- terra::vect("data/realms/RL_Realms.shp")
