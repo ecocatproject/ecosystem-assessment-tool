@@ -53,7 +53,7 @@ classification_module_ui <- function(id) {
 # -----------------------------------------------------------------------------
 # SERVER
 # -----------------------------------------------------------------------------
-classification_module_server <- function(id, drawn_poly=reactive(NULL), session_tmp = tempdir()) {
+classification_module_server <- function(id, drawn_poly=reactive(NULL), session_tmp = tempdir(), elev_data   = reactive(NULL)) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -848,6 +848,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
 # conditional process subset ui and button
 # =============================================================================
     output$refine_revert_ui <- renderUI({
+      req(tifs())
       if (is.null(rasters())) return(NULL)
       if (is.null(drawn_poly()) && !isTRUE(is_subsetted())) return(NULL)
       
@@ -879,6 +880,27 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         ),
         
         
+        tags$span(
+          if (isTRUE(is_bound_raster())) {
+            checkboxInput(ns("use_elev_filter"), tagList(tags$strong(style = "font-size:14px;",
+                                                                     "5b) Filter by elevation range (optional)")),
+                          value = FALSE)
+          } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
+            checkboxInput(ns("use_elev_filter"), tagList(tags$strong(style = "font-size:14px;",
+                                                                     "6b) Filter by elevation range (optional)")),
+                          value = FALSE)
+          } else {
+            checkboxInput(ns("use_elev_filter"), tagList(tags$strong(style = "font-size:14px;",
+                                                                     "5b) Filter by elevation range (optional)")),
+                          value = FALSE)
+          }
+        ),
+        
+        conditionalPanel(
+          condition = paste0("input['", ns("use_elev_filter"), "'] == true"),
+          uiOutput(ns("elev_filter_ui"))
+        ),
+        
         if (!is.null(drawn_poly())) {
           actionButton(ns("refine_area"), "Re-process refined area",
                        icon = icon("crop"), style = "width:100%; margin-top:4px;",
@@ -894,8 +916,24 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       )
     })
     
-    
-    
+    output$elev_filter_ui <- renderUI({
+      elev <- elev_data()
+      if (is.null(elev) || !inherits(elev, "SpatRaster")) {
+        tags$p(style = "color:#e67e22; font-size:12px; margin:4px 0;",
+               tags$i(class = "fas fa-exclamation-triangle"), " ",
+               "Ensure calculation of descriptive variables checkbox (3)) is selected to enable elevation filtering")
+        
+      } else {
+        rng <- terra::global(elev, c("min", "max"), na.rm = TRUE)
+        mn  <- floor(rng$min / 10) * 10    # round down to nearest 10
+        mx  <- ceiling(rng$max / 10) * 10  # round up to nearest 10
+        sliderInput(ns("elev_range"),
+                    label = "Elevation range (m)",
+                    min   = mn, max = mx,
+                    value = c(mn, mx),   # start with full range selected
+                    step  = 10, ticks=FALSE)
+      }
+    })
     
 
     
@@ -1151,6 +1189,9 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         # }
         # 
         
+        # Save original layer names before any subsetting operations
+        original_layer_names <- names(r_all)
+        
         if (!is.null(subset_poly())) {
           # poly      <- subset_poly()
           # crop_vect <- if (inherits(poly, "SpatVector")) poly else terra::vect(poly)
@@ -1160,6 +1201,9 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             terra::project(terra::crs(r_all))
           
           if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
+            message("[subset] resetting — extents don't intersect")
+            message("[subset] r_all crs: ", terra::crs(r_all, proj = TRUE))
+            message("[subset] crop_vect crs: ", terra::crs(crop_vect, proj = TRUE))
             subset_poly(NULL)
             is_subsetted(FALSE)
           } else {
@@ -1179,12 +1223,42 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
               tmp_result, overwrite = TRUE
             )
             r_all <- terra::trim(terra::rast(tmp_result))
+            
+            # Restore layer names — terra doesn't always preserve them through write/read
+            if (terra::nlyr(r_all) == length(original_layer_names)) {
+              names(r_all) <- original_layer_names
+            }
+            
+            
             rm(r_cropped, poly_mask); gc()
           }
         }
 
         
+        observe({
+          elev <- elev_data()
+          req(elev, inherits(elev, "SpatRaster"))
+          rng <- terra::global(elev, c("min", "max"), na.rm = TRUE)
+          updateSliderInput(session, "elev_range",
+                            min   = floor(rng$min),
+                            max   = ceiling(rng$max),
+                            value = c(floor(rng$min), ceiling(rng$max)))
+        })
         
+        if (isTRUE(input$use_elev_filter)) {
+          elev <- elev_data()
+          if (!is.null(elev) && inherits(elev, "SpatRaster")) {
+            if (!terra::same.crs(elev, r_all))
+              elev <- terra::project(elev, terra::crs(r_all), method = "bilinear")
+            elev_matched <- terra::resample(elev, r_all, method = "bilinear")
+            elev_mask <- terra::ifel(
+              elev_matched >= input$elev_range[1] & elev_matched <= input$elev_range[2],
+              1L, NA
+            )
+            r_all <- terra::mask(r_all, elev_mask)
+            rm(elev, elev_matched, elev_mask); gc()
+          }
+        }
         
         # ----------------------------------------------------------------------
         # BRANCH A: min/opt/max bound raster — calculate area for all 3 bounds
@@ -1192,7 +1266,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         if (is_bound_raster_val) {
           
           bound_names <- c("min", "opt", "max")
-          
+          print(r_all)
           for (b in bound_names) {
             r_b <- r_all[[b]]
             
@@ -1249,8 +1323,6 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             area_vals[i] <- expanse(r_orig, unit = "m")[, 2]
           }
           
-          print(area_vals)
-          
           area_df <- data.frame(
             Year     = years[i],
             Area_ha  = area_vals[i] / 10000,
@@ -1260,13 +1332,8 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
           if (is.null(areas())) {
             areas(area_df)
           } else {
-            print("areas 1")
-            print(areas())
             areas(rbind(areas(), area_df))
           }
-          
-          print("areas all")
-          print(areas())
           
         } # end BRANCH B
         
@@ -1310,14 +1377,27 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             r_loss <- ifel(r_oldest_grid == 1 & is.na(r_map), 1L, NA)
           
             # ---- Crop to subset polygon if one is active ----
+            # if (!is.null(subset_poly())) {
+            #   crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
+            #   
+            #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
+            #     subset_poly(NULL)
+            #     is_subsetted(FALSE)
+            #   } else {
+            #     r_loss <- terra::mask(r_loss, crop_vect)   # cells outside any polygon → NA
+            #   }
+            # }
             if (!is.null(subset_poly())) {
-              crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
+              poly <- subset_poly()
+              poly_vect <- if (inherits(poly, "SpatVector")) poly else terra::vect(poly)
               
-              if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-                subset_poly(NULL)
-                is_subsetted(FALSE)
-              } else {
-                r_loss <- terra::mask(r_loss, crop_vect)   # cells outside any polygon → NA
+              # Project ONCE for r_loss — separate variable, doesn't clobber r_all's crop_vect
+              crop_vect_4326 <- terra::project(poly_vect, "EPSG:4326")
+              
+              if (terra::relate(terra::ext(r_loss), terra::ext(crop_vect_4326), "intersects")) {
+                poly_mask_4326 <- terra::rasterize(crop_vect_4326, r_loss,
+                                                   field = 1, background = NA)
+                r_loss <- terra::mask(r_loss, poly_mask_4326)
               }
             }
             

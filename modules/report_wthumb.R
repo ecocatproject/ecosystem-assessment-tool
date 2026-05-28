@@ -46,7 +46,11 @@ report_module_ui <- function(id) {
                 tags$span(tags$b("Choose report format:"),tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures"), style = "color: #555;"),
                 choices = c("HTML" = "html", "Word" = "docx") # "PDF" = "pdf"
               )),
-              downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
+              downloadButton(ns("generate_report"), "Generate RLE Assessment Report")#,
+
+            # hr(),
+            # tags$p("Live preview:", style = "font-weight:500; color:#555; margin-bottom:6px;"),
+            # uiOutput(ns("report_preview_ui"))
             )
         ),
       ),
@@ -159,6 +163,81 @@ report_module_server <- function(datasets,
                                  b2_poly
 ) {
   moduleServer(id, function(input, output, session) {
+    
+  #   # Set up a per-session preview directory once
+  #   preview_dir <- file.path(tempdir(), session$token, "preview")
+  #   dir.create(preview_dir, recursive = TRUE, showWarnings = FALSE)
+  #   shiny::addResourcePath(
+  #     paste0("preview_", session$token), preview_dir
+  #   )
+  #   session$onSessionEnded(function() {
+  #     unlink(preview_dir, recursive = TRUE)
+  #   })
+  #   
+  #   # Debounce metadata text inputs — wait 1.5s after typing stops
+  #   debounced_meta <- shiny::debounce(
+  #     reactive(list(
+  #       ecosystem_name = input$ecosystem_name %||% "",
+  #       organisation   = input$organisation   %||% "",
+  #       author         = input$author         %||% "",
+  #       format         = input$report_format
+  #     )),
+  #     millis = 1500
+  #   )
+  #   
+  #   # Auto-render whenever data or debounced metadata changes
+  #   preview_file <- reactive({
+  #     message("[preview] starting reactive")
+  #     ds <- datasets()
+  #     message("[preview] datasets keys: ", paste(names(ds), collapse = ", "))
+  #     req(ds)
+  #     meta <- debounced_meta()
+  #     message("[preview] proceeding to render")
+  #     
+  #     progress <- shiny::Progress$new()
+  #     progress$set(message = "Updating preview…", value = 0.4)
+  #     on.exit(progress$close())
+  #     
+  #     report_path   <- tempfile(fileext = ".Rmd")
+  #     template_path <- file.path("report", "report_main.Rmd")
+  #     file.copy(template_path, report_path, overwrite = TRUE)
+  #     
+  #     output_file <- file.path(preview_dir, "report.html")
+  #     
+  #     tryCatch({
+  #       rmarkdown::render(
+  #         report_path,
+  #         output_file   = output_file,
+  #         output_format = "html_document",
+  #         params = list(
+  #           ecosystem_name = meta$ecosystem_name,
+  #           organisation   = meta$organisation,
+  #           author         = meta$author
+  #         ),
+  #         envir = list2env(list(datasets = ds)),       # datasets goes hereenvir = new.env(),
+  #         quiet = TRUE
+  #       )
+  #       paste0("preview_", session$token, "/report.html?t=", as.numeric(Sys.time()))
+  #     }, error = function(e) {
+  #       showNotification(paste("Preview failed:", e$message),
+  #                        type = "error", duration = 10)
+  #       NULL
+  #     })
+  #     
+  #     result_url <- paste0("preview_", session$token, "/report.html?t=", as.numeric(Sys.time()))
+  #     message("[preview] returning URL: ", result_url)
+  #     message("[preview] file exists: ", file.exists(output_file))
+  #     result_url
+  #   })
+  #   
+  # output$report_preview_ui <- renderUI({
+  #   message("[preview_ui] preview_file value: ", preview_file() %||% "NULL")
+  #   req(preview_file())
+  #   tags$iframe(
+  #     src   = preview_file(),
+  #     style = "width:100%; height:800px; border:1px solid #ddd; border-radius:4px;"
+  #   )
+  # })
     
     # --------------------------------------------------------------------------
     # conditionally build file name
