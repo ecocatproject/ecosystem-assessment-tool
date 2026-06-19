@@ -8,8 +8,10 @@ output:
     number_sections: false
 always_allow_html: true
 fontsize: 12pt
-mainfont: "Arial"
+mainfont: "TeX Gyre Heros"
 geometry: margin=1in
+urlcolor: blue
+linkcolor: blue
 params:
   ecosystem_name: NA
   author: NA
@@ -74,15 +76,6 @@ status_circle <- function(x) {
 ```
 
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
-# # Packages whose functions are called bare (unqualified) by the Word/PDF
-# # branches of child chunks.  rmarkdown::render() runs in `envir = new.env(
-# # parent = globalenv())`, so child chunks only see what's attached here.
-# # HTML branches qualify everything (htmltools::, leaflet::, DT::), so this
-# # matters specifically for the static-output (PDF/Word) paths.
-# suppressPackageStartupMessages({
-#   library(flextable)
-#   library(ggplot2)
-# })
 # -----------------------------------------------------------------------------
 # Helper: apply consistent styling to every Word/PDF flextable.
 #   ft            — a flextable object
