@@ -1,135 +1,167 @@
 <!--
-B2: Restricted area of occupancy (AOO)
+Criterion B (part 2 of 2): B2 — Area of Occupancy
+
+Renders, in order:
+  1. ### Subcriterion B2 — Area of Occupancy (AOO)
+     intro paragraph
+     b2_text                — dynamic narrative paragraph with the headline numbers
+     b2_text_missing        — fallback if no b2_data
+  2. b2_detail               — single-row card (replaces the old DT table)
+  3. b2_map                  — leaflet map (unchanged from before)
+
+Relies on assessment_map and latest_b_row defined by criterion_b_setup in
+b1_eoo.Rmd, which runs immediately before this child.
 -->
 
-```{r b2_table, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$aoo_sel_ids) }
-sel_ids <- try(params$aoo_sel_ids, silent = TRUE) # table with year + cell_ids
-all_ids <-  try(params$aoo_all_ids, silent = TRUE) # table with year + cell_ids
-b2_data <- try(params$b2_data, silent = TRUE)
+### Subcriterion B2 — Area of Occupancy (AOO)
 
-b2_tab <- htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Table of Area of Occupancy (AOO) for Subcriterion B2: Restricted Extent of Occurrence"
-  ),
+Subcriterion B2 is assessed by estimating the area of occupancy (AOO) by counting the number of 10 km<sup>2</sup> cells covered by the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystem types.
 
-  # centrered table too
-htmltools::div(
-  style = "text-align:center;",
+```{r b2_text, echo=FALSE, results='asis', eval = !is.null(params$b2_data)}
+b2_data    <- params$b2_data
+b2_code    <- b2_data$assessment[which.max(as.numeric(b2_data$year))]
+b2_n       <- b2_data$n[which.max(as.numeric(b2_data$year))]
+b2_nexceed <- b2_data$n_exceed[which.max(as.numeric(b2_data$year))]
+cat(paste0(
+  "From overlaying a 10 \u00d7 10 km grid on the ", params$ecosystem_name,
+  " ecosystem, ", b2_n, " 10 km\u00b2 grid cells intersect the most recent (",
+  max(params$years), ") ecosystem map, which is highlighted in the map below. ",
+  "Small patches of the mapped ecosystem (<1% of total mapped ecosystem area) ",
+  "are then excluded from the total number of intersecting 10 km\u00b2 grid cells ",
+  "to provide the AOO measurement. From the most recent mapping, the AOO for the ",
+  params$ecosystem_name, " ecosystem is **", b2_nexceed, " grid cells**. ",
+  "This number of grid cells classes the ecosystem as **",
+  assessment_map[b2_code], "** under subcriterion B2."
+))
+```
+
+```{r b2_text_missing, echo=FALSE, results='asis', eval = is.null(params$b2_data)}
+cat(paste0(
+  "The area of occupancy (AOO) under subcriterion B2 could not be calculated ",
+  "because the 10 x 10km grid data was not created for this assessment."
+))
+```
+
+```{r b2_detail, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$b2_data)}
+# Single-row "card" for B2: status circle, year, grid-cell counts, category.
+b2_latest <- latest_b_row(params$b2_data)
+
+b2_row <- data.frame(
+  Year      = as.character(b2_latest$year),
+  Cells     = as.character(as.numeric(b2_latest$n)),
+  AOO       = as.character(as.numeric(b2_latest$n_exceed)),
+  Category  = assessment_map[as.character(b2_latest$assessment)],
+  Status    = as.character(b2_latest$assessment),
+  stringsAsFactors = FALSE,
+  check.names = FALSE
+)
+
+if (knitr::is_html_output()) {
+  # Columns: status (60px) | year (80) | cells (120) | AOO (160) | category (flex)
+  grid_cols <- "60px 80px 120px 160px 1fr"
+  
+  header_row <- htmltools::div(
+    style = sprintf(paste(
+      "display: grid;",
+      "grid-template-columns: %s;",
+      "gap: 12px;",
+      "align-items: center;",
+      "padding: 6px 14px;",
+      "color: #666;",
+      "font-size: 0.82em;",
+      "text-transform: uppercase;",
+      "letter-spacing: 0.04em;",
+      "border-bottom: 1px solid #eee;"
+    ), grid_cols),
+    htmltools::div(""),
+    htmltools::div("Year"),
+    htmltools::div("Grid cells"),
+    htmltools::div("AOO (>1%)"),
+    htmltools::div("Category")
+  )
+  
+  data_row <- htmltools::div(
+    style = sprintf(paste(
+      "display: grid;",
+      "grid-template-columns: %s;",
+      "gap: 12px;",
+      "align-items: center;",
+      "padding: 8px 14px;"
+    ), grid_cols),
+    htmltools::HTML(status_circle(b2_row$Status)),
+    htmltools::div(b2_row$Year),
+    htmltools::div(b2_row$Cells),
+    htmltools::div(b2_row$AOO),
+    htmltools::div(b2_row$Category)
+  )
+  
   htmltools::div(
-    style = "display:inline-block; width:auto;",  # shrink to fit content
-    DT::datatable(
-      b2_data,
-      colnames=c("Year", "Number of occupied cells",
-               "Number of cells excluding smallest 1%", "Category"),
-      rownames = FALSE,
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        dom = 't',
-        autoWidth = TRUE,
-        scrollX = FALSE)) %>%
-      formatStyle(
-        "assessment",
-        backgroundColor = styleEqual(
-          c("CR", "EN", "VU", "NT", "LC"),
-          c("#FF0000", "#FFA500", "#FFFF00", "#ADFF2F", "#008000")),
-        color = "black",
-        fontWeight = "bold"
+    style = paste(
+      "margin: 12px 0;",
+      "border: 1px solid #ddd;",
+      "border-radius: 6px;",
+      "overflow: hidden;",
+      "background: white;"
+    ),
+    htmltools::div(
+      style = paste(
+        "padding: 10px 14px;",
+        "background: #f0f0f0;",
+        "border-bottom: 1px solid #ddd;"
+      ),
+      htmltools::tags$b("B2"),
+      htmltools::tags$span(
+        " \u2014 Area of Occupancy in the latest assessment year (grid cells; AOO excludes patches < 1%)",
+        style = "color: #555; font-size: 0.9em;"
       )
+    ),
+    header_row,
+    data_row
   )
-)
-)
-
-# assessment_map created in b1_table
-b2_code <- b2_data$assessment[max(NROW(b2_data))]
-```
-
-Subcriterion B2 is assessed by estimating the area of occupancy (AOO) by counting the number of 10 km<sup>2</sup> cells covered by the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystems types.
-
-`r if (!is.null(params$b2_data)) {
-  b2_data <- params$b2_data
-  b2_code <- b2_data$assessment[max(NROW(b2_data))]
-  
-  
-  e_name <- params$ecosystem_name
-  b2_n <- b2_data$n[max(NROW(b2_data))]
-  b2_nexceed <- b2_data$n_exceed[max(NROW(b2_data))]
-  b2_code <- assessment_map[b2_code]
-  
-  b2_data <- params$b2_data
-  b2_code <- b2_data$assessment[which.max(as.numeric(b2_data$year))]
-  paste0(
-    "From overlaying a 10 × 10 km grid on the ", params$ecosystem_name,
-    " ecosystem, ", b2_data$n[max(NROW(b2_data))], " 10 km² grid cells intersect the most recent (",
-    max(params$years), ") ecosystem map, which is highlighted in the map below. Small patches of the mapped ecosystem (<1% of total mapped ecosystem area) are then excluded from the total number of intersecting 10 km² grid cells to provide the AOO measurement. From the most recent mapping, the AOO for the ", params$ecosystem_name,
-    " ecosystem is **", b2_data$n_exceed[max(NROW(b2_data))], " grid cells**. This number of grid cells classes the ecosystem as **", assessment_map[b2_code], "** under subcriterion B2."
-  )
-  
-  
 } else {
-  "The area of occupancy (AOO) under subcriterion B2 could not be calculated because the 10 x 10km grid data was not created for this assessment."
-}`
-
-
-
-```{r b2_table_print, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$b2_data)}
-b2_tab
+  ft <- flextable::flextable(b2_row)
+  for (st in names(status_palette)) {
+    rows_st <- which(b2_row$Status == st)
+    if (length(rows_st) > 0) {
+      ft <- flextable::bg(ft, j = "Status", i = rows_st, bg = status_palette[[st]])
+    }
+  }
+  ft <- flextable::set_caption(
+    ft,
+    caption = flextable::as_paragraph(
+      flextable::as_b("B2 \u2014 "),
+      "Area of Occupancy in the latest assessment year (grid cells; AOO excludes patches < 1%)"
+    )
+  )
+  flextable::autofit(flextable::theme_booktabs(ft, bold_header = TRUE))
+}
 ```
 
-```{r b2_map, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$b2_poly)}
-map_title <- paste0("Area of Occupancy (AOO) including grid cells exceeding 1% cumulative proportion in ", max(years))
+```{r b2_map, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, fig.align="center", out.width="100%", eval = !is.null(params$b2_poly)}
+map_title <- paste0("Area of Occupancy (AOO) including grid cells exceeding 1% cumulative proportion in ", max(params$years, na.rm = TRUE))
 
-# Defensive extraction of parameters
-grid_sf <- try(params$b2_poly, silent = TRUE)   # sf polygons with cell_id
+# Compute r_recent / ext_r locally so this chunk doesn't depend on b1_map
+r_recent    <- rasters[[length(rasters)]]
+latest_year <- max(params$years, na.rm = TRUE)
+cells_sf <- sf::st_as_sf(params$b2_poly)
+dat_all  <- cells_sf[cells_sf$type == "all", ]
+dat_sel  <- cells_sf[cells_sf$type == "assessment", ]
 
-#colour palette
-pal <- colorNumeric(palette = c("white", "black"), domain = c(1, 0), na.color = "transparent")
-
-# Interactive Leaflet --------------------------------------------------------
-# data selection of the most recent data
-dat_all <- grid_sf[grid_sf$cell_id %in% all_ids$cell_ids[[1]], ]
-dat_sel <- grid_sf[grid_sf$cell_id %in% sel_ids$cell_ids[[1]], ]
-
-# map the most recent data
-m <- leaflet() %>% 
-  addTiles() %>%
-   fitBounds(unname(ext_r["xmin"]), # ext_r created earlier
-                    unname(ext_r["ymin"]),
-                    unname(ext_r["xmax"]),
-                    unname(ext_r["ymax"])) %>%
-  addRasterImage(r_recent, group = paste0(max(years), " classification"), colors = pal, method = "ngb", project = TRUE)  %>%
-  addPolygons(data = dat_all, group = "10x10 km grid",
-                    fillColor = "black",
-                    fillOpacity = 0.2,
-                    color = "black",
-                    weight = .5) %>%
-  addPolygons(data = dat_sel, group ="AOO (>1% occupancy)",
-                    fillColor = "orange",
-                    fillOpacity = 0.5,
-                    color = "black",
-                    weight = .5) %>%
-  addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
-  addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
-                   overlayGroups = c(paste0(max(years), " classification"), '10x10 km grid', 'AOO (>1% occupancy)'),
-          options = layersControlOptions(collapsed = FALSE)
-        ) %>%
-          addLegend(
-            position = "bottomright",
-            colors = c("black", "orange"),
-            labels = c("10x10 km grid", "AOO (>1% occupancy)"),
-            opacity = 0.7,
-            title = "Polygon Layers"
-          )
-
-
-# Wrap the map with title
+if (knitr::is_html_output()) {
+ m <- make_fig_b2_leaflet(dat_all, dat_sel, r_recent, latest_year)
+ # Wrap the map with title
 htmltools::tagList(
   tags$div(
     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
     map_title),
   m
-  )
+)
+} else {
+    make_fig_b2(params$b2_poly, rasters, params$years)
+}
+
+# Interactive Leaflet  - using function from figures1.R 
+#m
+
+
 ```

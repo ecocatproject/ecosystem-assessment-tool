@@ -1,110 +1,70 @@
 <!--
-Geographic distribution
-1. Country table
-2. Map of distribution (interactive if html)
+Geographic distribution by country
+The map of distribution has moved to report_main.Rmd ("Mapped distribution"
+section) so it is always shown.  This child only renders the country table
+when params$countries is supplied; otherwise it produces nothing — the
+consolidated "not requested" sentence in report_main.Rmd covers the
+explanation.
 -->
-
 
 
 ```{r countries_text, echo=FALSE, message=FALSE, warning=FALSE}
 if (is.null(params$countries)) {
-  country_list <- paste0("Geographical distribution was not requested")
   country_text <- ""
 } else {
-  country_list <- paste0("**Countries:** ", params$countries$Country)
   country_text <- paste0(
-"From the most recent ", max(params$years), " classification, the ecosystem is found in the following countries: ", params$countries$Country, ". The area and percentage of the ecosystem within each country as measured in ",max(params$years), " is summarised in the table and map below:")
+    "From the most recent ", max(params$years),
+    " classification, the ecosystem is found in the following countries: ",
+    paste(params$countries$Country, collapse = ", "),
+    ". The area and percentage of the ecosystem within each country as ",
+    "measured in ", max(params$years), " is summarised in the table below:"
+  )
 }
 ```
-
-`r country_list`
 
 `r country_text`
 
 ```{r coo, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$countries), results='asis'}
 coo_df <- params$countries
-title_text <- "Percentage of ROI occurrence per country"
+title_text <- "Ecosystem occurrence at a country level"
 
 # display the table
-if (knitr::is_html_output()) 
-{
+if (knitr::is_html_output()) {
   htmltools::tagList(
     # centered Title
     htmltools::div(
       style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
-    DT::datatable(coo_df, rownames=F,
-                  escape = FALSE,
+    DT::datatable(coo_df, rownames = F,
+                  escape  = FALSE,
                   options = list(
-                  paging = FALSE,
-                  searching = FALSE,
-                  info = FALSE,
-                  dom = 't',
-                  autoWidth = TRUE,
-                  scrollX = FALSE)) %>%
+                    paging = FALSE,
+                    searching = FALSE,
+                    info = FALSE,
+                    dom = 't',
+                    autoWidth = TRUE,
+                    scrollX = FALSE)) %>%
       DT::formatStyle(columns = c(1:ncol(coo_df)), fontSize = '100%')
-)
-  
-  } else {
-
-  # flextable
-  set_flextable_defaults(
-    font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent"
   )
+} else {
+  # flextable
+ # PDF/Word: styled flextable
+  set_flextable_defaults(theme_fun = theme_vanilla, background.color = "transparent")
   
-  coo_tab <- flextable(coo_df) %>%
-    set_caption(caption = as_paragraph(as_b(title_text))) %>%
-    autofit() %>%
-    flextable::theme_booktabs(bold_header = TRUE) %>%
-    # colformat_num(j="Year", big.mark = "") %>%
-    set_table_properties(layout="autofit")
+  coo_tab <- flextable(coo_df) |>
+    style_pdf_table(caption_text = title_text)
+  
+  coo_tab <- flextable(coo_df) |>
+  set_caption(
+      caption = flextable::as_paragraph(flextable::as_b(title_text)),
+      align_with_table = FALSE) |>   # let caption span page width, not just table
+  # set_header_labels(
+  #       `% of Ecosystem`       = "Ecosystem occurrence\n(%)",
+  #      `% of Country coverage`       = "Country\ncoverage\n(%)",
+  # ) |>
+  fontsize(size = 9, part = "all") |>
+  align(align = "left", part = "all") |>  # Center header text
+  valign(valign = "center", part = "all")# |> # Vertically center
   
   coo_tab
-  
-  }
-```
-
-  
-```{r eu_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$countries)}
-map_title <- paste0("Distribution of the ecosystem in ", max(years))
-
-#if (!is.null(params$rasters)) {
-  r_recent <- try(rasters[[length(rasters)]], silent = TRUE) # get the most recent raster for plotting
-  
-  # the map - recent raster only
-  pal <- colorNumeric(palette = c("white", "black"), domain = c(1, 0), na.color = "transparent")
-  
-  # get eau extent for mapping zoom
-  ext_r <- as.vector(ext(r_recent)) 
-   
-   m <- leaflet() %>%
-    addTiles() %>%
-      fitBounds(unname(ext_r["xmin"]),
-                    unname(ext_r["ymin"]),
-                    unname(ext_r["xmax"]),
-                    unname(ext_r["ymax"])) %>%
-    addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
-    addRasterImage(r_recent, group = paste0(max(years), " classification"), colors = pal, method = "ngb", project = TRUE) %>% 
-    addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
-                     overlayGroups = c(paste0(max(years), " classification")),
-                     options = layersControlOptions(collapsed = FALSE))
-  
-  # plot the map
-  if (knitr::is_html_output()) {
-  
-     # Wrap the map with title
-    htmltools::tagList(
-      tags$div(
-        style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
-      m)
-    
-  } else{
-    htmlwidgets::saveWidget(m, "map.html")
-webshot("map.html", file = "map.png", vwidth = 800, vheight = 600)
-knitr::include_graphics("map.png")
-  }
-
-  
-#} else {
-#  cat("No ROI shapefile was uploaded, so no ROI map is available.\n")
-#}
+}
 ```

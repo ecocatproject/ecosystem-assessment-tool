@@ -2,7 +2,48 @@
 Criterion A
 -->
 
-```{r area_table, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$areas) }
+```{r criterion_a_setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Local helpers for the Criterion A section.
+
+# worst (most severe) RLE status from a result data frame
+worst_from <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || !"status" %in% names(df) || nrow(df) == 0) {
+    return(NA_character_)
+  }
+  assessment <- c(CR = 1, EN = 2, VU = 3, NT = 4, LC = 5)
+  s <- df$status[df$status %in% names(assessment)]
+  if (length(s) == 0) return(NA_character_)
+  names(which.min(assessment[s]))
+}
+
+# normalise to a single status code, mapping invalid/missing -> "NE"
+as_status_code <- function(x) {
+  if (is.null(x) || length(x) == 0 || is.na(x[1]) || !nzchar(as.character(x[1]))) "NE"
+  else as.character(x[1])
+}
+
+# format-aware status_circle (defined in parent; fall back if knit standalone)
+if (!exists("status_circle")) {
+  status_circle <- function(x) {
+    code <- as_status_code(x)
+    if (isTRUE(knitr::is_html_output())) {
+      sprintf('<span class="status-circle %s">%s</span>', code, code)
+    } else {
+      sprintf("[%s]", code)
+    }
+  }
+}
+
+# colour palette shared across HTML + Word outputs
+status_palette <-c(CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00", NT = "#ADFF2F", LC = "#008000", NE = "black")
+
+has_any_a <- !is.null(params$a1_result) ||
+             !is.null(params$a2a_result) ||
+             !is.null(params$a2b_result)
+```
+
+
+```{r area_table, include=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$areas) }
 if (nrow(params$areas) > 1) {
     area_data <- params$areas
     area_data$Year <- as.numeric(area_data$Year)
@@ -22,13 +63,127 @@ if (nrow(params$areas) > 1) {
 }
 ```
 
-`r if (nrow(params$areas) > 1) {
-paste0("Between ", start_year, " and ", end_year,  " the area of this ecosystem has ", trend, " by ",
-abs(change_percent), "% from ", format(round(start_area,0), big.mark = ","), "km² to ", format(round(end_area,0), big.mark = ","),
-"km². The proportional rate (% of annual area change) and absolute rate (annual change in area) are detailed in the table below.")
- } else {
- "The area of ecosystem change for criterion A could not be calculated because only a single year of data was provided. The area calculation is provided below. "
- }`
+### Subcriterion assessment summary
+
+```{r criterion_a_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
+# Subcriterion outcomes "callout box".
+# Restricted to the Proportional Rate of Change (PRC) results only — to switch
+# to ARC, change headline_method below (and the subtitle text).
+# Returns an htmltools tagList (HTML) or a flextable (Word). Returning a proper
+# R object (no results='asis' with raw HTML cat()) prevents pandoc from confusing
+# the chunk output with the markdown that follows.
+
+headline_method <- "PRC"
+
+filter_method <- function(df, m) {
+  if (is.null(df) || !is.data.frame(df) || !"method" %in% names(df)) return(NULL)
+  out <- df[df$method == m, , drop = FALSE]
+  if (nrow(out) == 0) NULL else out
+}
+
+a1_status  <- as_status_code(worst_from(filter_method(params$a1_result,  headline_method)))
+a2a_status <- as_status_code(worst_from(filter_method(params$a2a_result, headline_method)))
+a2b_status <- as_status_code(worst_from(filter_method(params$a2b_result, headline_method)))
+
+summary_subtitle <- "Worst case across scenarios; based on Proportional Rate of Change (PRC)"
+
+if (knitr::is_html_output()) {
+  htmltools::tagList(
+    htmltools::div(
+      style = paste(
+        "margin: 10px 0 20px 0;",
+        "padding: 14px 16px;",
+        "border: 1px solid #ddd;",
+        "border-radius: 6px;",
+        "background: #fafafa;"
+      ),
+      htmltools::div(
+        style = "margin-bottom: 10px;",
+        htmltools::tags$b("Subcriterion outcomes"),
+        htmltools::tags$span(
+          paste0(" \u2014 ", summary_subtitle),
+          style = "color: #666; font-size: 0.9em;"
+        )
+      ),
+      htmltools::div(
+        style = "margin-top: 6px;",
+        htmltools::HTML(status_circle(a1_status)), " ",
+        htmltools::tags$b("A1"),
+        " \u2014 Observed and inferred reduction over the past ~50 years"
+      ),
+      htmltools::div(
+        style = "margin-top: 6px;",
+        htmltools::HTML(status_circle(a2a_status)), " ",
+        htmltools::tags$b("A2a"),
+        " \u2014 Projected reduction over the next ~50 years"
+      ),
+      htmltools::div(
+        style = "margin-top: 6px;",
+        htmltools::HTML(status_circle(a2b_status)), " ",
+        htmltools::tags$b("A2b"),
+        " \u2014 Worst-case reduction over any 50-year window (including past & future)"
+      )
+    )
+  )
+} else {
+  # Word: HTML divs / CSS don't render, so fall back to a coloured flextable.
+  a_summary <- data.frame(
+    Subcriterion = c("A1", "A2a", "A2b"),
+    Description = c(
+      "Observed and inferred reduction over the past ~50 years",
+      "Projected reduction over the next ~50 years",
+      "Worst-case reduction over any 50-year window (past + future)"
+    ),
+    Status = c(a1_status, a2a_status, a2b_status),
+    stringsAsFactors = FALSE
+  )
+  ft <- flextable::flextable(a_summary)
+  for (st in names(status_palette)) {
+    rows_st <- which(a_summary$Status == st)
+    if (length(rows_st) > 0) {
+      ft <- flextable::bg(ft, j = "Status", i = rows_st, bg = status_palette[[st]])
+    }
+  }
+  ft <- flextable::set_caption(
+    ft,
+    caption = flextable::as_paragraph(
+      flextable::as_b("Subcriterion outcomes "),
+      paste0("\u2014 ", summary_subtitle)
+    )
+  )
+  flextable::autofit(flextable::theme_booktabs(ft, bold_header = TRUE))
+}
+```
+
+
+
+### Summary of change
+```{r area_change_text, echo=FALSE, results='asis', eval = !is.null(params$areas)}
+
+    # # centered Title
+    # htmltools::div(
+    #   style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", "Summary of ecosystem area change")
+
+if (nrow(params$areas) > 1) {
+  cat(paste0(
+    "Between ", start_year, " and ", end_year,
+    " the area of this ecosystem has ", trend, " by ",
+    abs(change_percent), "% from ",
+    format(round(start_area, 0), big.mark = ","), "km\u00b2 to ",
+    format(round(end_area, 0),   big.mark = ","),
+    "km\u00b2. The proportional rate of change (PRC; % of annual area change) and absolute rate or change (ARC; ",
+    "total annual change in area) between each mapped ecosystem period are detailed in the table below."
+  ))
+} else {
+  cat(paste0(
+    "The area of ecosystem change for criterion A could not be calculated ",
+    "because only a single year of data was provided. The area calculation is ",
+    "provided below."
+  ))
+}
+```
+
+
 
 ```{r area_table_2, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) > 1}
 # This is conditional for when there is > 1 year
@@ -51,9 +206,9 @@ criteria_a_data <- area_change_data %>%
 
 if (knitr::is_html_output()) {
   a_tab <- htmltools::tagList(
-    # centered Title
-    htmltools::div(
-      style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
+    # # centered Title
+    # htmltools::div(
+    #   style = "text-align:left; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
     # centered table too
     htmltools::div(
       style = "text-align:center;",
@@ -117,119 +272,171 @@ a_tab
 ```
 
 
-`r if (!is.null(params$area_prediction_data)) {
-  paste0("To assess the subcriteria of Criterion A, the changes in ecosystem area can be estimated for both past and present using various of methods depending on data availability. This includes quantifying the absolute change area (ARC), proportional change in area (PRC). Some of these trends are presenting the the interactive graph below."
-  )
-}` 
 
-```{r area_change_graph, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, out.width = '100%',  eval = !is.null(params$area_prediction_data)}
-area_prediction_data <- params$area_prediction_data
+```{r area_prediction_text, echo=FALSE, results='asis', eval = !is.null(params$area_prediction_data)}
+cat(paste0(
+  "To assess the subcriteria of Criterion A, the changes in ecosystem area can ",
+  "be estimated for both past and present using various of methods depending on ",
+  "data availability. This includes prediciting the absolute rate of change in area (ARC) and ",
+  "proportional rate of change in area (PRC). Some of these trends are presented in the ",
+  "the graph below."),
+  "Predicted historical changes are based on the average trend over the observed period",
+   "Future changes are either based on the average trend ('Long-term'), or most recent period of change ('Near-term')."
+)
+```
 
-results <- area_prediction_data %>%
-  mutate(
-    hover_text = paste0(
-      "Year: ", year, "<br>",
-      "Area: ", round(area,0), "<br>",
-      "Scenario: ", scenario, "<br>",
-      "Method: ", method
-    )
-  )
+```{r area_change_graph, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, out.width = '100%', eval = !is.null(params$area_prediction_data)}
+# Match the chart shown on the Criterion A app tab by calling the shared
+# figure functions in modules/figures.R (sourced by the Shiny app at startup,
+# which is the same R session that renders the report).
+# HTML output -> plotly version, Word output -> ggplot2 version.
 
-# Line styles for methods
-linetypes <- c("PRC" = "solid", "ARC" = "dot")
+# Detect whether the data carries bounded estimates (min / opt / max).
+is_bound <- "Bound" %in% names(params$area_prediction_data)
 
-# Colors for scenarios
-colors <- c("median" = "#ff7f00",
-            "recent" = "#e31a1c",
-            "worst" = "darkred",
-            "recent/worst" = "darkred",
-            "past" = "steelblue")
+if (knitr::is_html_output()) {
+  make_fig_a_plotly(params$area_prediction_data, is_bound = is_bound)
+} else {
+  make_fig_a(params$area_prediction_data, is_bound = is_bound)
+}
+```
 
-# Start plotly
-p <- plot_ly()
 
-# Observed line
-p <- p %>%
-  add_trace(
-    data = filter(results, type == "observed"),
-    x = ~year, y = ~area, type = 'scatter', mode = 'lines+markers',
-    line = list(color = 'grey20', width = 3),
-    marker = list(color = 'grey10', size = 6),
-    hoverinfo = 'text',
-    text = ~hover_text,
-    name = 'Observed'
-  )
+### Subcriterion details
+```{r criterion_a_detail, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
+# Per-subcriterion "cards" with column-aligned rows.
+# HTML  -> styled htmltools divs with status circles inline
+# Word  -> single flextable with all rows + Period column + coloured Status cell
 
-# Projected lines
-proj_data <- filter(results, type == "projected")
-for(scen in unique(proj_data$scenario)) {
-  for(meth in unique(proj_data$method)) {
-    sub <- filter(proj_data, scenario == scen, method == meth)
-    p <- add_trace(
-      p,
-      data = sub,
-      x = ~year, y = ~area, type = 'scatter', mode = 'lines',
-      line = list(color = colors[scen], dash = linetypes[meth], width = 3),
-      hoverinfo = 'text',
-      text = ~hover_text,
-      name = paste(scen, meth, sep = "/")
-    )
+# Build a per-subcriterion data frame with consistent columns.
+build_detail_rows <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) return(NULL)
+  period_str <- if (!is.null(df$year_start) && !is.null(df$year_end)) {
+    paste0(df$year_start, "\u2013", df$year_end)
+  } else {
+    rep("\u2014", nrow(df))  # em dash if no period info
   }
+  data.frame(
+    Method     = df$method,
+    Scenario   = df$scenario,
+    Period     = period_str,
+    `% change` = sprintf("%.1f%%", df$perc_change * 100),
+    Status     = df$status,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
 }
 
-# GAM smoother if enough points
-n_points <- nrow(area_prediction_data)
-if (n_points > 3) {
-  dat <- area_prediction_data
-  gam_model <- try(
-    mgcv::gam(area ~ s(year, k = max(3, n_points - 2)), data=dat),
-    silent = TRUE
-  )
+sub_meta <- list(
+  list(code = "A1",  desc = "Observed and inferred reduction over the past ~50 years",
+       rows = build_detail_rows(params$a1_result)),
+  list(code = "A2a", desc = "Projected reduction over the next ~50 years",
+       rows = build_detail_rows(params$a2a_result)),
+  list(code = "A2b", desc = "Worst-case reduction over any 50-year window (past + future)",
+       rows = build_detail_rows(params$a2b_result))
+)
 
-  if (!inherits(gam_model, "try-error")) {
-    new_years <- data.frame(year = seq(min(dat$year), max(dat$year)))
-    pred_gam <- predict(gam_model, newdata = new_years, se.fit = TRUE)
-    pred_gam <- data.frame(
-      year = new_years$year,
-      fit = pred_gam$fit,
-      lwr = pred_gam$fit - 2 * pred_gam$se.fit,
-      upr = pred_gam$fit + 2 * pred_gam$se.fit
-    ) %>% mutate(across(c(fit, lwr, upr), ~ pmax(., 0)))
-
-    pred_gam_before <- filter(pred_gam, year < min(dat$year))
-    pred_gam_after  <- filter(pred_gam, year > max(dat$year))
-
-    p <- p %>%
-      add_trace(
-        data = pred_gam_before,
-        x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
-        line = list(color = 'blue', width = 3, dash = 'dash'),
-        showlegend = FALSE
-      ) %>%
-      add_trace(
-        data = pred_gam_after,
-        x = ~year, y = ~fit, type = 'scatter', mode = 'lines',
-        line = list(color = 'blue', width = 3, dash = 'dash'),
-        name = 'GAM'
-      ) %>%
-      add_ribbons(
-        data = pred_gam,
-        x = ~year, ymin = ~lwr, ymax = ~upr,
-        fillcolor = 'rgba(0,0,255,0.2)',
-        line = list(color = 'transparent'),
-        name = '95% CI'
+if (knitr::is_html_output()) {
+  # --- HTML: card per subcriterion ----------------------------------------
+  # Columns: status (60px) | method (90) | scenario (110) | period (130) | % change (auto)
+  grid_cols <- "60px 90px 110px 130px 1fr"
+  
+  make_card <- function(meta) {
+    if (is.null(meta$rows) || nrow(meta$rows) == 0) return(NULL)
+    
+    # Column header row (inside the card, below the title bar)
+    header_row <- htmltools::div(
+      style = sprintf(paste(
+        "display: grid;",
+        "grid-template-columns: %s;",
+        "gap: 12px;",
+        "align-items: center;",
+        "padding: 6px 14px;",
+        "color: #666;",
+        "font-size: 0.82em;",
+        "text-transform: uppercase;",
+        "letter-spacing: 0.04em;",
+        "border-bottom: 1px solid #eee;"
+      ), grid_cols),
+      htmltools::div(""),                # status (blank header)
+      htmltools::div("Method"),
+      htmltools::div("Scenario"),
+      htmltools::div("Period"),
+      htmltools::div("% change")
+    )
+    
+    # Data rows
+    data_rows <- lapply(seq_len(nrow(meta$rows)), function(i) {
+      htmltools::div(
+        style = sprintf(paste(
+          "display: grid;",
+          "grid-template-columns: %s;",
+          "gap: 12px;",
+          "align-items: center;",
+          "padding: 8px 14px;",
+          if (i %% 2 == 0) "background: #fafafa;" else ""
+        ), grid_cols),
+        htmltools::HTML(status_circle(meta$rows$Status[i])),
+        htmltools::div(meta$rows$Method[i]),
+        htmltools::div(meta$rows$Scenario[i]),
+        htmltools::div(meta$rows$Period[i]),
+        htmltools::div(meta$rows$`% change`[i])
       )
+    })
+    
+    # Card wrapper
+    htmltools::div(
+      style = paste(
+        "margin: 12px 0;",
+        "border: 1px solid #ddd;",
+        "border-radius: 6px;",
+        "overflow: hidden;",
+        "background: white;"
+      ),
+      htmltools::div(
+        style = paste(
+          "padding: 10px 14px;",
+          "background: #f0f0f0;",
+          "border-bottom: 1px solid #ddd;"
+        ),
+        htmltools::tags$b(meta$code),
+        htmltools::tags$span(
+          paste0(" \u2014 ", meta$desc),
+          style = "color: #555; font-size: 0.9em;"
+        )
+      ),
+      header_row,
+      do.call(htmltools::tagList, data_rows)
+    )
+  }
+  
+  cards <- Filter(Negate(is.null), lapply(sub_meta, make_card))
+  htmltools::tagList(cards)
+  
+} else {
+  # --- Word: combined flextable, coloured Status cell ----------------------
+  detail_df <- do.call(rbind, lapply(sub_meta, function(meta) {
+    if (is.null(meta$rows) || nrow(meta$rows) == 0) return(NULL)
+    cbind(Subcriterion = meta$code, meta$rows, stringsAsFactors = FALSE)
+  }))
+  
+  if (is.null(detail_df) || nrow(detail_df) == 0) {
+    invisible(NULL)
+  } else {
+    ft <- flextable::flextable(detail_df)
+    for (st in names(status_palette)) {
+      rows_st <- which(detail_df$Status == st)
+      if (length(rows_st) > 0) {
+        ft <- flextable::bg(ft, j = "Status", i = rows_st, bg = status_palette[[st]])
+      }
+    }
+    ft <- flextable::set_caption(
+      ft,
+      caption = flextable::as_paragraph(
+        flextable::as_b("Subcriterion assessments by method (PRC + ARC) and scenario")
+      )
+    )
+    flextable::autofit(flextable::theme_booktabs(ft, bold_header = TRUE))
   }
 }
-
-# Layout
-p <- p %>%
-  layout(
-    xaxis = list(title = "Year"),
-    yaxis = list(title = "Area"),
-    legend = list(title = list(text = "<b>Scenario / Method</b>"))
-  )
-
-p  # print the plotly object
-
 ```

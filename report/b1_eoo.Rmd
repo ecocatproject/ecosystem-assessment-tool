@@ -1,8 +1,46 @@
 <!--
-b1
+Criterion B (parts 1 of 2): B1 — Extent of Occurrence
+
+This file produces (in render order):
+  1. criterion_b_setup       — helpers + assessment_map (visible to b2_aoo.Rmd too)
+  2. ### Subcriterion summary
+     criterion_b_summary     — callout box with B1 + B2 status circles
+  3. ### Subcriterion B1 — Extent of Occurrence (EOO)
+     intro paragraph (unchanged from before)
+     b1_detail               — single-row card (replaces the old DT table)
+     b1_map                  — leaflet (HTML) / ggplot (Word), unchanged from before
 -->
 
-```{r assessment_map, echo=FALSE, message=FALSE, warning=FALSE}
+```{r criterion_b_setup, echo=FALSE, message=FALSE, warning=FALSE}
+# Helpers for the Criterion B section.  worst_from / as_status_code /
+# status_circle / status_palette already exist if criterion_a.Rmd ran first
+# (which it does in the parent), but we redefine defensively in case b1_eoo.Rmd
+# is knit standalone.
+
+if (!exists("as_status_code")) {
+  as_status_code <- function(x) {
+    if (is.null(x) || length(x) == 0 || is.na(x[1]) || !nzchar(as.character(x[1]))) "NE"
+    else as.character(x[1])
+  }
+}
+
+if (!exists("status_circle")) {
+  status_circle <- function(x) {
+    code <- as_status_code(x)
+    if (isTRUE(knitr::is_html_output())) {
+      sprintf('<span class="status-circle %s">%s</span>', code, code)
+    } else {
+      sprintf("[%s]", code)
+    }
+  }
+}
+
+if (!exists("status_palette")) {
+  status_palette <- c(CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00",
+                      NT = "#ADFF2F", LC = "#008000", NE = "black")
+}
+
+# Used by b2_aoo.Rmd's b2_text chunk too — defined here because b1 renders first.
 assessment_map <- c(
   "VU" = "Vulnerable",
   "EN" = "Endangered",
@@ -10,85 +48,210 @@ assessment_map <- c(
   "CR" = "Critically Endangered",
   "NT" = "Near Threatened"
 )
+
+# Pull the latest-year row from a B-style data frame (must have a `year` column).
+latest_b_row <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) return(NULL)
+  if (!"year" %in% names(df)) return(df[nrow(df), , drop = FALSE])
+  df[which.max(as.numeric(df$year)), , drop = FALSE]
+}
+
+b1_latest <- latest_b_row(params$mcp_data)
+b2_latest <- latest_b_row(params$b2_data)
+has_any_b <- !is.null(b1_latest) || !is.null(b2_latest)
 ```
 
-```{r b1, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5,  eval = !is.null(params$mcp_data)}
- if (!is.null(params$mcp_data)) {
-   b1_data <- params$mcp_data
-   b1_code <- b1_data$assessment[which.max(as.numeric(b1_data$year))]
- } 
 
-```
 
-Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) – the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystems types.
+### Subcriterion summary
+```{r criterion_b_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_b)}
+# Callout box with B1 + B2 status circles, mirroring criterion_a_summary.
+# Status for each is the assessment recorded for the most recent year.
 
-`r if (!is.null(params$mcp_data)) {
-  b1_data <- params$mcp_data
-  b1_code <- b1_data$assessment[which.max(as.numeric(b1_data$year))]
-  b1_year <- max(as.numeric(b1_data$year))
-  b1_area <- formatC(
-    b1_data$area_km2[which.max(as.numeric(b1_data$year))],
-    format = "f", big.mark = ",", digits = 0
-  )
-  paste0(
-    "The area of the minimum convex polygon (MCP) encompassing the most recent ecosystem map from ",
-    b1_year, " was **", b1_area, " km²**. ",
-    "This classes the ecosystem as **", assessment_map[b1_code],
-    "** under subcriterion B1."
+# tags$b("Subcriterion summary")
+
+b1_status <- as_status_code(if (!is.null(b1_latest)) b1_latest$assessment else NA)
+b2_status <- as_status_code(if (!is.null(b2_latest)) b2_latest$assessment else NA)
+
+summary_subtitle <- "Status from the latest assessment year"
+
+
+if (knitr::is_html_output()) {
+  htmltools::tagList(
+    htmltools::div(
+      style = paste(
+        "margin: 10px 0 20px 0;",
+        "padding: 14px 16px;",
+        "border: 1px solid #ddd;",
+        "border-radius: 6px;",
+        "background: #fafafa;"
+      ),
+      htmltools::div(
+        style = "margin-bottom: 10px;",
+        htmltools::tags$b("Subcriterion outcomes"),
+        htmltools::tags$span(
+          paste0(" \u2014 ", summary_subtitle),
+          style = "color: #666; font-size: 0.9em;"
+        )
+      ),
+      htmltools::div(
+        style = "margin-top: 6px;",
+        htmltools::HTML(status_circle(b1_status)), " ",
+        htmltools::tags$b("B1"),
+        " \u2014 Extent of Occurrence (EOO)"
+      ),
+      htmltools::div(
+        style = "margin-top: 6px;",
+        htmltools::HTML(status_circle(b2_status)), " ",
+        htmltools::tags$b("B2"),
+        " \u2014 Area of Occupancy (AOO)"
+      )
+    )
   )
 } else {
-  "The extent of occurrence (EOO) under subcriterion B1 could not be calculated because the MCP data was not created for this assessment."
-}`
-
-
-```{r b1_table, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = !is.null(params$mcp_data)}
-b1_data$area_km2 <- format(round(b1_data$area_km2, 0), big.mark = ",", trim = TRUE)
-
-b1_tab <- htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Table of EOO for Subcriterion B1"
-  ),
-  # centrered table too
-htmltools::div(
-  style = "text-align:center;",
-  htmltools::div(
-    style = "display:inline-block; width:auto;",  # shrink to fit content
-    DT::datatable(
-      b1_data,
-      colnames=c("Year", "Area (km<sup>2</sup>)", "Category"),
-      rownames = FALSE,
-      escape = FALSE,
-      options = list(
-        paging = FALSE,
-        searching = FALSE,
-        info = FALSE,
-        dom = 't',
-        autoWidth = FALSE,
-        scrollX = FALSE)) %>%
-      formatStyle(
-        "assessment",
-        backgroundColor = styleEqual(
-          c("CR", "EN", "VU", "NT", "LC"),
-          c("#FF0000", "#FFA500", "#FFFF00", "#ADFF2F", "#008000")),
-        color = "black",
-        fontWeight = "bold"
-      )
+  # Word: HTML divs / CSS don't render, so fall back to a coloured flextable.
+  b_summary <- data.frame(
+    Subcriterion = c("B1", "B2"),
+    Description  = c("Extent of Occurrence (EOO)", "Area of Occupancy (AOO)"),
+    Status       = c(b1_status, b2_status),
+    stringsAsFactors = FALSE
   )
-)
-)
-
-b1_tab
-
+  ft <- flextable::flextable(b_summary)
+  for (st in names(status_palette)) {
+    rows_st <- which(b_summary$Status == st)
+    if (length(rows_st) > 0) {
+      ft <- flextable::bg(ft, j = "Status", i = rows_st, bg = status_palette[[st]])
+    }
+  }
+  ft <- flextable::set_caption(
+    ft,
+    caption = flextable::as_paragraph(
+      flextable::as_b("Subcriterion outcomes "),
+      paste0("\u2014 ", summary_subtitle)
+    )
+  )
+  flextable::autofit(flextable::theme_booktabs(ft, bold_header = TRUE))
+}
 ```
 
+
+### Subcriterion B1 — Extent of Occurrence (EOO)
+
+Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) — the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystem types.
+
+```{r b1_text_missing, echo=FALSE, results='asis', eval = is.null(b1_latest)}
+cat(paste0(
+  "The extent of occurrence (EOO) under subcriterion B1 was not assessed for this ecosystem. "
+))
+```
+
+```{r b1_text, echo=FALSE, results='asis', eval = !is.null(b1_latest)}
+b1_eoo <- format(round(as.numeric(b1_latest$area_km2), 0),big.mark = ",", trim = TRUE)
+
+cat(paste0(
+  "From the most recent mapping, the EOO for the ",
+  params$ecosystem_name, " ecosystem is **", b1_eoo, " km\u00b2**. ",
+  "This area classes the ecosystem as **",
+  assessment_map[as.character(b1_latest$assessment)], "** under subcriterion B1."
+))
+```
+
+```{r b1_detail, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(b1_latest)}
+# Single-row "card" for B1: status circle, year, EOO area, category.
+# Mirrors criterion_a_detail visually but with B1's columns.
+
+b1_row <- data.frame(
+  Year     = as.character(b1_latest$year),
+  EOO      = paste0(format(round(as.numeric(b1_latest$area_km2), 0),
+                           big.mark = ",", trim = TRUE), " km\u00b2"),
+  Category = assessment_map[as.character(b1_latest$assessment)],
+  Status   = as.character(b1_latest$assessment),
+  stringsAsFactors = FALSE,
+  check.names = FALSE
+)
+
+if (knitr::is_html_output()) {
+  # Columns: status (60px) | year (90px) | EOO (160px) | category (flex)
+  grid_cols <- "60px 90px 160px 1fr"
+  
+  header_row <- htmltools::div(
+    style = sprintf(paste(
+      "display: grid;",
+      "grid-template-columns: %s;",
+      "gap: 12px;",
+      "align-items: center;",
+      "padding: 6px 14px;",
+      "color: #666;",
+      "font-size: 0.82em;",
+      "text-transform: uppercase;",
+      "letter-spacing: 0.04em;",
+      "border-bottom: 1px solid #eee;"
+    ), grid_cols),
+    htmltools::div(""),
+    htmltools::div("Year"),
+    htmltools::div("EOO area"),
+    htmltools::div("Category")
+  )
+  
+  data_row <- htmltools::div(
+    style = sprintf(paste(
+      "display: grid;",
+      "grid-template-columns: %s;",
+      "gap: 12px;",
+      "align-items: center;",
+      "padding: 8px 14px;"
+    ), grid_cols),
+    htmltools::HTML(status_circle(b1_row$Status)),
+    htmltools::div(b1_row$Year),
+    htmltools::div(b1_row$EOO),
+    htmltools::div(b1_row$Category)
+  )
+  
+  htmltools::div(
+    style = paste(
+      "margin: 12px 0;",
+      "border: 1px solid #ddd;",
+      "border-radius: 6px;",
+      "overflow: hidden;",
+      "background: white;"
+    ),
+    htmltools::div(
+      style = paste(
+        "padding: 10px 14px;",
+        "background: #f0f0f0;",
+        "border-bottom: 1px solid #ddd;"
+      ),
+      htmltools::tags$b("B1"),
+      htmltools::tags$span(
+        " \u2014 Extent of Occurrence in the latest assessment year",
+        style = "color: #555; font-size: 0.9em;"
+      )
+    ),
+    header_row,
+    data_row
+  )
+} else {
+  ft <- flextable::flextable(b1_row)
+  for (st in names(status_palette)) {
+    rows_st <- which(b1_row$Status == st)
+    if (length(rows_st) > 0) {
+      ft <- flextable::bg(ft, j = "Status", i = rows_st, bg = status_palette[[st]])
+    }
+  }
+  ft <- flextable::set_caption(
+    ft,
+    caption = flextable::as_paragraph(
+      flextable::as_b("B1 \u2014 "),
+      "Extent of Occurrence in the latest assessment year"
+    )
+  )
+  flextable::autofit(flextable::theme_booktabs(ft, bold_header = TRUE))
+}
+```
 
 ```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly)}
 map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
-# label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2,2), " km²")
 mcp_list <- params$mcp_poly %||% list()
-
 
 if (length(mcp_list) > 0) {
   mcp_all <- try(vect(mcp_list), silent = TRUE)
@@ -105,49 +268,46 @@ if (length(mcp_list) > 0) {
   if (!inherits(mcp_all, "try-error") && nrow(mcp_all) > 0) {
     if (knitr::is_html_output()) {
       # HTML Leaflet map ------------------------------------------------------
+      # map <- make_fig_b1_leaflet(mcp_all, r_recent, latest_year) 
+
       map <- leaflet() %>% addTiles() %>%
-          fitBounds(unname(ext_r["xmin"]), # ext_r created earlier
+          fitBounds(unname(ext_r["xmin"]),
                     unname(ext_r["ymin"]),
                     unname(ext_r["xmax"]),
                     unname(ext_r["ymax"])) %>%
        addPolygons(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
                    fillOpacity = 0.3, color = "black", weight = 2,
                    group = paste0(latest_year, " MCP"),
-                   label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2, 2), " km²"),
+                   label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2, 2), " km\u00b2"),
                    highlightOptions = highlightOptions(bringToFront = TRUE, color = "white", weight = 3)) %>%
         addRasterImage(r_recent, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
         addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
-        addLayersControl(baseGroups = c("OSM", "ESRI Satellite"), 
-                         overlayGroups = c(paste0(latest_year, " MCP"),paste0(latest_year, " classification")) ,
+        addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
+                         overlayGroups = c(paste0(latest_year, " MCP"),paste0(latest_year, " classification")),
             options = layersControlOptions(collapsed = FALSE))
-      # # return the map
-      # map
-
-      # Wrap the map with title
+      
       htmltools::tagList(
         tags$div(
           style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
         map)
-      
-      
-      # # Add title above map
-      # htmltools::tagList(
-      #   tags$div(
-      #     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-      #     map_title
-      #   ),
-      #   map
-      # )
-
+#     } else {
+#       ggplot() +
+#         geom_sf(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
+#                                     aes(fill = factor(year)), alpha = 0.3) +
+#         theme_minimal() +
+#         ggtitle(map_title) +
+#         theme(legend.position = "bottom")
+#     }
+#   } else {
+#     cat("No valid MCP data available for mapping.\n")
+#   }
+# } else {
+#   cat("No MCP vectors provided, so no B1 map can be generated.\n")
+# }
     } else {
-      #  PDF / Word (static map) ----------------------------------------------
-      ggplot() +
-        geom_sf(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
-                                    aes(fill = factor(year)), alpha = 0.3) +
-        #scale_fill_manual(values = pal_colors) +
-        theme_minimal() +
-        ggtitle(map_title) +
-        theme(legend.position = "bottom")
+      # PDF/Word: full static map from figures1.R (includes the classification
+      # raster, scale bar, and EOO assessment subtitle)
+      make_fig_b1(mcp_list, rasters, params$years)
     }
   } else {
     cat("No valid MCP data available for mapping.\n")

@@ -4,47 +4,43 @@ Elevation across ecosystem
 
 ```{r elevation_text, echo=FALSE, message=FALSE, warning=FALSE}
 if (is.null(params$elevation)) {
-  elev_text <- "Elevation calculation was not requested."
+  elev_text <- ""
 } else {
   elev_q <- global(params$elevation, quantile, probs=c(0.05,.95), na.rm=TRUE)
   
   elev_text <- paste0(
+    # "**Elevation:** ",
     "The elevation of the mapped ecosystem in ", max(params$years),
     " ranged from ", as.numeric(min(values(params$elevation), na.rm=TRUE)),
     "m to ", as.numeric(max(values(params$elevation), na.rm=TRUE)),
     "m, with 95% of the ecosystem elevation between ",
-    elev_q[1], "m and ", elev_q[2], "m. he elevation distribution across the ecosystem is shown in the graph below:"
+    elev_q[1], "m and ", elev_q[2], "m. The elevation distribution across the ecosystem is shown in the graph below:"
   )
 }
 ```
-**Elevation:** `r elev_text`
+`r elev_text`
 
 ```{r elevation, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', fig.height=3, eval = !is.null(params$elevation)}
 elev_values <- as.numeric(values(params$elevation, na.rm = TRUE))  # get numeric vector without NAs
 
 if (knitr::is_html_output()) {
   # --- Interactive Plotly ---
-  e_plot <- plot_ly(x = elev_values, type = "histogram", marker=list(color="#669900")) %>%
-        layout(xaxis = list(title = "Elevation (m)"),
-               yaxis = list(title = "Number of mapped pixels"),
-               bargap = 0.1)
+  e_plot <- plot_ly(x = elev_values, type = "histogram", histnorm = "percent",marker=list(color="#669900"), xbins=list(size=20)) %>% # 20  = 20 meters
+          layout(xaxis = list(title = "Elevation (m)"),
+                 yaxis = list(title = "Percentage of mapped pixels"),
+                 bargap = 0.01)
+  
   e_plot
 
 } else {
-  # --- Static ggplot for PDF/Word ---
-   e_plot <- ggplot(temp_avg, aes(x = month, group=1)) +
-  # smoothed ribbon
-    geom_ribbon(aes(ymin = min_smooth, ymax = max_smooth),
-              fill = "lightblue", alpha = 0.4) +
-
-  # smoothed mean line
-    geom_line(aes(y = mean_smooth), color = "blue", size = 1) +
-    labs(title = "Average Monthly Temperature",
-       x = "Month",
-       y = "Temperature (°C)")+
+e_plot <- ggplot(data.frame(elevation = elev_values), aes(x = elevation)) +
+    geom_histogram(bins = 30, fill = "#669900", color = "white", linewidth = 0.2) +
+    labs(title = "Elevation distribution across the ecosystem",
+         x = "Elevation (m)",
+         y = "Number of mapped pixels") +
     theme_classic() +
-    theme(panel.grid.major.y = element_line(linetype=5, linewidth=0.5, color="grey50"))
+    theme(panel.grid.major.y = element_line(linetype = 5, linewidth = 0.5, color = "grey50"))
 
-   e_plot
+  e_plot
 }
 ```

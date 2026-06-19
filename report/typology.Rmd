@@ -4,11 +4,14 @@ Global Ecosystem Classification
 
 
 ```{r typology_text, echo=FALSE, message=FALSE, warning=FALSE}
+# Empty when typology wasn't requested (single consolidated "not requested"
+# message lives in report_main.Rmd, and the parent suppresses the section
+# header in that case too).
 if (is.null(params$typology)) {
-  get_text <- paste0("Global Ecosystem Typology was not requested")
+  get_text <- ""
 } else {
   get_text <- paste0(
-    "To summarise the [IUCN Global Ecosystem Typology (GET)](https://global-ecosystems.org/) of the ecosystem, the most recent (", max(params$years), ") classification map was overlayed on the global GET maps and the percentage of each ecosystem functional group (EFG) (both major and minor occurrence) intersecting with the ecosystem was calculated.  The summary of EFGs in the mapped ecosystem is presented in the table below with '", params$typology[1,2], "' the most prevalent major EFG. Any EFG with <1% occurrence coverage in the ecosystem is not displayed in this table.")
+    "To summarise the [IUCN Global Ecosystem Typology (GET)](https://global-ecosystems.org/) of the ecosystem, the most recent (", max(params$years), ") classification map was overlayed on the global GET maps and the percentage of each ecosystem functional group (EFG) (both major and minor occurrence) intersecting with the ecosystem were calculated.  A summary of EFGs within the mapped ecosystem is presented in the table below with '", params$typology[1,3], "' the most prevalent major EFG. Any EFG with <1% occurrence coverage in the ecosystem is not displayed in this table.")
 }
 ```
 
@@ -40,14 +43,41 @@ htmltools::tagList(
     # flextable
   set_flextable_defaults(font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent")
   
-  get_tab <- flextable(typology_df) %>%
-    set_caption(caption = as_paragraph(as_b(title_text))) %>%
-    autofit() %>%
-    flextable::theme_booktabs(bold_header = TRUE) %>%
-    # colformat_num(j="Year", big.mark = "") %>%
-    set_table_properties(layout="autofit")
+  # get_tab <- flextable(typology_df) %>%
+  #   set_caption(caption = as_paragraph(as_b(title_text))) %>%
+  #   autofit() %>%
+  #   flextable::theme_booktabs(bold_header = TRUE) %>%
+  #   # colformat_num(j="Year", big.mark = "") %>%
+  #   set_table_properties(layout="autofit")
   
-  get_tab
+  # get_tab <-   flextable(c) |>
+  #   style_pdf_table(
+  #     caption_text  = title_text,
+  #     header_labels = list(
+  #       `Ecosystem Functional Group` = "Ecosystem\nFunctional Group",
+  #       `Major occurrence (%)`       = "Major\noccurrence (%)"
+  #     )
+  #   )
+  # 
+  # get_tab
+  
+# Create flextable with multi-line headers
+get_tab <- flextable(typology_df) |>
+  set_caption(
+      caption = flextable::as_paragraph(flextable::as_b(title_text)),
+      align_with_table = FALSE) |>   # let caption span page width, not just table
+  set_header_labels(
+        `Ecosystem Functional Group` = "Ecosystem\nFunctional\nGroup",
+        `Major occurrence (%)`       = "Major\noccurrence\n(%)",
+        `EFG_CODE` = "EFG\ncode",
+        `Minor occurrence (%)`       = "Minor\noccurrence (%)"
+  ) |>
+  fontsize(size = 9, part = "all") |>
+  align(align = "left", part = "all") |>  # Center header text
+  valign(valign = "center", part = "all")# |> # Vertically center
+  # autofit()  # Adjust column widths
+
+get_tab
   
 }
 ```

@@ -2,16 +2,20 @@
 title: "IUCN Red List of Ecosystem Assessment: `r params$ecosystem_name`"
 output: 
   rmdformats::robobook: default
-  word_document: default          # Word
-  pdf_document: default           # PDF
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    number_sections: false
 always_allow_html: true
 fontsize: 12pt
 mainfont: "Arial"
+geometry: margin=1in
 params:
   ecosystem_name: NA
   author: NA
   organisation: NA
   raster_files: NA
+  rasters_change_files: NA
   years: NA
   areas: NA
   countries: NA
@@ -21,6 +25,11 @@ params:
   typology: NA
   area_change_data: NA
   area_prediction_data: NA
+  a1_result: NA
+  a2a_result: NA
+  a2b_result: NA
+  criterion_a_status: NA
+  criterion_b_status: NA
   mcp_data: NA
   mcp_poly: NA
   b2_data: NA 
@@ -48,22 +57,134 @@ params:
 .status-circle.VU { background:#fee08b; color:black; }
 .status-circle.NT { background:#91bfdb; }
 .status-circle.LC { background:#1a9850; }
+.status-circle.NE { background:#999999; }
 </style>
 
 ```{r setup3, include=FALSE}
 status_circle <- function(x) {
-  sprintf('<span class="status-circle %s">%s</span>', x, x)
+  code <- if (is.null(x) || length(x) == 0 || is.na(x[1]) ||
+              !nzchar(as.character(x[1]))) "NE" else as.character(x[1])
+  if (isTRUE(knitr::is_html_output())) {
+    sprintf('<span class="status-circle %s">%s</span>', code, code)
+  } else {
+    # Word / PDF: HTML spans don't render, so use a plain bracketed code.
+    sprintf("[%s]", code)
+  }
 }
 ```
 
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+# # Packages whose functions are called bare (unqualified) by the Word/PDF
+# # branches of child chunks.  rmarkdown::render() runs in `envir = new.env(
+# # parent = globalenv())`, so child chunks only see what's attached here.
+# # HTML branches qualify everything (htmltools::, leaflet::, DT::), so this
+# # matters specifically for the static-output (PDF/Word) paths.
+# suppressPackageStartupMessages({
+#   library(flextable)
+#   library(ggplot2)
+# })
+# -----------------------------------------------------------------------------
+# Helper: apply consistent styling to every Word/PDF flextable.
+#   ft            — a flextable object
+#   caption_text  — string used as the table caption (bolded, full table width)
+#   header_labels — optional named list to relabel headers; use "\n" to force a
+#                   line break, e.g.  list(`Long Column Name` = "Long Column\nName")
+# Centred columns, autofit to 100% page width, booktabs theme with bold header,
+# compact font/padding so headers don't push the table off the page.
+style_pdf_table <- function(ft,
+                            caption_text  = NULL,
+                            header_labels = NULL) {
+  ft <- flextable::set_table_properties(ft, layout = "autofit", width = 1)
+  ft <- flextable::align(ft, align = "center", part = "all")
+  ft <- flextable::theme_booktabs(ft, bold_header = TRUE)
+  ft <- flextable::fontsize(ft, size = 9, part = "all")
+  ft <- flextable::padding(ft, padding = 4, part = "all")
+  if (!is.null(header_labels)) {
+    ft <- do.call(flextable::set_header_labels,
+                  c(list(x = ft), header_labels))
+  }
+  if (!is.null(caption_text)) {
+    ft <- flextable::set_caption(
+      ft,
+      caption = flextable::as_paragraph(flextable::as_b(caption_text)),
+      align_with_table = FALSE)   # let caption span page width, not just table
+  }
+  ft
+}
 # evaluate some parameters
-rasters <- if (!is.null(params$raster_files)) lapply(params$raster_files, terra::rast) else NULL
+
+# Defensive loader: returns NULL when the param is NULL, NA (the YAML default),
+# an empty vector, or a vector containing only NAs.  Without this, terra::rast()
+# would be called on NA and the report would crash before any chunks rendered.
+.load_rasters <- function(files) {
+  if (is.null(files)) return(NULL)
+  files <- files[!is.na(files)]
+  if (length(files) == 0) return(NULL)
+  lapply(files, terra::rast)
+}
+
+rasters        <- .load_rasters(params$raster_files)
+rasters_change <- .load_rasters(params$rasters_change_files)
 years <- params$years %||% numeric(0)
 n <- length(rasters)
 
 terraOptions(progress = 0)
 
+# ---------------------------------------------------------------------------
+# Which descriptive variables were requested?  Used to (a) build a single
+# consolidated "X, Y and Z were not requested" sentence at the top of the
+# Ecosystem description section, and (b) conditionally show / hide section
+# and tab headers so empty sections don't appear in the report at all.
+# ---------------------------------------------------------------------------
+descriptive_flags <- list(
+  typology    = !is.null(params$typology),
+  countries   = !is.null(params$countries),
+  rainfall    = !is.null(params$rainfall),
+  temperature = !is.null(params$temperature),
+  elevation   = !is.null(params$elevation)
+)
+
+# Human-friendly labels (display order matches report layout)
+descriptive_labels <- c(
+  typology    = "Global Ecosystem Typology",
+  countries   = "Geographic distribution by country",
+  rainfall    = "Rainfall",
+  temperature = "Temperature",
+  elevation   = "Elevation"
+)
+
+missing_labels <- unname(descriptive_labels[
+  names(descriptive_flags)[!unlist(descriptive_flags)]
+])
+
+# Build a single sentence listing missing variables.  Returns "" if none missing.
+not_requested_sentence <- (function(x) {
+  if (length(x) == 0) return("")
+  if (length(x) == 1) {
+    paste0("*", x, " was not requested for this ecosystem.*")
+  } else if (length(x) == 2) {
+    paste0("*", x[1], " and ", x[2], " were not requested for this ecosystem.*")
+  } else {
+    paste0("*The following descriptive variables were not requested for this ",
+           "ecosystem: ", paste(x[-length(x)], collapse = ", "),
+           ", and ", x[length(x)], ".*")
+  }
+})(missing_labels)
+
+# Abiotic tabset helpers --------------------------------------------------
+any_abiotic   <- any(unlist(descriptive_flags[c("rainfall", "temperature", "elevation")]))
+first_abiotic <- if (any_abiotic) {
+  names(which(unlist(descriptive_flags[c("rainfall", "temperature", "elevation")])))[1]
+} else NA_character_
+
+tab_header <- function(name, label) {
+  if (!isTRUE(descriptive_flags[[name]])) return("")
+  if (!is.na(first_abiotic) && first_abiotic == name) {
+    paste0("#### ", label, " {.active}")
+  } else {
+    paste0("#### ", label)
+  }
+}
 ```
 
 Assessed on `r format(Sys.Date(), "%d %B %Y")` `r 
@@ -104,26 +225,55 @@ This report documents an ecosystem assessment following the IUCN Red List of Eco
 ------------------------------------------------------------------------
   
 # **Ecosystem description**
-  
-### Classification
+
+`r not_requested_sentence`
+
+`r if (!is.null(rasters) && length(rasters) > 0) "### Mapped distribution" else ""`
+
+```{r mapped_distribution, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width="100%", eval = !is.null(rasters) && length(rasters) > 0}
+# Always-shown recent + loss map.  Uses the same figure helpers as the app tab
+# (figures.R sourced by the Shiny app at startup, in scope at render time).
+#
+# r_loss is taken from `rasters_change` if available; otherwise NULL, in which
+# case make_fig_loss / make_fig_distribution_leaflet falls back to showing just
+# the most recent raster.
+r_recent <- rasters[[length(rasters)]]
+r_loss   <- if (is.null(rasters_change)) {
+  NULL
+} else if (inherits(rasters_change, "SpatRaster")) {
+  rasters_change
+} else if (is.list(rasters_change) && length(rasters_change) > 0) {
+  rasters_change[[length(rasters_change)]]
+} else {
+  NULL
+}
+
+if (knitr::is_html_output()) {
+  make_fig_distribution_leaflet(r_recent, r_loss, years)
+} else {
+  make_fig_loss(r_recent, r_loss, years)
+}
+```
+
+`r if (descriptive_flags$typology) "### Classification" else ""`
 ```{r child='typology.Rmd'}
 ```
 
-### Distribution
+`r if (descriptive_flags$countries) "### Distribution by country" else ""`
 ```{r child='distribution.Rmd'}
 ```
 
-### Abiotic features {.tabset}
+`r if (any_abiotic) "### Abiotic features {.tabset}" else ""`
 
-#### Rainfall {.active}
+`r tab_header("rainfall", "Rainfall")`
 ```{r child='rainfall.Rmd'}
 ```
 
-#### Temperature
+`r tab_header("temperature", "Temperature")`
 ```{r child='temperature.Rmd'}
 ```
 
-#### Elevation
+`r tab_header("elevation", "Elevation")`
 ```{r child='elevation.Rmd'}
 ```
 
@@ -131,34 +281,21 @@ This report documents an ecosystem assessment following the IUCN Red List of Eco
 
 
 # **Risk Assessment** {.tabset}
-
-<!--
-```{r}
-bslib::value_box(
-  title = "Temperature",
-  value = sprintf("%.1f°C", round(mean(params$rainfall$mean), 1)),
-  showcase = bsicons::bs_icon("thermometer"),
-  theme = "danger"
-)
-```
--->
-
-<!--## Criterion A: Reduction in geographic distribution {.active}
--->
 ```{r setup2, include=FALSE}
-result_a <- "LC"   # this would come from your analysis
+# Worst-case status across A1, A2a, A2b (computed in the Criterion A module).
+# Defaults to NA / "NE" if no assessment was run.
+result_a <- params$criterion_a_status
+result_b <- params$criterion_b_status
 ```
+
 ## `r status_circle(result_a)` Criterion A: Reduction in geographic distribution {.active}
 ```{r child='criterion_a.Rmd'}
 ```
 
-## Criterion B: Restricted geographic distribution
-
-### Subcriterion B1: Restricted extent of occurrence (EOO)
+## `r status_circle(result_b)` Criterion B: Restricted geographic distribution
 ```{r child='b1_eoo.Rmd'}
 ```
 
-### Subcriterion B2: Restricted area of occupancy (AOO)
 ```{r child='b2_aoo.Rmd'}
 ```
 
