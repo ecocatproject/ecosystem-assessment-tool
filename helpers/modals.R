@@ -81,27 +81,12 @@ start_up_modal <- modalDialog(
 # =============================================================================
 years_modal <-  function(rows, ns){
   modalDialog(
-    # title     = tags$div(
-    #   style = "font-size:18px; font-weight:bold; color:#2c3e50;",
-    #   icon("calendar"), " Classification years", #icon("calendar")
-    # ),
-    
-    # Option 1 — file in www/ folder (simplest)
     tags$div(
       style = "font-size:20px; font-weight:500; margin:0 0 0.2rem; text-align:center; padding-bottom:0.25rem; ",
       tags$img(src = "calendar.png", height = "22px", width = "22px"),
       "Classification years"
     ),
     tags$hr(),
-    # 
-    # title = div(
-    #   style = "text-align:center; padding-bottom:0.25rem; ",
-    #   tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
-    #          "Welcome to the EcoCAT RLE Assessment Tool​"),
-    #   tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
-    #          "An interactive tool for RLE ecosystem assessments")
-    # ),
-    
     size      = "m",
     easyClose = FALSE,
     footer    = tagList(
@@ -149,7 +134,7 @@ upload_modal <- modalDialog(
         # tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
         tags$p("The ecosystem map and description will be available after completion"),
         
-        withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
+        withSpinner(uiOutput("dummy_spinner"), type = 5, "#669900"),  # CSS spinner
         tags$hr(),
         # Tip box
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
@@ -165,42 +150,10 @@ upload_modal <- modalDialog(
 # =============================================================================
 # 2c. draw instructions
 # =============================================================================
-# draw_instructions_modal <- modalDialog(
-#   title = tags$div(
-#     style = "font-size:18px; font-weight:bold;",
-#     icon("draw-polygon"), " Refine the analysis area"
-#   ),
-#   tagList(
-#     tags$p("You can restrict the analysis to a specific area using the drawing tools on the map:"),
-#     tags$ol(
-#       style = "font-size:14px; line-height:1.8;",
-#       tags$li(tags$strong("Go to the Description tab")),
-#       tags$li("Select the ", tags$strong("rectangle or polygon tool"),
-#               " from the toolbar in the top-left corner of the map"),
-#       tags$li("Draw around your area of interest"),
-#       tags$li("Return to the sidebar and click ",
-#               tags$strong("'Re-process refined area'"))
-#     ),
-#     tags$hr(),
-#     tags$p(style = "font-size:13px; color:#555;",
-#            icon("info-circle"),
-#            " Use ", tags$strong("'Revert to full extent'"),
-#            " to instantly restore the original results — no reprocessing needed.")
-#   ),
-#   easyClose = FALSE,
-#   footer    = modalButton("Got it")
-# )
-
-# square - f0c8 or square
-# pentagon - e790 or pentagon
-# draw polygon - f5ee or draw-polygon
-# edit  - f044 or pen-to-square
-# delete - f2ed or trash-can
-
 draw_instructions_modal  <- modalDialog(
   title = div(
     style = "text-align:center; padding-bottom:0.25rem; ",
-    tags$p(icon("draw-polygon"), " Refine the assessment area (optional)"),
+    tags$p(icon("draw-polygon"), " Refine assessment area (optional)"),
     tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
            "You can restrict the assessment to a specific area using the drawing tools on the map:")
   ),
@@ -220,7 +173,6 @@ draw_instructions_modal  <- modalDialog(
         body  = list(
           # tagList mixes text and icon() inline
           tagList(
-            # "The ", "\u2B1F", " polygon and/or ",
             "The ", tags$span(style = "font-size:1.3em; line-height:1;", "\u2B1F"), 
             " polygon and/or ",
             tags$i(class = "fas fa-square"), " rectangle tools can be found on the ",
@@ -235,7 +187,7 @@ draw_instructions_modal  <- modalDialog(
           tagList(
             "Return to the sidebar and click '",
             tags$i(class = "fas fa-crop"),
-            tags$strong("Re-process refined area'"),
+            tags$strong("Apply area filter'"),
             " at the bottom of the sidebar. ",
             "To revert to original, click '",
             tags$i(class = "fas fa-rotate-left"),
@@ -257,13 +209,7 @@ draw_instructions_modal  <- modalDialog(
             tags$p(style = "margin:0; font-size:13px; color:#6b7280; line-height:1.5;", body)
           )
         )
-      }),
-      
-      # # Tip box
-      # tags$p(
-      #   style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
-      #   tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
-      # )
+      })
     )
   ),
   easyClose = FALSE,
@@ -286,24 +232,15 @@ a_quick_modal <- modalDialog(
     style = "text-align:center; padding-bottom:0.25rem; ",
     tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
            "Criterion A - quick guide")
-    # tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
-    #        "Quick guide")
     ),
     
-  # tagList(
-  #   tags$p("Criterion A Assessement - reduction in geographic distribution over ANY of the following time periods:"),
-  #   tags$ul(
-  #     tags$li(tags$b("A1 - the past 50 years")),
-  #     tags$li(tags$b("A2a - the next 50 years")),
-  #     tags$li(tags$b("A2b - any 50-year period including the past, present and future"))
-  #   ),
-
     # image of Criterion A criterion taken from the RLE guidelines
     tags$img(
       src = "a_table.png",
       width = "100%",
      style = "margin-top: 15px;margin-bottom: 50px"
     ),
+  
   # link to RLE guidelines
   tags$p(
     tags$b("Source: "),
@@ -384,10 +321,8 @@ b1_modal <- modalDialog(
   tagList(
     div(style = "text-align:center;",
         tags$h4("Please wait... "),
-        # tags$p("This will take approximately 15 seconds per classification map"),
-        # tags$p(tags$b("Criteria A"), "results will be visible on the ",tags$b("'Criteria A'")," tab on completion"),
         tags$p("Computing the minimum convex polygon (MCP) area to measure the ecosystem Extent of Occurrence (EOO)"),
-        withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
+        withSpinner(uiOutput("dummy_spinner"), type = 5, color = "#669900"),  # CSS spinner
         # Tip box
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
                 tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
@@ -406,7 +341,7 @@ b2_modal <- modalDialog(
     div(style = "text-align:center;",
         tags$h4("Please wait... "),
         tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occupancy (AOO)"),
-        withSpinner(uiOutput("dummy_spinner"), type = 5),  # CSS spinner
+        withSpinner(uiOutput("dummy_spinner"), type = 5, color = "#669900"),  # CSS spinner
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
                 tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
         

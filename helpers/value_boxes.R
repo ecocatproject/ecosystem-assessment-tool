@@ -160,7 +160,7 @@ make_value_box <- function(title, reactive_data, status_col, data_col, method_co
       ),
       value  = status_value,
       p(HTML(description_html)),
-      height = 150L,
+      min_height = "150px",
       style  = paste("background-color:", status$color, "; color: black;")
     )
   })
@@ -239,7 +239,7 @@ make_b_value_boxes <- function(title, reactive_data, status_col,
       ),
       value = status_value,
       p(HTML(description_html)),
-      height = 150L,
+      min_height = "150px",
       style = paste("background-color:", status$color, "; color: black;")
     )
   })

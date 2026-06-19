@@ -82,7 +82,7 @@ compute_countries <- function(x, countries) {
     
     # 2. Aggregate raster (speed)
     # eau_agg <- terra::aggregate(x, 2, fun = "min", na.rm = TRUE)
-    eau_agg <- spatSample(x, 100000, method = "regular",
+    eau_agg <- spatSample(x, 1000000, method = "regular",
                       as.raster = TRUE, na.rm = TRUE)
     
     if (is.null(eau_agg) || ncell(eau_agg) == 0) return(data.frame())
