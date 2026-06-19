@@ -21,8 +21,8 @@ classification_module_ui <- function(id) {
         ),
         tags$p(style = "margin:0 0 3px; font-size:13px; color:#6b7280; line-height:1.5;",
                "Upload maps from multiple years to assess changes in ecosystem distribution (Criterion A)."),
-  
-       
+        
+        
         # fileInput(ns("tifs"), "", multiple = TRUE, accept = ".tif")
         uiOutput(ns("tifs_ui"))
       )
@@ -37,7 +37,7 @@ classification_module_ui <- function(id) {
                              )), value = FALSE),
     
     # 4) separator line is better than hr()  - less white space
-    div(style = "border-top: 1px solid #ccc; margin: 10px 0;"),
+    div(style = "border-top: 1px solid #ccc; margin: 0px 0;"), # margin was 10, set as 0 to reduce space
     
     # 5) remaining sidebar sections 
     # uiOutput(ns("part2")),
@@ -46,14 +46,19 @@ classification_module_ui <- function(id) {
     uiOutput(ns("run_description")),
     uiOutput(ns("process_btn_text")),
     uiOutput(ns("process_btn_ui")),
-    uiOutput(ns("refine_revert_ui"))
+    #div(style = "margin:0; padding:0; line-height:0;",
+        uiOutput(ns("subset_guide_ui")),
+    #),
+    div(style = "margin-top:-5px;", # -10 reduces all spacing between revert and above button
+        uiOutput(ns("refine_revert_ui"))
+    )
   )
 }
 
 # -----------------------------------------------------------------------------
 # SERVER
 # -----------------------------------------------------------------------------
-classification_module_server <- function(id, drawn_poly=reactive(NULL), session_tmp = tempdir(), elev_data   = reactive(NULL)) {
+classification_module_server <- function(id, drawn_poly=reactive(NULL), session_tmp = tempdir()) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -96,7 +101,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     data_source <- reactive({
       if (isTRUE(input$example)) {
         "example"
-      } else if (!is.null(input$tifs)) {
+      } else if (!is.null(input$tifs)) { # input[[paste0("tifs_", file_key())]]
         "upload"
       } else {
         NULL
@@ -166,10 +171,15 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       cached_full$rasters_change   <- NULL
       cached_full$areas            <- NULL
       
+      # If tifs() is NULL (user unchecked example with no prior upload),
+      # stop here — nothing left to build year inputs from.
+      if (is.null(tifs())) {
+        stored_years$years <- list()
+        return()
+      }
       
       # Full reset every time tifs() changes — covers example↔upload switching
-      fnames     <- tifs()$name          # NULL-safe: if tifs() is NULL, this errors
-      fnames     <- basename(fnames)     # and the whole observer just stops, which is fine
+      fnames     <- basename(tifs()$name)     # and the whole observer just stops, which is fine
       auto_years <- sapply(fnames, extract_year)
       
       stored_years$years <- setNames(
@@ -185,7 +195,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       )
       
       build_year_inputs()
-    }, ignoreNULL = TRUE)   # ignoreNULL = TRUE so NULL tifs() doesn't trigger reset
+    }, ignoreNULL = FALSE)   # ignoreNULL = TRUE so NULL tifs() doesn't trigger reset
     
     # --------------------------------------------------------------------------
     # Save inputs → store on Confirm, then close
@@ -386,62 +396,62 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       
       # # ---- min/opt/max bound raster: no layer selection needed ---------------
       if (!is_bound_raster()) {
-      #   return(tagList(
-      #     tags$div(
-      #       class = "alert alert-info",
-      #       style = "font-size:13px; padding:8px; margin-bottom:6px;",
-      #       bs_icon("info-circle"), " ",
-      #       tags$strong("Min / Opt / Max layers detected."),
-      #       " All three bounds will be processed automatically — no layer selection required."
-      #     ),
-      #     div(style = "border-top: 1px solid #ccc; margin: 0;")
-      #   ))
-     # return(NULL)
-      # }
-      if (NROW(r_freq()) > 1) {
-        if (nlyr(r_rast()) > 1) {
-          # # Multiple raster layers
-          # years <- sapply(seq_along(tifs()$name),
-          #                 function(i) input[[paste0("year_", i)]])
-          tagList(
-            selectInput(
-              ns("selected_layer"),
-              tags$strong(style = "font-size:14px;"
-                          ,"3) Multiple data layers detected - select the layer/ecosystem required:"),
-              
-              # choices = lyr_names(),
-              choices = c("Select a layer..." = "", lyr_names()),
-              selected = NULL#lyr_names()[1]
-            ),
-            div(style = "border-top: 1px solid #ccc; margin: 0;")) # was hr()
-          
-        } else {
-          # Multiple categories detected
-          vals_chr <- as.character(r_freq()$value)
-          
-          tagList(
-            # 3) Category source choice
-            radioButtons(
-              ns("cat_source"),
-              tags$strong(style = "font-size:14px;","3a) Do you have a file describing the category levels?"),
-              choices = c(
-                "Yes – I have a .aux.xml file" = "xml",
-                "Yes – I have a 2-column .csv file" = "csv",
-                "No – use raster values only"  = "raster"
+        #   return(tagList(
+        #     tags$div(
+        #       class = "alert alert-info",
+        #       style = "font-size:13px; padding:8px; margin-bottom:6px;",
+        #       bs_icon("info-circle"), " ",
+        #       tags$strong("Min / Opt / Max layers detected."),
+        #       " All three bounds will be processed automatically — no layer selection required."
+        #     ),
+        #     div(style = "border-top: 1px solid #ccc; margin: 0;")
+        #   ))
+        # return(NULL)
+        # }
+        if (NROW(r_freq()) > 1) {
+          if (nlyr(r_rast()) > 1) {
+            # # Multiple raster layers
+            # years <- sapply(seq_along(tifs()$name),
+            #                 function(i) input[[paste0("year_", i)]])
+            tagList(
+              selectInput(
+                ns("selected_layer"),
+                tags$strong(style = "font-size:14px;"
+                            ,"3) Multiple data layers detected - select the layer/ecosystem required:"),
+                
+                # choices = lyr_names(),
+                choices = c("Select a layer..." = "", lyr_names()),
+                selected = NULL#lyr_names()[1]
               ),
-              selected = "raster"
-            ),
+              div(style = "border-top: 1px solid #ccc; margin: 0;")) # was hr()
             
-            # 3b) Dynamic UI
-            uiOutput(ns("category_ui")),
+          } else {
+            # Multiple categories detected
+            vals_chr <- as.character(r_freq()$value)
             
-            # add horizontal rule
-            div(style = "border-top: 1px solid #ccc; margin: 0;")
-          )
-          
+            tagList(
+              # 3) Category source choice
+              radioButtons(
+                ns("cat_source"),
+                tags$strong(style = "font-size:14px;","3a) Do you have a file describing the category levels?"),
+                choices = c(
+                  "Yes – I have a .aux.xml file" = "xml",
+                  "Yes – I have a 2-column .csv file" = "csv",
+                  "No – use raster values only"  = "raster"
+                ),
+                selected = "raster"
+              ),
+              
+              # 3b) Dynamic UI
+              uiOutput(ns("category_ui")),
+              
+              # add horizontal rule
+              div(style = "border-top: 1px solid #ccc; margin: 0;")
+            )
+            
+          }
         }
-      }
-      
+        
       }
     })
     
@@ -585,28 +595,12 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       df
     })
     
-    
-    # --------------------------------------------------------------------------
-    # resolved selection
-    # resolved_selection <- eventReactive(process_btn(), {
-    #   # If single-value raster, just return the raster value or first layer
-    #   r <- r_rast()
-    #   if (nlyr(r) == 1 && length(terra::unique(r)[,1]) <= 1) {
-    #     return(as.character(terra::unique(r)[,1]))
-    #   }
-    #   
-    #   # For categorical rasters or XML/CSV categories
-    #   if (!is.null(input$cat_source) && input$cat_source %in% c("csv","xml")) {
-    #     req(input$class)
-    #     return(as.numeric(input$class))
-    #   } else if (!is.null(input$selected_layer)) {
-    #     return(input$selected_layer)
-    #   } else {
-    #     return(names(r)[1]) # fallback
-    #   }
-    # })
-    
-    resolved_selection <- eventReactive(process_btn(), {
+
+    # =============================================================================
+    # RESOLVED SELECITON
+    # =============================================================================
+
+      resolved_selection <- eventReactive(process_btn(), {
       
       r <- r_rast()
       req(r)
@@ -631,8 +625,9 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       return(NULL)
     })
     
-    # --------------------------------------------------------------------------
-    # Dynamic year inputs
+    # =============================================================================
+    # DYNAMIC YEAR INPUT SECTION
+    # =============================================================================
     extract_year <- function(filename) {
       m <- regexpr("(?<!\\d)(19|20)\\d{2}(?!\\d)", filename, perl = TRUE)
       if (m[1] == -1) return(NULL)
@@ -688,7 +683,6 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       # show the modal of editable years - see helpers/modals.R
       showModal(years_modal(rows, ns))
     }
-    
     
     
     # Render a compact summary in the sidebar (refreshes on confirm)
@@ -751,71 +745,59 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       if (isTRUE(input$year_inputs))div(style = "border-top: 1px solid #ccc; margin: 0;")
     })
     
-    # --------------------------------------------------------------------------
+    
+    # =============================================================================
     # checkbox for description calculation
-    output$run_description <- renderUI({
-      req(tifs())
-      tags$span(
-        if (isTRUE(is_bound_raster())) {
-          tagList(tags$strong(style = "font-size:14px;",
-                              "3) Select here for calculation of descriptive variables"))
-        } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
-          tagList(tags$strong(style = "font-size:14px;",
-                              "4) Select here for calculation of descriptive variables"))
-        } else {
-          tagList(tags$strong(style = "font-size:14px;",
-                              "3) Select here for calculation of descriptive variables"))
-        },
-        
-        tooltip(bs_icon("info-circle"),
-                "Uncheck this box to skip calculating descriptive variables (this will speed up processing time).",
-                tagList(
-                  tags$p("The following varibles will be calculated:"),
-                  tags$ul(
-                    tags$li(("Rainfall")), #tags$b
-                    tags$li(("Temperature")),
-                    tags$li(("Elevation")),
-                    tags$li(("Country overlap")),
-                    tags$li(("Global Ecosystem Typology"))
-                  ))),
-        checkboxInput(ns("run_description"),label = NULL, value = TRUE),
-        div(style = "border-top: 1px solid #ccc; margin: 0;")
-      )
-    })
+    # =============================================================================
+        output$run_description <- renderUI({
+          req(tifs())
+
+          # Step number prefix depends on raster type
+          step <- if (isTRUE(is_bound_raster()) || !(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1)) "3" else "4"
+
+            tags$div(
+              style = "margin-top:0; line-height:1.2;",
+              tags$strong(style = "font-size:14px;",
+                          paste0(step, ") Select here for calculation of descriptive variables:")),
+
+            tooltip(bs_icon("info-circle"),
+                    "Uncheck this box to skip calculating descriptive variables (this will speed up processing time).",
+                    tagList(
+                      tags$p("The following varibles will be calculated:"),
+                      tags$ul(
+                        tags$li(("Rainfall")), #tags$b
+                        tags$li(("Temperature")),
+                        tags$li(("Elevation")),
+                        tags$li(("Country overlap")),
+                        tags$li(("Global Ecosystem Typology"))
+                      ))),
+            checkboxInput(ns("run_description"),label = NULL, value = TRUE),
+            div(style = "border-top: 1px solid #ccc; margin: 0;")
+          )
+        })
     
-# =============================================================================
-# condition process button text
-# =============================================================================
-    output$process_btn_text <- renderUI({
-      # only display if there 
-      req(tifs())
-      
-      tags$span(
-        # ifelse(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1,
-        #        tagList(tags$strong(style = "font-size:14px;",  "5) Click the process button below to start the ecosystem assessment: ")),
-        #        tagList(tags$strong(style = "font-size:14px;", "4) Click the process button below to start the ecosystem assessment: "))),
-        if (isTRUE(is_bound_raster())) {
-          tagList(tags$strong(style = "font-size:14px;",
-                              "4) Click the process button below to start the ecosystem assessment:"))
-        } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
-          tagList(tags$strong(style = "font-size:14px;",
-                              "5) Click the process button below to start the ecosystem assessment:"))
-        } else {
-          tagList(tags$strong(style = "font-size:14px;",
-                              "4) Click the process button below to start the ecosystem assessment:"))
-        },
-        
-        
-        tooltip(bs_icon("info-circle"),
-                "The 'Process ecosystem maps' button will only be selectable when 
-                a year for each classifcation map (section 2) has been entered."
+        # =============================================================================
+        # condition process button text
+        # =============================================================================
+        output$process_btn_text <- renderUI({
+          # only display if there
+          req(tifs())
+
+          # Step number prefix depends on raster type
+          step <- if (isTRUE(is_bound_raster()) || !(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1)) "4" else "5"
+
+              tags$span(
+                tags$strong(style = "font-size:14px;",
+                            paste0(step, ") Click the process button below to start the ecosystem assessment:")),
+                tooltip(bs_icon("info-circle"),
+                        "Draw polygon(s) on the map to restrict the analysis to a specific area.")
         )
-      )
-    })
+        })
     
-# =============================================================================
-# condition process button
-# =============================================================================
+    
+    # =============================================================================
+    # conditional process button
+    # =============================================================================
     output$process_btn_ui <- renderUI({
       req(tifs())
       
@@ -844,111 +826,90 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       )
     })
     
-# =============================================================================
-# conditional process subset ui and button
-# =============================================================================
+    # =============================================================================
+    # conditional guide note 
+    # =============================================================================
+    # Guide note: appears after processing, disappears once user starts refining
+    output$subset_guide_ui <- renderUI({
+      req(rasters())
+      if (!is.null(drawn_poly()) || isTRUE(is_subsetted())) return(NULL)
+
+      # # Step number prefix depends on raster type
+      # step <- if (isTRUE(is_bound_raster()) || !(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1)) "5" else "6"
+
+      div(
+        style = "background:#f0f7ff; border-left:3px solid #669900;
+                 padding:8px 10px; border-radius:3px;
+                 font-size:12px; margin-top:2px; line-height:1.5; margin-bottom: -8px;",
+
+        tags$i(class = "fas fa-info-circle", style = "color:#669900; margin-right:4px;"),
+        tags$strong("Maps processed."),
+        paste0(" Optionally refine your ecosystem area by applying area filter after using the map drawing tools."),# (", step,")"),
+        tags$div(
+          style = "display:flex; justify-content:flex-end; margin-top:6px;",
+          actionLink(
+            ns("show_draw_help"),
+            tagList(bs_icon("pencil"), " How to refine"),
+            style = "font-size:12px; text-decoration:none;
+             border:1px solid #669900; border-radius:4px;
+             padding:3px 8px; color:#669900;"
+          )
+        )
+        
+        # tags$i(class = "fas fa-arrow-down", style = "color:#669900;")
+      )
+    })
+
+    
+  
+    
+    # =============================================================================
+    # conditional process subset ui and button
+    # =============================================================================
     output$refine_revert_ui <- renderUI({
       req(tifs())
       if (is.null(rasters())) return(NULL)
-      if (is.null(drawn_poly()) && !isTRUE(is_subsetted())) return(NULL)
-      
+
+      # Step number prefix depends on raster type
+      step <- if (isTRUE(is_bound_raster()) || !(nlyr(r_rast()) > 1 || NROW(r_freq()) > 1)) "5" else "6"
+
       tagList(
-        # div(style = "border-top: 1px solid #ccc; margin: 10px 0;"),
-        # tags$div(
-        #   style = "display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;",
-        #   tags$strong(style = "font-size:14px;", "Refine analysis area"),
-        #   actionLink(ns("show_draw_help"), tagList(bs_icon("info-circle"), " How to draw"),
-        #              style = "font-size:12px;")
-        # ),
-        tags$span(
-          if (isTRUE(is_bound_raster())) {
-            tagList(tags$strong(style = "font-size:14px;",
-                                "5) Refine Area of analysis (optional):"))
-          } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
-            tagList(tags$strong(style = "font-size:14px;",
-                                "6) Refine Area of analysis (optional)"))
-          } else {
-            tagList(tags$strong(style = "font-size:14px;",
-                                "5) Refine Area of analysis (optional)"))
-          },
-    
-          tooltip(bs_icon("info-circle"),
-                  "Optionally subset the ecosytem map to assess an area of interest."
-          )
-            # actionLink(ns("show_draw_help"), tagList(bs_icon("info-circle"), " How to draw"),
-            #            style = "font-size:12px;")
-        ),
-        
-        
-        tags$span(
-          if (isTRUE(is_bound_raster())) {
-            checkboxInput(ns("use_elev_filter"), tagList(tags$strong(style = "font-size:14px;",
-                                                                     "5b) Filter by elevation range (optional)")),
-                          value = FALSE)
-          } else if (nlyr(r_rast()) > 1 || NROW(r_freq()) > 1) {
-            checkboxInput(ns("use_elev_filter"), tagList(tags$strong(style = "font-size:14px;",
-                                                                     "6b) Filter by elevation range (optional)")),
-                          value = FALSE)
-          } else {
-            checkboxInput(ns("use_elev_filter"), tagList(tags$strong(style = "font-size:14px;",
-                                                                     "5b) Filter by elevation range (optional)")),
-                          value = FALSE)
+
+        # ---- Section A: Refine by area ----------------------------------
+        # Only shown once a polygon has been drawn or a subset is active
+        if (!is.null(drawn_poly()) || isTRUE(is_subsetted())) tagList(
+          div(style = "border-top:1px solid #e0e0e0; margin:-6px 0 4px;"), # was 4, reduces teh gap between hr line and the process button(above it)
+          tags$span(
+            tags$strong(style = "font-size:14px;",
+                        paste0(step, ") Refine by area (optional)")),
+            tooltip(bs_icon("info-circle"),
+                    "Draw polygon(s) on the map to restrict the analysis to a specific area.")
+          ),
+          if (!is.null(drawn_poly())) {
+            actionButton(ns("refine_area"), "Apply area filter",
+                         icon = icon("crop"),
+                         style = "width:100%; margin-top:6px;",
+                         class = "btn-warning")
           }
         ),
-        
-        conditionalPanel(
-          condition = paste0("input['", ns("use_elev_filter"), "'] == true"),
-          uiOutput(ns("elev_filter_ui"))
-        ),
-        
-        if (!is.null(drawn_poly())) {
-          actionButton(ns("refine_area"), "Re-process refined area",
-                       icon = icon("crop"), style = "width:100%; margin-top:4px;",
-                       class = "btn-warning")
-        },
-        # tags$p(style = "font-size:11px; color:#c0392b; margin-top:4px;",
-        #        "Revert to full extent before re-uploading new data."),
-        if (isTRUE(is_subsetted())) {
+
+        # ---- Revert -----------------------------------------------------
+        if (isTRUE(is_subsetted())) tagList(
+          #div(style = "border-top:1px solid #e0e0e0; margin:8px 0 6px;"),
           actionButton(ns("revert_area"), "Revert to full extent",
-                       icon = icon("undo"), style = "width:100%; margin-top:4px;",
+                       icon = icon("undo"),
+                       style = "width:100%; margin-top:4px;",
                        class = "btn-outline-secondary")
-        }
+        )
       )
     })
     
-    output$elev_filter_ui <- renderUI({
-      elev <- elev_data()
-      if (is.null(elev) || !inherits(elev, "SpatRaster")) {
-        tags$p(style = "color:#e67e22; font-size:12px; margin:4px 0;",
-               tags$i(class = "fas fa-exclamation-triangle"), " ",
-               "Ensure calculation of descriptive variables checkbox (3)) is selected to enable elevation filtering")
-        
-      } else {
-        rng <- terra::global(elev, c("min", "max"), na.rm = TRUE)
-        mn  <- floor(rng$min / 10) * 10    # round down to nearest 10
-        mx  <- ceiling(rng$max / 10) * 10  # round up to nearest 10
-        sliderInput(ns("elev_range"),
-                    label = "Elevation range (m)",
-                    min   = mn, max = mx,
-                    value = c(mn, mx),   # start with full range selected
-                    step  = 10, ticks=FALSE)
-      }
-    })
     
+    
+    # =============================================================================
+    # PROCESS RASTERS
+    # =============================================================================
 
-    
-    
-    
-    
-    
-    
-    
-    
-    # -----------------------------------------------------------------------------
-    # process rasters 
-    # -----------------------------------------------------------------------------
-    
-    
     # check_resolution <- function(file){
     #   r <- rast(file)
     #   res_m <- res(project(r, "EPSG:3857"))  # metres
@@ -962,7 +923,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     #   
     #   list(ok = TRUE, res = round(min_res, 2))
     # }
-
+    
     # Single trigger — incremented by any of the three buttons
     process_trigger <- reactiveVal(0)
     
@@ -994,18 +955,14 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     })
     
     
-
-# =============================================================================
-# Process uploaded TIFs when the process_button is clicked
-# =============================================================================
+    
+    # =============================================================================
+    # Process uploaded TIFs when the process_button is clicked
+    # =============================================================================
     observeEvent(process_trigger(), {
       req(process_trigger() > 0)   # don't fire on initialisation (value = 0)
       req(tifs())
       files <- tifs()$datapath
-      
-      
-      #print(is_bound_raster())
-      
       
       # check <- check_resolution(tifs()$datapath)
       # if (!check$ok) {
@@ -1023,7 +980,8 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       #   
       #   return(NULL)
       # }
-      # 
+
+       
       # show modal popup
       showModal(upload_modal)
       
@@ -1137,61 +1095,6 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         r_all <- rast(files[i])
         
         # # ---- Crop to subset polygon if one is active ----
-        # if (!is.null(subset_poly())) {
-        #   crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
-        # 
-        # #   # Guard: if extents don't overlap (e.g. new upload in different region)
-        # #   # clear the stale polygon and fall back to full extent silently
-        # #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-        # #     subset_poly(NULL)
-        # #     is_subsetted(FALSE)
-        # #   } else {
-        # #     r_all <- terra::crop(r_all, crop_vect)
-        # #     r_all <- terra::mask(r_all, crop_vect)
-        # #   }
-        # # }
-        # 
-        #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-        #     subset_poly(NULL)
-        #     is_subsetted(FALSE)
-        #   } else {
-        #     r_all <- terra::mask(r_all, crop_vect)   # cells outside any polygon → NA
-        # 
-        #   }
-        # }
-        
-        # if (!is.null(subset_poly())) {
-        #   crop_vect <- subset_poly() |>
-        #     terra::vect() |>
-        #     terra::project(terra::crs(r_all))
-        #   
-        #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-        #     subset_poly(NULL)
-        #     is_subsetted(FALSE)
-        #   } else {
-        #     # Write mask and cropped result to disk immediately
-        #     # — avoids holding full-res raster + mask + result in RAM simultaneously
-        #     tmp_mask   <- tempfile(fileext = ".tif")
-        #     tmp_result <- tempfile(fileext = ".tif")
-        #     
-        #     poly_mask <- terra::rasterize(crop_vect, r_all, field = 1, background = NA)
-        #     terra::writeRaster(poly_mask, tmp_mask, overwrite = TRUE)
-        #     poly_mask <- terra::rast(tmp_mask)          # file-backed — frees RAM
-        #     rm(crop_vect); gc()
-        #     
-        #     terra::writeRaster(
-        #       terra::mask(r_all, poly_mask),
-        #       tmp_result, overwrite = TRUE
-        #     )
-        #     r_all <- terra::trim(terra::rast(tmp_result)) # file-backed
-        #     rm(poly_mask); gc()
-        #   }
-        # }
-        # 
-        
-        # Save original layer names before any subsetting operations
-        original_layer_names <- names(r_all)
-        
         if (!is.null(subset_poly())) {
           # poly      <- subset_poly()
           # crop_vect <- if (inherits(poly, "SpatVector")) poly else terra::vect(poly)
@@ -1200,10 +1103,8 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             # terra::vect() |>
             terra::project(terra::crs(r_all))
           
+          # 1st check extents overlap and fall back to full extent silently
           if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-            message("[subset] resetting — extents don't intersect")
-            message("[subset] r_all crs: ", terra::crs(r_all, proj = TRUE))
-            message("[subset] crop_vect crs: ", terra::crs(crop_vect, proj = TRUE))
             subset_poly(NULL)
             is_subsetted(FALSE)
           } else {
@@ -1223,42 +1124,12 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
               tmp_result, overwrite = TRUE
             )
             r_all <- terra::trim(terra::rast(tmp_result))
-            
-            # Restore layer names — terra doesn't always preserve them through write/read
-            if (terra::nlyr(r_all) == length(original_layer_names)) {
-              names(r_all) <- original_layer_names
-            }
-            
-            
             rm(r_cropped, poly_mask); gc()
           }
         }
-
         
-        observe({
-          elev <- elev_data()
-          req(elev, inherits(elev, "SpatRaster"))
-          rng <- terra::global(elev, c("min", "max"), na.rm = TRUE)
-          updateSliderInput(session, "elev_range",
-                            min   = floor(rng$min),
-                            max   = ceiling(rng$max),
-                            value = c(floor(rng$min), ceiling(rng$max)))
-        })
         
-        if (isTRUE(input$use_elev_filter)) {
-          elev <- elev_data()
-          if (!is.null(elev) && inherits(elev, "SpatRaster")) {
-            if (!terra::same.crs(elev, r_all))
-              elev <- terra::project(elev, terra::crs(r_all), method = "bilinear")
-            elev_matched <- terra::resample(elev, r_all, method = "bilinear")
-            elev_mask <- terra::ifel(
-              elev_matched >= input$elev_range[1] & elev_matched <= input$elev_range[2],
-              1L, NA
-            )
-            r_all <- terra::mask(r_all, elev_mask)
-            rm(elev, elev_matched, elev_mask); gc()
-          }
-        }
+        
         
         # ----------------------------------------------------------------------
         # BRANCH A: min/opt/max bound raster — calculate area for all 3 bounds
@@ -1266,7 +1137,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         if (is_bound_raster_val) {
           
           bound_names <- c("min", "opt", "max")
-          print(r_all)
+          
           for (b in bound_names) {
             r_b <- r_all[[b]]
             
@@ -1323,6 +1194,8 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             area_vals[i] <- expanse(r_orig, unit = "m")[, 2]
           }
           
+          print(area_vals)
+          
           area_df <- data.frame(
             Year     = years[i],
             Area_ha  = area_vals[i] / 10000,
@@ -1332,12 +1205,17 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
           if (is.null(areas())) {
             areas(area_df)
           } else {
+            print("areas 1")
+            print(areas())
             areas(rbind(areas(), area_df))
           }
           
+          print("areas all")
+          print(areas())
+          
         } # end BRANCH B
         
-
+        
         # Only sample the most recent raster (last in sequence)
         # r_orig is either the standard layer (B) or the "opt" layer (A)
         if (i == length(files)) {
@@ -1354,12 +1232,65 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
           
           # Loss map: work entirely on small sampled rasters to avoid memory issues.
           # Loss = cell was present (value == 1) in oldest but absent (NA) in latest.
+          # if (length(files) > 1) {
+          #   r_oldest_raw <- rast(files[1])
+          #   r_oldest_raw <- if (is_bound_raster_val) {
+          #     r_oldest_raw[["opt"]]
+          #   } else {
+          #     select_layer_or_mask(r_oldest_raw, sel_name)
+          #   }
+          #   
+          #   # Sample oldest at same density BEFORE projecting — keeps memory low.
+          #   # na.rm = FALSE retains absence/outside cells so loss areas stay visible.
+          #   r_oldest_samp <- spatSample(r_oldest_raw, 1000000, method = "regular",
+          #                               as.raster = TRUE, na.rm = FALSE)
+          #   r_oldest_samp <- tryCatch({
+          #     project(r_oldest_samp, "EPSG:4326", method = "near")
+          #   }, error = function(e) { crs(r_oldest_samp) <- "EPSG:4326"; r_oldest_samp })
+          #   
+          #   # Snap to r_map's exact grid — all further ops are on small rasters only
+          #   r_oldest_grid <- resample(r_oldest_samp, r_map, method = "near")
+          #   
+          #   # Loss: present in oldest and absent (NA) in latest sample
+          #   r_loss <- ifel(r_oldest_grid == 1 & is.na(r_map), 1L, NA)
+          #   
+          #   # ---- Crop to subset polygon if one is active ----
+          #   if (!is.null(subset_poly())) {
+          #     crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
+          #     
+          #     if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
+          #       subset_poly(NULL)
+          #       is_subsetted(FALSE)
+          #     } else {
+          #       r_loss <- terra::mask(r_loss, crop_vect)   # cells outside any polygon → NA
+          #     }
+          #   }
+          #   
+          #   
+          #   rasters_change(r_loss)
+          #   rm(r_oldest_raw, r_oldest_samp, r_oldest_grid, r_loss)
+          #   gc()
+          # }
           if (length(files) > 1) {
             r_oldest_raw <- rast(files[1])
             r_oldest_raw <- if (is_bound_raster_val) {
               r_oldest_raw[["opt"]]
             } else {
               select_layer_or_mask(r_oldest_raw, sel_name)
+            }
+            
+            # If a subset is active, crop the oldest raster to the polygon BEFORE sampling
+            # so spatSample produces the same effective resolution as r_map.
+            # Without this, the oldest is sampled across its full extent and ends up
+            # blocky after resample() snaps it onto r_map's fine subset grid.
+            if (!is.null(subset_poly())) {
+              poly_native <- terra::project(subset_poly(), terra::crs(r_oldest_raw))
+              if (terra::relate(terra::ext(r_oldest_raw),
+                                terra::ext(poly_native), "intersects")) {
+                r_oldest_raw <- terra::crop(r_oldest_raw, poly_native)
+                r_oldest_raw <- terra::mask(r_oldest_raw, poly_native)
+                r_oldest_raw <- terra::trim(r_oldest_raw)
+              }
             }
             
             # Sample oldest at same density BEFORE projecting — keeps memory low.
@@ -1375,32 +1306,6 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             
             # Loss: present in oldest and absent (NA) in latest sample
             r_loss <- ifel(r_oldest_grid == 1 & is.na(r_map), 1L, NA)
-          
-            # ---- Crop to subset polygon if one is active ----
-            # if (!is.null(subset_poly())) {
-            #   crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
-            #   
-            #   if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-            #     subset_poly(NULL)
-            #     is_subsetted(FALSE)
-            #   } else {
-            #     r_loss <- terra::mask(r_loss, crop_vect)   # cells outside any polygon → NA
-            #   }
-            # }
-            if (!is.null(subset_poly())) {
-              poly <- subset_poly()
-              poly_vect <- if (inherits(poly, "SpatVector")) poly else terra::vect(poly)
-              
-              # Project ONCE for r_loss — separate variable, doesn't clobber r_all's crop_vect
-              crop_vect_4326 <- terra::project(poly_vect, "EPSG:4326")
-              
-              if (terra::relate(terra::ext(r_loss), terra::ext(crop_vect_4326), "intersects")) {
-                poly_mask_4326 <- terra::rasterize(crop_vect_4326, r_loss,
-                                                   field = 1, background = NA)
-                r_loss <- terra::mask(r_loss, poly_mask_4326)
-              }
-            }
-            
             
             rasters_change(r_loss)
             rm(r_oldest_raw, r_oldest_samp, r_oldest_grid, r_loss)
@@ -1441,110 +1346,17 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       if (!isTRUE(input$run_description)) {
         removeModal()    # no descriptive vars — close immediately
         if (is.null(subset_poly())) showModal(draw_instructions_modal) # If run_description TRUE, description module handles removeModal + showModal
-
+        
       }
-
-      # currently this modal is showign too early - hash out for now      
-      # # Show drawing instructions only after a full-extent run
-      # if (is.null(subset_poly())) {
-      #   showModal(draw_instructions_modal)
-      # }
-      
       
     })
     
-    # this works, but just below is attemtp to hold back teh modal creation....
-    # output$refine_revert_ui <- renderUI({
-    #   # req(rasters()) # Only show after initial process has run
-    #   # req(!is.null(drawn_poly()) || isTRUE(is_subsetted()))  # hides when no draw and not subsetted
-    #   
-    #   # Explicit NULL return clears the UI — req() only silently keeps old content
-    #   if (is.null(rasters())) return(NULL)
-    #   if (is.null(drawn_poly()) && !isTRUE(is_subsetted())) return(NULL)
-    # 
-    #   
-    #   tagList(
-    #     div(style = "border-top: 1px solid #ccc; margin: 10px 0;"),
-    #     
-    #     # Refine button — visible when a polygon has been drawn
-    #     if (!is.null(drawn_poly())) {
-    #       tagList(
-    #         tags$span(
-    #           tags$strong(style = "font-size:14px;",
-    #                       if (is_subsetted()) "Re-process refined area" else "Process refined area"),
-    #           tooltip(bs_icon("info-circle"),
-    #                   "Re-run the analysis cropped to the polygon drawn on the map.")
-    #         ),
-    #         actionButton(ns("refine_area"), "Re-process refined area",
-    #                      icon  = icon("crop"),
-    #                      style = "width:100%; margin-top:4px;",
-    #                      class = "btn-warning")
-    #       )
-    #     },
-    #     
-    #     # Revert button — visible only when currently showing a subset
-    #     if (isTRUE(is_subsetted())) {
-    #       tagList(
-    #         tags$span(
-    #           tags$strong(style = "font-size:14px; margin-top:8px; display:block;",
-    #                       "Revert to full extent"),
-    #           tooltip(bs_icon("info-circle"),
-    #                   "Re-run the analysis on the original full-extent rasters.")
-    #         ),
-    #         actionButton(ns("revert_area"), "Revert to full extent",
-    #                      icon  = icon("undo"),
-    #                      style = "width:100%; margin-top:4px;",
-    #                      class = "btn-outline-secondary")
-    #       )
-    #     }
-    #   )
-    # })
-    
-
-    
-    observeEvent(input$show_draw_help, {
+    # this works- attemtp to hold back teh modal creation....
+        observeEvent(input$show_draw_help, {
       showModal(draw_instructions_modal)
     })
     
     
-    # # Refine: apply the drawn polygon and reprocess
-    # observeEvent(input$refine_area, {
-    #   req(drawn_poly())
-    #   subset_poly(drawn_poly())
-    #   is_subsetted(TRUE)
-    #   # Trigger reprocessing via the same process button reactive chain
-    #   # by directly calling the processing logic — see note below
-    #   shinyjs::click(ns("process"))   # or use a shared processing function
-    # })
-    # # 
-    # # # Revert: clear the subset and reprocess on full extent
-    # # observeEvent(input$revert_area, {
-    # #   subset_poly(NULL)
-    # #   is_subsetted(FALSE)
-    # #   shinyjs::click(ns("process"))
-    # # })
-    # 
-    # observeEvent(input$revert_area, {
-    #   req(!is.null(cached_full$rasters))   # cache must exist
-    #   
-    #   subset_poly(NULL)
-    #   is_subsetted(FALSE)
-    #   
-    #   # Restore directly from cache — no reprocessing
-    #   rasters(cached_full$rasters)
-    #   rasters_original(cached_full$rasters_original)
-    #   rasters_change(cached_full$rasters_change)
-    #   areas(cached_full$areas)
-    #   shinyjs::click(ns("process"))
-    #   
-    #   # Do NOT increment process_trigger here
-    # })
-    
-    
-  
-    
-    
-   
     
     # --------------------------------------------------------------------------
     # return data
@@ -1568,3 +1380,5 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     
   })
 }
+
+

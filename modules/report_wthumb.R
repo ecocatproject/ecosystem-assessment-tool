@@ -25,33 +25,35 @@ report_module_ui <- function(id) {
       # -----------------------------------------------------------------------
       # report
       nav_panel(
-        "Report",
+        tags$span("Report", tooltip(bs_icon("info-circle"),
+                                    "Optional - Information provided here is used solely for creating the report and is not retained",
+                                    "It is recommended to include the name of the ecosystem that has been assessed",
+                                    style = "color: #555; font-size: 0.9em;"
+        )),
         card_body(
           fluidRow(
             column(
               width = 6,
               textInput(ns("ecosystem_name"),
-                        tags$span(tags$b("Ecosystem Name:"),tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained"), style = "color: #555;"),
-                        placeholder = "Enter ecosystem name - Optional"),
+                        tags$span(tags$b("Ecosystem Name:"),tooltip(bs_icon("info-circle"), "Name of ecosystem inlcuded in this assessment"), style = "color: #555;"),
+                        placeholder = "Ecosystem name for report - Optional"),
               textInput(ns("organisation"),
-                        tags$span(tags$b("Organisation(s):"),tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained"), style = "color: #555;"),
-                        placeholder = "Enter organisation name(s) - Optional")),
+                        tags$span(tags$b("Organisation(s):"),tooltip(bs_icon("info-circle"), "Optionally include the organisation name(s) in the subtitle"), style = "color: #555;"),
+                        placeholder = "Organisation name(s) for report - Optional")),
             column(
               width = 6,
               textInput(ns("author"),
-                        tags$span(tags$b("Author:"),tooltip(bs_icon("info-circle"), "Optional - Information provided here is used solely for creating the report and is not retained"), style = "color: #555;"),
-                        placeholder = "Enter assessor name - Optional"),
+                        tags$span(tags$b("Author:"),tooltip(bs_icon("info-circle"), "Optionally include the assessor name(s) in the subtitle"), style = "color: #555;"),
+                        placeholder = "Assessor name(s) for report - Optional"),
               selectInput(
                 ns("report_format"),
-                tags$span(tags$b("Choose report format:"),tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures"), style = "color: #555;"),
-                choices = c("HTML" = "html", "Word" = "docx") # "PDF" = "pdf"
+                tags$span(tags$b("Choose report format:"),tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures."),
+                                                                  #PDF format will include static map and figures."),
+                          style = "color: #555;"),
+                choices = c("HTML" = "html", "PDF" = "pdf") # "PDF" = "pdf"
               )),
-              downloadButton(ns("generate_report"), "Generate RLE Assessment Report")#,
-
-            # hr(),
-            # tags$p("Live preview:", style = "font-weight:500; color:#555; margin-bottom:6px;"),
-            # uiOutput(ns("report_preview_ui"))
-            )
+            downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
+          )
         ),
       ),
       # -----------------------------------------------------------------------
@@ -63,27 +65,37 @@ report_module_ui <- function(id) {
           downloadButton(ns("download_file"), "Download data")
         )
       ),
+      # nav_panel(
+      #   "Data",
+      #   card_body(
+      #     tags$p(style = "color:#666; font-size:13px;",
+      #            "Tick datasets to include in the download. Click a name to preview."),
+      #     uiOutput(ns("dataset_chooser")),
+      #     tags$br(),
+      #     downloadButton(ns("download_file"), "Download data")
+      #   )
+      # ),
       # -----------------------------------------------------------------------
       # scripts
       nav_panel(
         tags$span("Script", tooltip(bs_icon("info-circle"),
-                                                 "Download a standalone R script that reproduces your assessment outside the app,",
-                                                 "including all figures and maps.",
-                                                 style = "color: #555; font-size: 0.9em;"
-                                               )),
+                                    "Download a standalone R script that reproduces your assessment outside the app,",
+                                    "including all figures and maps.",
+                                    style = "color: #555; font-size: 0.9em;"
+        )),
         card_body(
           script_export_ui("script_export"),
-         # height=50
+          # height=50
         )
       ),
       # -----------------------------------------------------------------------
       # Thumbnails 
       nav_panel(
         tags$span("Figures", tooltip(bs_icon("info-circle"),
-                                       "Static publication-ready figures generated from your assessment.",
-                                       "Select figures to preview and download as PNG.",
-                                       style = "color: #555; font-size: 0.9em;"
-                                     )),
+                                     "Static publication-ready figures generated from your assessment.",
+                                     "Select figures to preview and download as PNG.",
+                                     style = "color: #555; font-size: 0.9em;"
+        )),
         card_body(
           # tags$p(
           #   "Static publication-ready figures generated from your assessment.",
@@ -95,7 +107,8 @@ report_module_ui <- function(id) {
             column(
               width = 4,
               tags$b("Distribution"),
-              uiOutput(ns("fig_change_preview")),
+              withSpinner(uiOutput(ns("fig_change_preview")),
+                          type = 6, color = "#669900", proxy.height = "160px"),
               tags$br(),
               downloadButton(ns("dl_fig_change"), "Download PNG", disabled = length(years()) <1,
                              style = "width:100%; margin-top: 4px;")
@@ -104,7 +117,8 @@ report_module_ui <- function(id) {
             column(
               width = 4,
               tags$b("Criterion A - Area change trend"),
-              uiOutput(ns("fig_a_preview")),
+              withSpinner(uiOutput(ns("fig_a_preview")),
+                          type = 6, color = "#669900", proxy.height = "160px"),
               tags$br(),
               downloadButton(ns("dl_fig_a"), "Download PNG",
                              style = "width:100%; margin-top: 4px;")
@@ -112,8 +126,9 @@ report_module_ui <- function(id) {
             # Criterion B1 EOO map
             column(
               width = 4,
-              tags$b("Criterion B1 - EOO map"),
-              uiOutput(ns("fig_b1_preview")),
+              tags$b("Subcriterion B1 - EOO map"),
+              withSpinner(uiOutput(ns("fig_b1_preview")),
+                          type = 6, color = "#669900", proxy.height = "160px"),
               tags$br(),
               downloadButton(ns("dl_fig_b1"), "Download PNG",
                              style = "width:100%; margin-top: 4px;")
@@ -121,8 +136,9 @@ report_module_ui <- function(id) {
             # Criterion B2 AOO map
             column(
               width = 4,
-              tags$b("Criterion B2 - AOO map"),
-              uiOutput(ns("fig_b2_preview")),
+              tags$b("Subcriterion B2 - AOO map"),
+              withSpinner(uiOutput(ns("fig_b2_preview")),
+                          type = 6, color = "#669900", proxy.height = "160px"),
               tags$br(),
               downloadButton(ns("dl_fig_b2"), "Download PNG",
                              style = "width:100%; margin-top: 4px;")
@@ -155,6 +171,11 @@ report_module_server <- function(datasets,
                                  typology,
                                  area_change_data,
                                  area_prediction_data,
+                                 a1_result,
+                                 a2a_result,
+                                 a2b_result,
+                                 criterion_a_status,
+                                 criterion_b_status,
                                  mcp_data,
                                  mcp_poly,
                                  b2_data,
@@ -164,80 +185,7 @@ report_module_server <- function(datasets,
 ) {
   moduleServer(id, function(input, output, session) {
     
-  #   # Set up a per-session preview directory once
-  #   preview_dir <- file.path(tempdir(), session$token, "preview")
-  #   dir.create(preview_dir, recursive = TRUE, showWarnings = FALSE)
-  #   shiny::addResourcePath(
-  #     paste0("preview_", session$token), preview_dir
-  #   )
-  #   session$onSessionEnded(function() {
-  #     unlink(preview_dir, recursive = TRUE)
-  #   })
-  #   
-  #   # Debounce metadata text inputs — wait 1.5s after typing stops
-  #   debounced_meta <- shiny::debounce(
-  #     reactive(list(
-  #       ecosystem_name = input$ecosystem_name %||% "",
-  #       organisation   = input$organisation   %||% "",
-  #       author         = input$author         %||% "",
-  #       format         = input$report_format
-  #     )),
-  #     millis = 1500
-  #   )
-  #   
-  #   # Auto-render whenever data or debounced metadata changes
-  #   preview_file <- reactive({
-  #     message("[preview] starting reactive")
-  #     ds <- datasets()
-  #     message("[preview] datasets keys: ", paste(names(ds), collapse = ", "))
-  #     req(ds)
-  #     meta <- debounced_meta()
-  #     message("[preview] proceeding to render")
-  #     
-  #     progress <- shiny::Progress$new()
-  #     progress$set(message = "Updating preview…", value = 0.4)
-  #     on.exit(progress$close())
-  #     
-  #     report_path   <- tempfile(fileext = ".Rmd")
-  #     template_path <- file.path("report", "report_main.Rmd")
-  #     file.copy(template_path, report_path, overwrite = TRUE)
-  #     
-  #     output_file <- file.path(preview_dir, "report.html")
-  #     
-  #     tryCatch({
-  #       rmarkdown::render(
-  #         report_path,
-  #         output_file   = output_file,
-  #         output_format = "html_document",
-  #         params = list(
-  #           ecosystem_name = meta$ecosystem_name,
-  #           organisation   = meta$organisation,
-  #           author         = meta$author
-  #         ),
-  #         envir = list2env(list(datasets = ds)),       # datasets goes hereenvir = new.env(),
-  #         quiet = TRUE
-  #       )
-  #       paste0("preview_", session$token, "/report.html?t=", as.numeric(Sys.time()))
-  #     }, error = function(e) {
-  #       showNotification(paste("Preview failed:", e$message),
-  #                        type = "error", duration = 10)
-  #       NULL
-  #     })
-  #     
-  #     result_url <- paste0("preview_", session$token, "/report.html?t=", as.numeric(Sys.time()))
-  #     message("[preview] returning URL: ", result_url)
-  #     message("[preview] file exists: ", file.exists(output_file))
-  #     result_url
-  #   })
-  #   
-  # output$report_preview_ui <- renderUI({
-  #   message("[preview_ui] preview_file value: ", preview_file() %||% "NULL")
-  #   req(preview_file())
-  #   tags$iframe(
-  #     src   = preview_file(),
-  #     style = "width:100%; height:800px; border:1px solid #ddd; border-radius:4px;"
-  #   )
-  # })
+    
     
     # --------------------------------------------------------------------------
     # conditionally build file name
@@ -249,7 +197,7 @@ report_module_server <- function(datasets,
         } else {
           ""
         }
-        paste0("RLE_Assessment_", name_part, format(Sys.Date(), "%d%m%Y"), ".", ext)
+        paste0("RLE_Assessment_", name_part, format(Sys.Date(), "%d-%b-%y"), ".", ext)
       },
       content = function(file) {
         
@@ -269,7 +217,7 @@ report_module_server <- function(datasets,
               tags$h4("Please wait while your RLE assessment report is being generated."),
               # tags$p("This process usually takes approximately 10 seconds."),
               tags$p(tags$em(paste0("Rendering the ", input$report_format, " report..."))),
-              withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5)
+              withSpinner(uiOutput(session$ns("dummy_spinner")), type = 5, color = "#669900")
             )
           ),
           easyClose = TRUE,
@@ -289,29 +237,45 @@ report_module_server <- function(datasets,
           }
         }
         
+        # Save rasters_change (the loss SpatRaster) so the "Mapped distribution"
+        # section in the report can show the red loss overlay.  NULL when only a
+        # single assessment year was uploaded, in which case the map falls back
+        # to showing just the recent raster.
+        rasters_change_obj   <- rasters_change()
+        rasters_change_paths <- NULL
+        if (!is.null(rasters_change_obj)) {
+          rasters_change_paths <- file.path(tmpdir, "rasters_change.tif")
+          terra::writeRaster(rasters_change_obj, rasters_change_paths, overwrite = TRUE)
+        }
+        
         # Build params list for R Markdown ------------------------------------
         params_list <- list(
-          ecosystem_name = input$ecosystem_name,
-          author = input$author,
-          organisation = input$organisation,
-          # email = input$email,
-          areas = (areas()),
-          years = (years()),
-          raster_files = raster_paths,
-          # roi_vec_file = roi_vec_path,
-          countries = (countries()),
-          rainfall = (rainfall()),
-          temperature = (temperature()),
-          elevation = (elevation()),
-          typology = (typology()),
-          area_change_data = (area_change_data()),
+          ecosystem_name       = input$ecosystem_name,
+          author               = input$author,
+          organisation         = input$organisation,
+          areas                = (areas()),
+          years                = (years()),
+          raster_files         = raster_paths,
+          rasters_change_files = rasters_change_paths,
+          # roi_vec_file        = roi_vec_path,
+          countries            = (countries()),
+          rainfall             = (rainfall()),
+          temperature          = (temperature()),
+          elevation            = (elevation()),
+          typology             = (typology()),
+          area_change_data     = (area_change_data()),
           area_prediction_data = (area_prediction_data()),
-          mcp_data = (mcp_data()),
-          mcp_poly = (mcp_poly()),
-          b2_data = (b2_data()),
-          aoo_sel_ids = (aoo_sel_ids()),
-          aoo_all_ids = (aoo_all_ids()),
-          b2_poly = (b2_poly())
+          a1_result            = (a1_result()),
+          a2a_result           = (a2a_result()),
+          a2b_result           = (a2b_result()),
+          criterion_a_status   = (criterion_a_status()),
+          criterion_b_status   = (criterion_b_status()),
+          mcp_data             = (mcp_data()),
+          mcp_poly             = (mcp_poly()),
+          b2_data              = (b2_data()),
+          aoo_sel_ids          = (aoo_sel_ids()),
+          aoo_all_ids          = (aoo_all_ids()),
+          b2_poly              = (b2_poly())
         )
         
         str(params_list)
@@ -319,7 +283,7 @@ report_module_server <- function(datasets,
         # Choose output format  ----------------------------------------------
         fmt <- switch(input$report_format,
                       html = "html_document",
-                      docx = "word_document")
+                      pdf = "pdf_document")
         
         # --- Render the report ----------------------------------------------
         report_dir <- normalizePath("report")
@@ -399,7 +363,7 @@ report_module_server <- function(datasets,
     # =========================================================================
     # Figure preview thumbnails (PNG inline)
     # =========================================================================
-
+    
     # render a ggplot to a temp PNG and show it, or show a placeholder
     make_preview <- function(fig_reactive, ns_id) {
       output[[ns_id]] <- renderUI({
@@ -438,7 +402,7 @@ report_module_server <- function(datasets,
           name_part <- if (!is.null(input$ecosystem_name) && nzchar(trimws(input$ecosystem_name))) {
             paste0(gsub(" ", "_", trimws(input$ecosystem_name)), "_")
           } else ""
-          paste0(name_part, filename, "_", format(Sys.Date(), "%Y%m%d"), ".png")
+          paste0(name_part, filename, "_", format(Sys.Date(), "%d-%b-%y"), ".png")
         },
         content = function(file) {
           p <- fig_reactive()
@@ -474,7 +438,7 @@ report_module_server <- function(datasets,
     
     output$download_file <- downloadHandler(
       filename = function() {
-        paste0(gsub(" ", "_", input$ecosystem_name),"_datasets", "_",format(Sys.Date(), "%d%m%Y"), ".zip")
+        paste0(gsub(" ", "_", input$ecosystem_name),"_datasets", "_",format(Sys.Date(), "%d-%b-%y"), ".zip")
       },
       content = function(file) {
         # Get selected datasets
@@ -539,5 +503,5 @@ report_module_server <- function(datasets,
     )
     
   })
-
+  
 }

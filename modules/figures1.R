@@ -80,7 +80,7 @@ make_fig_loss <- function(r_map, r_loss = NULL, years) {
       p <- p +
         ggplot2::geom_raster(data = df_loss,
                              ggplot2::aes(x = x, y = y), fill = "#d73027") +
-        ggplot2::labs(
+        ggplot2::labs(x = NULL, y = NULL,
           title    = "Ecosystem distribution and loss",
           subtitle = paste0(min(years), "\u2013", max(years),
                             "  |  Black = present  \u2022  Red = lost")
@@ -548,11 +548,20 @@ make_fig_a_plotly <- function(area_prediction_data,
 # }
 
 make_fig_b1 <- function(mcp_poly_list, rasters_list, years) {
-  eoo_sf      <- sf::st_as_sf(terra::project(mcp_poly_list[[1]], "EPSG:4326"))
+  # Pick the polygon for the latest year, not [[1]] (which would be the oldest
+  # year because mcp_poly_list is constructed in chronological order).
+  latest_year   <- max(years, na.rm = TRUE)
+  latest_yr_str <- as.character(latest_year)
+  latest_mcp <- if (latest_yr_str %in% names(mcp_poly_list)) {
+    mcp_poly_list[[latest_yr_str]]
+  } else {
+    mcp_poly_list[[length(mcp_poly_list)]]
+  }
+  
+  eoo_sf      <- sf::st_as_sf(terra::project(latest_mcp, "EPSG:4326"))
   raster_4326 <- terra::project(rasters_list[[length(rasters_list)]], "EPSG:4326")
   raster_df   <- as.data.frame(raster_4326, xy = TRUE) |> stats::na.omit()
-  latest_year <- max(years, na.rm = TRUE)
-  eoo_area    <- round(as.data.frame(mcp_poly_list[[1]])$area_km2, 1)
+  eoo_area    <- round(as.data.frame(latest_mcp)$area_km2, 1)
   eoo_assessment <- dplyr::case_when(
     eoo_area < 2000  ~ "CR", eoo_area < 20000 ~ "EN",
     eoo_area < 50000 ~ "VU", eoo_area < 55000 ~ "NT", TRUE ~ "LC"
@@ -733,18 +742,45 @@ make_fig_b2 <- function(b2_poly, rasters_list, years) {
 #   r_recent    — most-recent SpatRaster (any CRS; projected internally)
 #   latest_year — integer scalar
 make_fig_b2_leaflet <- function(dat_all, dat_sel, r_recent, latest_year) {
+
+  raster_4326 <- terra::project(r_recent, "EPSG:4326")
+  ext_r       <- as.vector(terra::ext(raster_4326))
+  classification_group <- paste0(latest_year, " classification")
+  
+  # White→black palette with transparent NAs, matching the in-app rendering
+  pal <- leaflet::colorNumeric(
+    palette  = c("white", "black"),
+    domain   = c(0, 1),
+    na.color = "transparent"
+  )
+  
   
   leaflet::leaflet() |>
     leaflet::addTiles() |>
+    leaflet::fitBounds(unname(ext_r["xmin"]), unname(ext_r["ymin"]),
+                       unname(ext_r["xmax"]), unname(ext_r["ymax"])) |>
+    leaflet::addRasterImage(
+      raster_4326,
+      colors  = pal,
+      method  = "ngb",
+      project = FALSE,                 # already projected to 4326 above
+      opacity = 0.7,
+      group   = classification_group
+    ) |>
     make_fig_b2_layers(
-      dat_all = dat_all,
-      dat_sel = dat_sel,
-      r_recent = r_recent,
+      dat_all     = dat_all,
+      dat_sel     = dat_sel,
+      r_recent    = r_recent,
       latest_year = latest_year
     ) |>
+    leaflet::addProviderTiles(
+      leaflet::providers$Esri.WorldImagery,
+      group = "ESRI Satellite") |>
     leaflet::addLayersControl(
-      baseGroups = c("OSM", "ESRI Satellite"),
-      overlayGroups = c("classification", "10x10 km grid", "AOO (>1% occupancy)"),
+      baseGroups    = c("OSM", "ESRI Satellite"),
+      overlayGroups = c(classification_group,
+                        "10x10 km grid",
+                        "AOO (>1% occupancy)"),
       options = leaflet::layersControlOptions(collapsed = FALSE)
     ) |>
     leaflet::addLegend(
@@ -752,7 +788,7 @@ make_fig_b2_leaflet <- function(dat_all, dat_sel, r_recent, latest_year) {
       colors   = c("black", "orange"),
       labels   = c("10x10 km grid", "AOO (>1% occupancy)"),
       opacity  = 0.7,
-      title = "AOO layers"
+      title    = "AOO layers"
     )
 }
 
@@ -785,6 +821,8 @@ make_fig_b2_layers <- function(map, dat_all, dat_sel, r_recent, latest_year) {
       weight = 0.5
     )
 }
+
+
 # # modules/figures.R
 # 
 # # =============================================================================

@@ -180,6 +180,23 @@ compute_aoo_fast <- function(eau) {
   )
 }
 
+
+# ==============================================================================
+# Helper: most severe (worst-case) IUCN RLE status across a vector of codes
+# CR > EN > VU > NT > LC. Unknown / NA values are dropped. Returns NA when
+# nothing valid is supplied.
+# ==============================================================================
+worst_rle_status <- function(...) {
+  vals <- unlist(list(...), use.names = FALSE)
+  vals <- vals[!is.na(vals)]
+  assessment <- c(CR = 1, EN = 2, VU = 3, NT = 4, LC = 5)
+  vals <- vals[vals %in% names(assessment)]
+  if (length(vals) == 0) return(NA_character_)
+  names(which.min(assessment[vals]))
+}
+
+
+
 criterion_b_module_ui <- function(id) {
   ns <- NS(id)
   nav_panel(
@@ -250,6 +267,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
     b2_poly      <- reactiveVal(NULL)
     aoo_sel_ids  <- reactiveVal(NULL)
     aoo_all_ids  <- reactiveVal(NULL)
+    # criterion_b_status <- reactiveVal(NULL)
     
     # reset when new rasters uploaded ------------------------------------------
     observeEvent(rasters(), {
@@ -264,6 +282,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       b2_poly(NULL)
       aoo_sel_ids(NULL)
       aoo_all_ids(NULL)
+      # criterion_b_status(NULL)
       
       # clear map -------------------------------------------------------------
       leafletProxy(ns("map_B")) %>%
@@ -569,6 +588,29 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       })
     })
     
+    
+    # ==============================================================================
+    # Persist assessments so they can be passed to the report.
+    # Overall criterion-A status = worst (most severe) across A1, A2a, A2b
+    # over all method x scenario combinations.
+    # ==============================================================================
+    # criterion_b_status  <- worst_rle_status(mcp_table()$assessment, b2_table()$assessment)
+    
+    criterion_b_status <- reactive({
+      b1 <- mcp_table()
+      b2 <- b2_table()
+      if (is.null(b1) && is.null(b2)) return(NULL)
+      
+      latest_assessment <- function(df) {
+        if (is.null(df) || !is.data.frame(df) || nrow(df) == 0 ||
+            !all(c("year", "assessment") %in% names(df))) return(character())
+        df$assessment[which.max(as.numeric(df$year))]
+      }
+      
+      worst_rle_status(latest_assessment(b1), latest_assessment(b2))
+    })
+    
+    
     # return reactiveVals ----------------------------------------------------
     return(list(
       mcp_table   = mcp_table,
@@ -577,7 +619,9 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       aoo_sel_ids = aoo_sel_ids,
       aoo_all_ids = aoo_all_ids,
       b2_table    = b2_table,
-      b2_poly     = b2_poly
+      b2_poly     = b2_poly,
+      criterion_b_status   = criterion_b_status
+      
     ))
   })
 }
