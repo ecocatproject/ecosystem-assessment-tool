@@ -21,30 +21,30 @@
       "description": {
         "Package": "DBI",
         "Title": "R Database Interface",
-        "Version": "1.2.3",
-        "Date": "2024-06-02",
+        "Version": "1.3.0",
+        "Date": "2026-02-11",
         "Authors@R": "c(\n    person(\"R Special Interest Group on Databases (R-SIG-DB)\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Kirill\", \"Müller\", , \"kirill@cynkra.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-1416-3412\")),\n    person(\"R Consortium\", role = \"fnd\")\n  )",
         "Description": "A database interface definition for communication between R\n    and relational database management systems.  All classes in this\n    package are virtual and need to be extended by the various R/DBMS\n    implementations.",
         "License": "LGPL (>= 2.1)",
         "URL": "https://dbi.r-dbi.org, https://github.com/r-dbi/DBI",
         "BugReports": "https://github.com/r-dbi/DBI/issues",
         "Depends": "methods, R (>= 3.0.0)",
-        "Suggests": "arrow, blob, covr, DBItest, dbplyr, downlit, dplyr, glue,\nhms, knitr, magrittr, nanoarrow (>= 0.3.0.1), RMariaDB,\nrmarkdown, rprojroot, RSQLite (>= 1.1-2), testthat (>= 3.0.0),\nvctrs, xml2",
+        "Suggests": "arrow, blob, callr, covr, DBItest (>= 1.8.2), dbplyr,\ndownlit, dplyr, glue, hms, knitr, magrittr, nanoarrow (>=\n0.3.0.1), otel, otelsdk, RMariaDB, rmarkdown, rprojroot,\nRSQLite (>= 1.1-2), testthat (>= 3.0.0), vctrs, xml2",
         "VignetteBuilder": "knitr",
         "Config/autostyle/scope": "line_breaks",
         "Config/autostyle/strict": "false",
         "Config/Needs/check": "r-dbi/DBItest",
-        "Encoding": "UTF-8",
-        "RoxygenNote": "7.3.1",
         "Config/Needs/website": "r-dbi/DBItest, r-dbi/dbitemplate, adbi,\nAzureKusto, bigrquery, DatabaseConnector, dittodb, duckdb,\nimplyr, lazysf, odbc, pool, RAthena, IMSMWU/RClickhouse, RH2,\nRJDBC, RMariaDB, RMySQL, RPostgres, RPostgreSQL, RPresto,\nRSQLite, sergeant, sparklyr, withr",
         "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3.9000",
         "NeedsCompilation": "no",
-        "Packaged": "2024-06-02 20:26:05 UTC; kirill",
-        "Author": "R Special Interest Group on Databases (R-SIG-DB) [aut],\n  Hadley Wickham [aut],\n  Kirill Müller [aut, cre] (<https://orcid.org/0000-0002-1416-3412>),\n  R Consortium [fnd]",
+        "Packaged": "2026-02-24 17:22:33 UTC; kirill",
+        "Author": "R Special Interest Group on Databases (R-SIG-DB) [aut],\n  Hadley Wickham [aut],\n  Kirill Müller [aut, cre] (ORCID:\n    <https://orcid.org/0000-0002-1416-3412>),\n  R Consortium [fnd]",
         "Maintainer": "Kirill Müller <kirill@cynkra.com>",
         "Repository": "CRAN",
-        "Date/Publication": "2024-06-02 21:50:02 UTC",
-        "Built": "R 4.4.3; ; 2025-08-04 00:21:53 UTC; windows"
+        "Date/Publication": "2026-02-25 06:31:27 UTC",
+        "Built": "R 4.4.3; ; 2026-04-22 00:54:47 UTC; windows"
       }
     },
     "DT": {
@@ -1722,26 +1722,26 @@
       "description": {
         "Package": "httr",
         "Title": "Tools for Working with URLs and HTTP",
-        "Version": "1.4.7",
-        "Authors@R": "c(\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Posit, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Version": "1.4.8",
+        "Authors@R": "c(\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
         "Description": "Useful tools for working with HTTP organised by HTTP verbs\n    (GET(), POST(), etc). Configuration functions make it easy to control\n    additional request components (authenticate(), add_headers() and so\n    on).",
         "License": "MIT + file LICENSE",
         "URL": "https://httr.r-lib.org/, https://github.com/r-lib/httr",
         "BugReports": "https://github.com/r-lib/httr/issues",
-        "Depends": "R (>= 3.5)",
-        "Imports": "curl (>= 5.0.2), jsonlite, mime, openssl (>= 0.8), R6",
+        "Depends": "R (>= 3.6)",
+        "Imports": "curl (>= 5.1.0), jsonlite, mime, openssl (>= 0.8), R6",
         "Suggests": "covr, httpuv, jpeg, knitr, png, readr, rmarkdown, testthat\n(>= 0.8.0), xml2",
         "VignetteBuilder": "knitr",
         "Config/Needs/website": "tidyverse/tidytemplate",
         "Encoding": "UTF-8",
-        "RoxygenNote": "7.2.3",
+        "RoxygenNote": "7.3.3",
         "NeedsCompilation": "no",
-        "Packaged": "2023-08-15 02:56:56 UTC; hadleywickham",
-        "Author": "Hadley Wickham [aut, cre],\n  Posit, PBC [cph, fnd]",
+        "Packaged": "2026-02-13 13:25:45 UTC; hadleywickham",
+        "Author": "Hadley Wickham [aut, cre],\n  Posit Software, PBC [cph, fnd]",
         "Maintainer": "Hadley Wickham <hadley@posit.co>",
         "Repository": "CRAN",
-        "Date/Publication": "2023-08-15 09:00:02 UTC",
-        "Built": "R 4.4.3; ; 2025-09-01 02:12:41 UTC; windows"
+        "Date/Publication": "2026-02-13 16:20:15 UTC",
+        "Built": "R 4.4.3; ; 2026-04-22 02:33:48 UTC; windows"
       }
     },
     "isoband": {
@@ -2193,27 +2193,27 @@
       "description": {
         "Package": "lifecycle",
         "Title": "Manage the Life Cycle of your Package Functions",
-        "Version": "1.0.4",
+        "Version": "1.0.5",
         "Authors@R": "c(\n    person(\"Lionel\", \"Henry\", , \"lionel@posit.co\", role = c(\"aut\", \"cre\")),\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = \"aut\",\n           comment = c(ORCID = \"0000-0003-4757-117X\")),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n  )",
         "Description": "Manage the life cycle of your exported functions with shared\n    conventions, documentation badges, and user-friendly deprecation\n    warnings.",
         "License": "MIT + file LICENSE",
         "URL": "https://lifecycle.r-lib.org/, https://github.com/r-lib/lifecycle",
         "BugReports": "https://github.com/r-lib/lifecycle/issues",
         "Depends": "R (>= 3.6)",
-        "Imports": "cli (>= 3.4.0), glue, rlang (>= 1.1.0)",
-        "Suggests": "covr, crayon, knitr, lintr, rmarkdown, testthat (>= 3.0.1),\ntibble, tidyverse, tools, vctrs, withr",
+        "Imports": "cli (>= 3.4.0), rlang (>= 1.1.0)",
+        "Suggests": "covr, knitr, lintr (>= 3.1.0), rmarkdown, testthat (>=\n3.0.1), tibble, tidyverse, tools, vctrs, withr, xml2",
         "VignetteBuilder": "knitr",
         "Config/Needs/website": "tidyverse/tidytemplate, usethis",
         "Config/testthat/edition": "3",
         "Encoding": "UTF-8",
-        "RoxygenNote": "7.2.1",
+        "RoxygenNote": "7.3.3",
         "NeedsCompilation": "no",
-        "Packaged": "2023-11-06 16:07:36 UTC; lionel",
-        "Author": "Lionel Henry [aut, cre],\n  Hadley Wickham [aut] (<https://orcid.org/0000-0003-4757-117X>),\n  Posit Software, PBC [cph, fnd]",
+        "Packaged": "2026-01-07 15:00:49 UTC; lionel",
+        "Author": "Lionel Henry [aut, cre],\n  Hadley Wickham [aut] (ORCID: <https://orcid.org/0000-0003-4757-117X>),\n  Posit Software, PBC [cph, fnd]",
         "Maintainer": "Lionel Henry <lionel@posit.co>",
         "Repository": "CRAN",
-        "Date/Publication": "2023-11-07 10:10:10 UTC",
-        "Built": "R 4.4.3; ; 2025-08-04 01:04:09 UTC; windows"
+        "Date/Publication": "2026-01-08 08:00:02 UTC",
+        "Built": "R 4.4.3; ; 2026-04-22 01:53:00 UTC; windows"
       }
     },
     "listenv": {
@@ -2448,7 +2448,7 @@
         "Package": "openssl",
         "Type": "Package",
         "Title": "Toolkit for Encryption, Signatures and Certificates Based on\nOpenSSL",
-        "Version": "2.3.3",
+        "Version": "2.4.0",
         "Authors@R": "c(person(\"Jeroen\", \"Ooms\", role = c(\"aut\", \"cre\"), email = \"jeroenooms@gmail.com\",\n    comment = c(ORCID = \"0000-0002-4035-0289\")),\n    person(\"Oliver\", \"Keyes\", role = \"ctb\"))",
         "Description": "Bindings to OpenSSL libssl and libcrypto, plus custom SSH key parsers.\n    Supports RSA, DSA and EC curves P-256, P-384, P-521, and curve25519. Cryptographic\n    signatures can either be created and verified manually or via x509 certificates. \n    AES can be used in cbc, ctr or gcm mode for symmetric encryption; RSA for asymmetric\n    (public key) encryption or EC for Diffie Hellman. High-level envelope functions \n    combine RSA and AES for encrypting arbitrary sized data. Other utilities include key\n    generators, hash functions (md5, sha1, sha256, etc), base64 encoder, a secure random\n    number generator, and 'bignum' math methods for manually performing crypto \n    calculations on large multibyte integers.",
         "License": "MIT + file LICENSE",
@@ -2461,12 +2461,12 @@
         "RoxygenNote": "7.3.2",
         "Encoding": "UTF-8",
         "NeedsCompilation": "yes",
-        "Packaged": "2025-05-26 09:13:50 UTC; jeroen",
+        "Packaged": "2026-04-14 21:27:09 UTC; jeroen",
         "Author": "Jeroen Ooms [aut, cre] (ORCID: <https://orcid.org/0000-0002-4035-0289>),\n  Oliver Keyes [ctb]",
         "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
         "Repository": "CRAN",
-        "Date/Publication": "2025-05-26 13:00:02 UTC",
-        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-09-01 01:51:58 UTC; windows",
+        "Date/Publication": "2026-04-15 06:30:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2026-04-22 02:07:31 UTC; windows",
         "Archs": "x64"
       }
     },
@@ -4482,7 +4482,7 @@
   },
   "files": {
     "app.R": {
-      "checksum": "17d8d1d8959b93379b558e158c0ecbb8"
+      "checksum": "523ffa372207cd501229465456293834"
     },
     "data/data/get_geotiff/F3.2.web.orig_v1.0.tif": {
       "checksum": "12106700175518b8fdf6dd93aa22c4ac"
@@ -5052,37 +5052,37 @@
       "checksum": "1b58b3e2480a90e277dc2bfc75514261"
     },
     "global.R": {
-      "checksum": "26de2159a0edaa2ae4f186c8116911de"
+      "checksum": "ea3738bd3ed52c5fe5b0fdc4830d29a1"
     },
     "helpers/analysis_functions.R": {
-      "checksum": "f4ee2637853fcf33ed46f959100e33e0"
+      "checksum": "7c804deb1fc3fc22da1f9dfbd0d970c0"
     },
     "helpers/country_overlap.R": {
-      "checksum": "3be2297e6195e88e0784d4438cdb0004"
+      "checksum": "745b47fb8f975d51930455946da105c1"
     },
     "helpers/elevation.R": {
-      "checksum": "4246c1e61216149b43b98f2b6e0c030c"
+      "checksum": "cc2b8514f0039829dd7b032bc888357a"
     },
     "helpers/helpers.R": {
       "checksum": "e948300c7154baee0bcfecfe8f2ad9c4"
     },
     "helpers/modals.R": {
-      "checksum": "4381921afb566d7bf0b6de467ccc9bbb"
+      "checksum": "80f43aa947fbc58b90b270922f1a16b8"
     },
     "helpers/precipitation.R": {
-      "checksum": "dbc40d7ee5b48e089aa1a500dfa7ff01"
+      "checksum": "a3ec07bdea46702d638282f921857339"
     },
     "helpers/process_rasters.R": {
       "checksum": "b5bb63dfb4bab8b6cdcdc3d524f0f776"
     },
     "helpers/temperature.R": {
-      "checksum": "d7b1c0ec68294f57a0f44cab2ac13256"
+      "checksum": "6ba2f12833c79c72720c2cb1655d4458"
     },
     "helpers/typology.R": {
-      "checksum": "d3513fc4ddd542b62466e6c4b20ca578"
+      "checksum": "835d844ff518701621b05390859116fc"
     },
     "helpers/value_boxes.R": {
-      "checksum": "f0c71ed1c02e248b4d9478d1eb2865de"
+      "checksum": "ec3fae22b50c2f5421e16b6d3c4df10c"
     },
     "map.html": {
       "checksum": "58984fb5f82bd3a2ec9d2de2dcadb515"
@@ -5112,10 +5112,13 @@
       "checksum": "0d402ceb47504c4405e29d15e05cfd17"
     },
     "modules/classification_upload_working2.R": {
-      "checksum": "ef1e9afdd5d19c38cf12ed64511836b2"
+      "checksum": "86c059bb8754c037ee9df52e635ae044"
+    },
+    "modules/classification_upload_working2_old.R": {
+      "checksum": "52e8b0b3e5e6a21e9cec3f518eb9de3f"
     },
     "modules/criterion_a.R": {
-      "checksum": "dd6aa13279e9d1934fd63b138ee8b0b5"
+      "checksum": "2a804b12173f76a55d78094b109924ce"
     },
     "modules/criterion_a_no_bounds.R": {
       "checksum": "9be62901fc9aff62062d0be1d0364daa"
@@ -5124,7 +5127,7 @@
       "checksum": "9b3305c9a3c1bd8c8ff80d3076e7cf32"
     },
     "modules/criterion_b.R": {
-      "checksum": "5fff5d7d6b71efaaff7b7bd3c0dce836"
+      "checksum": "acb31f1514bfca59fa621191b575d974"
     },
     "modules/data_download.R": {
       "checksum": "6129d6e6847843721405804a9fd8e7a7"
@@ -5133,13 +5136,16 @@
       "checksum": "fd338927e2abf9500191fde98648e4df"
     },
     "modules/description_eu_working2.R": {
-      "checksum": "dc266668dde0d16daeb559ceccc79228"
+      "checksum": "03b76de37e91929dffbb6d045222e919"
+    },
+    "modules/description_eu_working2_old.R": {
+      "checksum": "0ad2929fa1d96fcfbab9513cb65202dd"
     },
     "modules/figures_ggplot.R": {
       "checksum": "84c5cc389edfc626f62e5236c276763c"
     },
     "modules/figures1.R": {
-      "checksum": "d38b21359adc3f380b9c1c123cc87c17"
+      "checksum": "02ed58ac99b8cf53e6a29503124e3714"
     },
     "modules/old_working_modules/classification_upload_working.R": {
       "checksum": "16cb95c1c5b33a42d1f37ca5e750ebe8"
@@ -5160,13 +5166,13 @@
       "checksum": "fe212be113553617799aabf438d2ae09"
     },
     "modules/report_wthumb.R": {
-      "checksum": "ed4a0c4049c77447ddbb73cb0a796d1c"
+      "checksum": "4e36ebf2b3a7c9e379bf4a33a212962a"
     },
     "modules/script_export.R": {
       "checksum": "ce4c806312ed4be30be64f28343ba2da"
     },
     "modules/script_export_no_bounds.R": {
-      "checksum": "bb622acebaf35a81176c2016b52213ea"
+      "checksum": "5d8641891f9c5a72433cc243d0969330"
     },
     "modules/script_export_v1.R": {
       "checksum": "d1d01d81a3573c456bc9b98f20595ae5"
@@ -5181,133 +5187,61 @@
       "checksum": "1776fa3413f8c36c3ad601dc513af743"
     },
     "renv.lock": {
-      "checksum": "097f03c64827a9242cd0ae82aca5b32d"
+      "checksum": "75ded80b4bbf3de4c5fa913849f8a85b"
     },
     "report/b1_eoo.Rmd": {
-      "checksum": "b3c7887f2837c1c2820621f1f7a0c7a2"
+      "checksum": "4fb035505f6f9c06dddced3869d31e32"
     },
     "report/b2_aoo.Rmd": {
-      "checksum": "84b9f744b2cf5ccfa069eef78aa811b9"
+      "checksum": "643d4bfdb5fe7a580d3c687cc12a695a"
     },
     "report/criterion_a.Rmd": {
-      "checksum": "fdb1ceab274be825f6c26fbfd71da063"
+      "checksum": "773f9d6d634d09c13de3ff1ac5e29cb3"
     },
     "report/distribution.Rmd": {
-      "checksum": "472df6fde44913e620a9090f3c8112dd"
+      "checksum": "614ac0703357a8442b2663de6a3ce2ff"
     },
     "report/elevation.Rmd": {
+      "checksum": "30a298a7ab3a351d7e5e042d95416fe9"
+    },
+    "report/old versions/b1_eoo.Rmd": {
+      "checksum": "23c7383472311d0bc947dc86f76aa66a"
+    },
+    "report/old versions/b2_aoo.Rmd": {
+      "checksum": "e7d2874ef0ad29d8447d9054eae0518c"
+    },
+    "report/old versions/distribution.Rmd": {
+      "checksum": "472df6fde44913e620a9090f3c8112dd"
+    },
+    "report/old versions/elevation.Rmd": {
       "checksum": "f6e391b7dcae40ebc1b85c2df7ac9e56"
     },
-    "report/get_classification.Rmd": {
+    "report/old versions/get_classification.Rmd": {
       "checksum": "17cbd9659f4616602c0e9ad09aa3cb9d"
     },
-    "report/rainfall.Rmd": {
+    "report/old versions/rainfall.Rmd": {
       "checksum": "e8715e2887c0fd5611de81e49aaa4721"
     },
-    "report/report_main.Rmd": {
-      "checksum": "e404c87f1539c8550ab543c285d4232a"
+    "report/old versions/report_main.Rmd": {
+      "checksum": "e0e6cc27a6465d9e5dac414b2ffe9006"
     },
-    "report/temperature.Rmd": {
+    "report/old versions/temperature.Rmd": {
       "checksum": "87a23946b556868515e95c91bb0b4f94"
     },
-    "report/typology.Rmd": {
+    "report/old versions/typology.Rmd": {
       "checksum": "8b0043d6d3c4cfecc382d7007bd84c0b"
     },
-    "rosm.cache/osm/7_75_65.png": {
-      "checksum": "49666443627c9eaea6b3e85e8e01c018"
+    "report/rainfall.Rmd": {
+      "checksum": "a633a9c5dba201265bebda7aa80c02e8"
     },
-    "rosm.cache/osm/7_75_66.png": {
-      "checksum": "680f8a9d719675fdcb69b0adb8bb9a4a"
+    "report/report_main.Rmd": {
+      "checksum": "74154e0f14f9d63e2b98cbde845c3c53"
     },
-    "rosm.cache/osm/7_76_65.png": {
-      "checksum": "d22a7244a3a70c845cea53f7ee601024"
+    "report/temperature.Rmd": {
+      "checksum": "8e0c406d738c68995b00861d42a4dc7a"
     },
-    "rosm.cache/osm/7_76_66.png": {
-      "checksum": "bd7f22e29622fbe52103b3b6689cde9f"
-    },
-    "rosm.cache/osm/7_77_65.png": {
-      "checksum": "f9a03288c87587696113b24900868d11"
-    },
-    "rosm.cache/osm/7_77_66.png": {
-      "checksum": "99d46a35b7247712a1d9b04da5b5a2e7"
-    },
-    "rosm.cache/osm/8_151_131.png": {
-      "checksum": "10970331ea8de6f9d7c1a3c150dba24b"
-    },
-    "rosm.cache/osm/8_151_132.png": {
-      "checksum": "7b100f46d31cd4fcb5bde3e8c1d61f06"
-    },
-    "rosm.cache/osm/8_152_131.png": {
-      "checksum": "98e013189e6edbcfc4ef34d0e1556a7f"
-    },
-    "rosm.cache/osm/8_152_132.png": {
-      "checksum": "4b29b4a51b4289d48ea8461b7324495a"
-    },
-    "rosm.cache/osm/8_153_131.png": {
-      "checksum": "8c9da2a41b91710bcd500dccb0ad2cb5"
-    },
-    "rosm.cache/osm/8_153_132.png": {
-      "checksum": "d88ae3133d26c058aea5b72627c01bcf"
-    },
-    "rosm.cache/osm/8_154_131.png": {
-      "checksum": "c7f8bf381f4414a9857a60ee7e5fce93"
-    },
-    "rosm.cache/osm/8_154_132.png": {
-      "checksum": "937abafa7555d656381b12bbd788c21a"
-    },
-    "rosm.cache/osm/9_303_263.png": {
-      "checksum": "dd0fcbb2169107e526c4d63e179ea87d"
-    },
-    "rosm.cache/osm/9_303_264.png": {
-      "checksum": "71e29f3dd16601a0a8ed49d983e73c92"
-    },
-    "rosm.cache/osm/9_303_265.png": {
-      "checksum": "7d1268150fb308ae1453dc7ca522ff21"
-    },
-    "rosm.cache/osm/9_304_263.png": {
-      "checksum": "45ccddd9744f8f444596bc12dd04a2bc"
-    },
-    "rosm.cache/osm/9_304_264.png": {
-      "checksum": "0776dbae9d07340ec2fcf1ecd47acb2e"
-    },
-    "rosm.cache/osm/9_304_265.png": {
-      "checksum": "8bf9377e685e94c012bc15c079507347"
-    },
-    "rosm.cache/osm/9_305_263.png": {
-      "checksum": "b13832ca82e163dbeb0b1f266d5bfa25"
-    },
-    "rosm.cache/osm/9_305_264.png": {
-      "checksum": "9c7f39057eb77670044994f6123d2625"
-    },
-    "rosm.cache/osm/9_305_265.png": {
-      "checksum": "cfb3fb0606cae212e291e11f5f4eda4c"
-    },
-    "rosm.cache/osm/9_306_263.png": {
-      "checksum": "8d71f607f0c2c34834a0814d9ef30567"
-    },
-    "rosm.cache/osm/9_306_264.png": {
-      "checksum": "2397d4f66ee5fb479bf14927a227003f"
-    },
-    "rosm.cache/osm/9_306_265.png": {
-      "checksum": "fff95c5b5c17591e6f175a42344a57ce"
-    },
-    "rosm.cache/osm/9_307_263.png": {
-      "checksum": "f72cafccb3c8913984eb26542a1080b6"
-    },
-    "rosm.cache/osm/9_307_264.png": {
-      "checksum": "fe2c5db0016ce274825708f74508c741"
-    },
-    "rosm.cache/osm/9_307_265.png": {
-      "checksum": "07319dab2b13a538888065c8dba5c281"
-    },
-    "rosm.cache/osm/9_308_263.png": {
-      "checksum": "d351f422d62d70a26b17cb8e640f2a5b"
-    },
-    "rosm.cache/osm/9_308_264.png": {
-      "checksum": "c881a4b5508f551295372e6209cd9f1d"
-    },
-    "rosm.cache/osm/9_308_265.png": {
-      "checksum": "d0c8132c2f467e44b49cbc687511fd9f"
+    "report/typology.Rmd": {
+      "checksum": "2ca94294f1b9fb5e148d6d454ec76339"
     },
     "www/a_table.jpg": {
       "checksum": "79b081332ef5648d133e62edd79b368f"
@@ -5318,8 +5252,26 @@
     "www/calendar.png": {
       "checksum": "4c7e9033546e551003dedba85b3c4f31"
     },
+    "www/cat_bw.png": {
+      "checksum": "6562f0a4644e9e8ea5741966cdbd7490"
+    },
+    "www/cat_bw2.png": {
+      "checksum": "54b416ca7d225624adf00e7d5a88080c"
+    },
+    "www/cat_bw3.png": {
+      "checksum": "5175cf9deeab6b0c4bb1082fb27b4c00"
+    },
+    "www/cat1.png": {
+      "checksum": "5aba03764f8a68c6c6cf9cb69ffd22af"
+    },
+    "www/cat2.jpg": {
+      "checksum": "a9415b82d828d97599053cc59f84f06e"
+    },
+    "www/cat2.png": {
+      "checksum": "384651ff46fd6a0ff19537f57a011455"
+    },
     "www/custom.css": {
-      "checksum": "79cd8037f63488f6d78b427f8b93eac3"
+      "checksum": "5756ad61f68bebc8a2ff60ad47d80ae1"
     },
     "www/documentation/conservation-biology.csl": {
       "checksum": "ba36006e188bdbe9d4b61ab8b88c3473"
@@ -5371,6 +5323,27 @@
     },
     "www/documentation/rle-criteria-b2.png": {
       "checksum": "7b9790f7bc429b1ff10b2b49d2be4034"
+    },
+    "www/documentation/Screenshot 2026-06-04 112644.png": {
+      "checksum": "3343b58f1321854f0c958b3fe1f47f1c"
+    },
+    "www/documentation/Screenshot 2026-06-04 112752.png": {
+      "checksum": "ea98fded9a070f33770bdd64c55aa6b8"
+    },
+    "www/documentation/Screenshot 2026-06-04 113106.png": {
+      "checksum": "ba3198625202357bd9df348ae54d4588"
+    },
+    "www/documentation/Screenshot 2026-06-04 113301.png": {
+      "checksum": "b083de70b99c48465d3da0a7c211db6a"
+    },
+    "www/documentation/Screenshot 2026-06-04 113708.png": {
+      "checksum": "92b7da9d52369bc0058ce14cd94ba849"
+    },
+    "www/documentation/Screenshot 2026-06-04 114137.png": {
+      "checksum": "af8a2c3f634f05db2ace7b5155650821"
+    },
+    "www/documentation/Screenshot 2026-06-04 114350.png": {
+      "checksum": "cb675077c226e621112017ab1cdc21ef"
     },
     "www/documentation/thicket-distribution.png": {
       "checksum": "b4b2466c71dba7594875302e6bad4354"

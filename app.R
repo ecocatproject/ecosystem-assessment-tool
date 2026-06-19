@@ -104,8 +104,7 @@ server <- function(input, output, session) {
   
   # classification upload module -----------------------------------------------
   upload_module <- classification_module_server("upload", drawn_poly = description_module$drawn_poly,
-                                                session_tmp = session_tmp,
-                                                elev_data   = reactive(description_module$elevation()))
+                                                session_tmp = session_tmp)
   
   # Description module --------------------------------------------------------
   description_module <- description_module_server("description",
@@ -113,7 +112,8 @@ server <- function(input, output, session) {
                                                   process_btn = upload_module$process,
                                                   tifs_input = upload_module$tifs,
                                                   year_inputs = upload_module$years,
-                                                  countries = countries)#,
+                                                  countries = countries,
+                                                  session_tmp = session_tmp)#,
                                                   # clear_trigger = upload_module$clear_aoi_trigger)
 # 
 #   # Wire drawn AOI from description module → classification module
@@ -173,24 +173,31 @@ server <- function(input, output, session) {
                        ecosystem_name = input$ecosystem_name,
                        author = input$author,
                        organisation = input$organisation,
-                       #email = input$email,
                        rasters = upload_module$rasters,
                        rasters_change = upload_module$rasters_change,
                        areas = upload_module$areas,
                        years = upload_module$years,
+                       # Description data --------------------------------------
                        countries = description_module$countries,
                        rainfall = description_module$rainfall,
                        temperature = description_module$temperature,
                        elevation = description_module$elevation,
                        typology = description_module$typology,
+                       # criteria A data ---------------------------------------
                        area_change_data = criterion_a_module$area_change_data,
                        area_prediction_data = criterion_a_module$area_prediction_data,
+                       a1_result            = criterion_a_module$a1_result,
+                       a2a_result           = criterion_a_module$a2a_result,
+                       a2b_result           = criterion_a_module$a2b_result,
+                       criterion_a_status   = criterion_a_module$criterion_a_status,
+                       # criteria B data ---------------------------------------
                        mcp_data = criterion_b_module$mcp_table,
                        mcp_poly = criterion_b_module$mcp_poly,
                        b2_data = criterion_b_module$b2_table,
                        aoo_sel_ids = criterion_b_module$aoo_sel_ids,
                        aoo_all_ids = criterion_b_module$aoo_all_ids,
-                       b2_poly = criterion_b_module$b2_poly
+                       b2_poly = criterion_b_module$b2_poly,
+                       criterion_b_status   = criterion_b_module$criterion_b_status
   )
   
   # script_export  --------------------------------------------------------

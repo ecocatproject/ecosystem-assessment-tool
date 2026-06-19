@@ -1,17 +1,18 @@
 # global.R
 # 
 # renv::snapshot(exclude=c("climateR", "RNetCDF", "rnz", "ncmeta")) # creates lockfile
-# # renv::snapshot(exclude = "rosm") # creates lockfile
-# # renv::dependencies()
-# # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
+# # # renv::snapshot(exclude = "rosm") # creates lockfile
+# # # renv::dependencies()
+# # # renv::restore() # this would restores after cloning - useful to provide in .Rprofile and .Rproj? - https://www.casualinf.com/post/2024-12-27-sharing-shiny-app-without-hosting/
 # rsconnect::writeManifest() #captures dependencies from lockfile
 # manifest <- jsonlite::fromJSON("manifest.json")
-# # orig.manifest <- jsonlite::fromJSON("C:/Users/rcr11kg/Downloads/manifest.json")
-# # names(orig.manifest$packages)
+# # # orig.manifest <- jsonlite::fromJSON("C:/Users/rcr11kg/Downloads/manifest.json")
+# # # names(orig.manifest$packages)
 # names(manifest$packages)
-# # renv::install("DT")
-# # remove.packages("tidyterra")
-
+# renv::install("DT")
+# remove.packages("tidyterra")
+suppressPackageStartupMessages({
+  
 library(shiny)
 library(shinythemes)
 library(data.table)
@@ -47,13 +48,14 @@ library(promises)
 library(future)
 library(rstac)
 # library(rmdformats)
-# library(flextable)
+library(flextable)
 # library(mapview)
 library(xml2)
 library(stars)
 library(quarto)
 library(ggspatial)
-
+library(tinytex)
+})
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
