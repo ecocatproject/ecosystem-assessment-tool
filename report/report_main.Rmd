@@ -16,8 +16,7 @@ header-includes:
   - \usepackage{caption}
   - \captionsetup{width=\textwidth, justification=centering, font=small}
   - \usepackage[normalem]{ulem}
-  - \let\OLDhref\href
-  - \renewcommand{\href}[2]{\OLDhref{#1}{\textcolor{blue}{\uline{#2}}}}
+  - \AtBeginDocument{\let\OLDhref\href \renewcommand{\href}[2]{\OLDhref{##1}{\textcolor{blue}{\uline{##2}}}}}
 params:
   ecosystem_name: NA
   author: NA
