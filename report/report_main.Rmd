@@ -8,10 +8,17 @@ output:
     number_sections: false
 always_allow_html: true
 fontsize: 12pt
-#mainfont: "TeX Gyre Heros"
 geometry: margin=1in
 urlcolor: blue
 linkcolor: blue
+header-includes:
+  - \usepackage{lmodern}
+  - \renewcommand{\familydefault}{\sfdefault}
+  - \usepackage{caption}
+  - \captionsetup{width=\textwidth, justification=centering, font=small}
+  - \usepackage[normalem]{ulem}
+  - \let\OLDhref\href
+  - \renewcommand{\href}[2]{\OLDhref{#1}{\textcolor{blue}{\uline{#2}}}}
 params:
   ecosystem_name: NA
   author: NA
