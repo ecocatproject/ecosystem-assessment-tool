@@ -1316,8 +1316,14 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         
         
         # Clean up temporary files periodically on long runs
+        # if ((i %% 3) == 0) {
+        #   try(terra::tmpFiles(remove = TRUE), silent = TRUE)
+        #   gc()
+        # }
         if ((i %% 3) == 0) {
-          try(terra::tmpFiles(remove = TRUE), silent = TRUE)
+          # Only remove THIS session's terra temp files, not the whole process's
+          tf <- terra::tmpFiles(current = TRUE, remove = FALSE)
+          unlink(tf[startsWith(tf, session_tmp)])
           gc()
         }
         

@@ -502,7 +502,7 @@ description_module_server <- function(id, upload_module, countries,
       req(isTRUE(upload_module$run_description()))   # guard — only runs if checked
       
       begin_desc_task()
-      
+      tryCatch({
       # reset all reactive values to NULL first
       rv$countries    <- NULL
       rv$rainfall     <- NULL
@@ -527,12 +527,16 @@ description_module_server <- function(id, upload_module, countries,
       latest <- upload_module$rasters_original()#[[length(years)]]
       
       # 1. country overlap
-      progress$inc(2/6, detail = "countries") # update progress
-      rv$countries <- compute_countries(latest, countries)
+      progress$inc(2/6, detail = "countries")
+      rv$countries <- tryCatch(compute_countries(latest, countries), error = function(e) {
+        message("[desc] countries failed: ", conditionMessage(e)); NULL
+      })
       
       # 2. temperature
-      progress$inc(3/6,detail = "monthly temperature") # update progress
-      rv$temperature <- compute_temperature(latest)
+      progress$inc(3/6, detail = "monthly temperature")
+      rv$temperature <- tryCatch(compute_temperature(latest), error = function(e) {
+        message("[desc] temperature failed: ", conditionMessage(e)); NULL
+      })
       #      rv$temperature <- tryCatch(compute_temperature(...), error = function(e) NULL)
       # if (!is.null(rv$temperature)) {
       #   # update temperature display
@@ -542,15 +546,21 @@ description_module_server <- function(id, upload_module, countries,
       
       # 3. elevation
       progress$inc(4/6, detail = "elevation")
-      rv$elevation <- compute_elevation(latest, cache_path = elev_cache)
+      rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache), error = function(e) {
+        message("[desc] elevation failed: ", conditionMessage(e)); NULL
+      })
       
       # 4. global ecosystem typology (get)
       progress$inc(5/6, detail = "global ecosystem typology")
-      rv$typology <- compute_typology(latest, efg_lookup)
+      rv$typology <- tryCatch(compute_typology(latest, efg_lookup), error = function(e) {
+        message("[desc] typology failed: ", conditionMessage(e)); NULL
+      })
       
       # 5. precipitation
-      progress$inc(6/6, detail = "monthly rainfall") # update progress
-      rv$rainfall <- compute_precipitation(latest)
+      progress$inc(6/6, detail = "monthly rainfall")
+      rv$rainfall <- tryCatch(compute_precipitation(latest), error = function(e) {
+        message("[desc] rainfall failed: ", conditionMessage(e)); NULL
+      })
       
       # # hide modal once done
       progress$close()
@@ -565,12 +575,13 @@ description_module_server <- function(id, upload_module, countries,
         desc_cache$typology    <- rv$typology
         desc_cache$elevation   <- rv$elevation
       }
-      
-      
-      end_desc_task()   # closes modal only when ALL tasks finish
-      # hide modal once done
-      
-    })
+    }, error = function(e) {
+      message("[desc] unexpected top-level error: ", conditionMessage(e))
+      if (exists("progress")) try(progress$close(), silent = TRUE)
+    }, finally = {
+      end_desc_task()    # ALWAYS runs now, no if any above fails
+    }) # close trycatch
+    }) # close observeevent
     
     # ========================================================================
     # Restore descriptive variables on revert
