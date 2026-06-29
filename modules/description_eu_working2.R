@@ -503,8 +503,11 @@ description_module_server <- function(id, upload_module, countries,
               deparse(isTRUE(upload_module$run_description())),
               "; rasters_original null? ", is.null(upload_module$rasters_original()))
       req(isTRUE(upload_module$run_description()))   # guard — only runs if checked
+      # req(upload_module$run_description())
+      req(upload_module$rasters_original()) # see app.R server for tifs_inputs
       
       begin_desc_task()
+      
       tryCatch({
       # reset all reactive values to NULL first
       rv$countries    <- NULL
@@ -513,8 +516,7 @@ description_module_server <- function(id, upload_module, countries,
       rv$elevation    <- NULL
       rv$typology     <- NULL
       
-      req(upload_module$run_description())
-      req(upload_module$rasters_original()) # see app.R server for tifs_inputs
+
       years <- year_inputs()                # see app.R server for year_inputs
       
       # Add drawn_poly store near other reactiveVals in the server
@@ -529,41 +531,65 @@ description_module_server <- function(id, upload_module, countries,
       
       latest <- upload_module$rasters_original()#[[length(years)]]
       
-      # 1. country overlap
-      progress$inc(2/6, detail = "countries")
-      rv$countries <- tryCatch(compute_countries(latest, countries), error = function(e) {
-        message("[desc] countries failed: ", conditionMessage(e)); NULL
-      })
+      # # 1. country overlap
+      # progress$inc(2/6, detail = "countries")
+      # rv$countries <- tryCatch(compute_countries(latest, countries), error = function(e) {
+      #   message("[desc] countries failed: ", conditionMessage(e)); NULL
+      # })
+      # 
+      # # 2. temperature
+      # progress$inc(3/6, detail = "monthly temperature")
+      # rv$temperature <- tryCatch(compute_temperature(latest), error = function(e) {
+      #   message("[desc] temperature failed: ", conditionMessage(e)); NULL
+      # })
+      # #      rv$temperature <- tryCatch(compute_temperature(...), error = function(e) NULL)
+      # # if (!is.null(rv$temperature)) {
+      # #   # update temperature display
+      # # } else {
+      # #   # show "no data for this area" message
+      # # }
+      # 
+      # # 3. elevation
+      # progress$inc(4/6, detail = "elevation")
+      # rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache), error = function(e) {
+      #   message("[desc] elevation failed: ", conditionMessage(e)); NULL
+      # })
+      # 
+      # # 4. global ecosystem typology (get)
+      # progress$inc(5/6, detail = "global ecosystem typology")
+      # rv$typology <- tryCatch(compute_typology(latest, efg_lookup), error = function(e) {
+      #   message("[desc] typology failed: ", conditionMessage(e)); NULL
+      # })
+      # 
+      # # 5. precipitation
+      # progress$inc(6/6, detail = "monthly rainfall")
+      # rv$rainfall <- tryCatch(compute_precipitation(latest), error = function(e) {
+      #   message("[desc] rainfall failed: ", conditionMessage(e)); NULL
+      # })
+      message("[desc] >>> countries START")
+      rv$countries <- tryCatch(compute_countries(latest, countries),
+                               error = function(e) { message("[desc] countries ERR: ", conditionMessage(e)); NULL })
+      message("[desc] <<< countries DONE (null? ", is.null(rv$countries), ")")
       
-      # 2. temperature
-      progress$inc(3/6, detail = "monthly temperature")
-      rv$temperature <- tryCatch(compute_temperature(latest), error = function(e) {
-        message("[desc] temperature failed: ", conditionMessage(e)); NULL
-      })
-      #      rv$temperature <- tryCatch(compute_temperature(...), error = function(e) NULL)
-      # if (!is.null(rv$temperature)) {
-      #   # update temperature display
-      # } else {
-      #   # show "no data for this area" message
-      # }
+      message("[desc] >>> temperature START")
+      rv$temperature <- tryCatch(compute_temperature(latest),
+                                 error = function(e) { message("[desc] temperature ERR: ", conditionMessage(e)); NULL })
+      message("[desc] <<< temperature DONE (null? ", is.null(rv$temperature), ")")
       
-      # 3. elevation
-      progress$inc(4/6, detail = "elevation")
-      rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache), error = function(e) {
-        message("[desc] elevation failed: ", conditionMessage(e)); NULL
-      })
+      message("[desc] >>> elevation START")
+      rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
+                               error = function(e) { message("[desc] elevation ERR: ", conditionMessage(e)); NULL })
+      message("[desc] <<< elevation DONE (null? ", is.null(rv$elevation), ")")
       
-      # 4. global ecosystem typology (get)
-      progress$inc(5/6, detail = "global ecosystem typology")
-      rv$typology <- tryCatch(compute_typology(latest, efg_lookup), error = function(e) {
-        message("[desc] typology failed: ", conditionMessage(e)); NULL
-      })
+      message("[desc] >>> typology START")
+      rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
+                              error = function(e) { message("[desc] typology ERR: ", conditionMessage(e)); NULL })
+      message("[desc] <<< typology DONE (null? ", is.null(rv$typology), ")")
       
-      # 5. precipitation
-      progress$inc(6/6, detail = "monthly rainfall")
-      rv$rainfall <- tryCatch(compute_precipitation(latest), error = function(e) {
-        message("[desc] rainfall failed: ", conditionMessage(e)); NULL
-      })
+      message("[desc] >>> rainfall START")
+      rv$rainfall <- tryCatch(compute_precipitation(latest),
+                              error = function(e) { message("[desc] rainfall ERR: ", conditionMessage(e)); NULL })
+      message("[desc] <<< rainfall DONE (null? ", is.null(rv$rainfall), ")")
       
       # # hide modal once done
       progress$close()
