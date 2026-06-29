@@ -1380,7 +1380,11 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       tifs             = tifs,
       example          = reactive(input$example),
       is_bound_raster  = is_bound_raster,              # NEW: lets criterion_a branch on data type
-      run_description = reactive({input$run_description})
+      # run_description = reactive({input$run_description})
+      run_description = reactive({
+        v <- input$run_description
+        if (is.null(v)) TRUE else isTRUE(v)   # default TRUE until the dynamic input registers
+      })
     ))
     
     
