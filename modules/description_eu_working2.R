@@ -499,6 +499,9 @@ description_module_server <- function(id, upload_module, countries,
     # ========================================================================
     # Process uploaded TIFs when the process_button is clicked
     observeEvent(process_btn(), {
+      message("[desc] observer fired; run_description = ",
+              deparse(isTRUE(upload_module$run_description())),
+              "; rasters_original null? ", is.null(upload_module$rasters_original()))
       req(isTRUE(upload_module$run_description()))   # guard — only runs if checked
       
       begin_desc_task()
