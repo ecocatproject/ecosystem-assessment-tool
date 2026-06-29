@@ -72,7 +72,7 @@ start_up_modal <- modalDialog(
               )
     )
   ),
-  easyClose = FALSE,
+  easyClose = TRUE,
   footer = modalButton("Start")
 )
 
