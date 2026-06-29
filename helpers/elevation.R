@@ -5,24 +5,81 @@
 # saves the full-extent raster to cache_path, returns the masked elevation.
 # On later calls (cache_path exists): loads the cached full-extent raster and
 # masks it to the current ecosystem (e.g. a spatial subset) — no re-download.
+# compute_elevation <- function(eau, cache_path = NULL) {
+#   
+#   if (!is.null(cache_path) && file.exists(cache_path)) {
+#     # ---- Use cached full-extent elevation, mask to current eau --------------
+#     elev_roi <- terra::rast(cache_path)
+#     eau2     <- terra::resample(eau, elev_roi, method = "average")
+#     elev_map <- terra::mask(elev_roi, eau2)
+#     elev_map <- terra::trim(elev_map)   # shrink extent to the subset area
+#     return(elev_map)
+#   }
+#   
+#   # ---- No cache: download full extent -------------------------------------
+#   eau.ext <- terra::as.polygons(terra::ext(eau))
+#   terra::crs(eau.ext) <- terra::crs(eau)
+#   eau.ext.sf <- sf::st_as_sf(eau.ext)
+#   elev_roi   <- terra::rast(elevatr::get_elev_raster(locations = eau.ext.sf, z = 10))
+#   
+#   # Save the full-extent (unmasked) elevation to cache for reuse on subset
+#   if (!is.null(cache_path)) {
+#     terra::writeRaster(elev_roi, cache_path, overwrite = TRUE)
+#   }
+#   
+#   eau2     <- terra::resample(eau, elev_roi, method = "average")
+#   elev_map <- terra::mask(elev_roi, eau2)
+#   return(elev_map)
+# }
+
 compute_elevation <- function(eau, cache_path = NULL) {
   
   if (!is.null(cache_path) && file.exists(cache_path)) {
-    # ---- Use cached full-extent elevation, mask to current eau --------------
     elev_roi <- terra::rast(cache_path)
     eau2     <- terra::resample(eau, elev_roi, method = "average")
     elev_map <- terra::mask(elev_roi, eau2)
-    elev_map <- terra::trim(elev_map)   # shrink extent to the subset area
+    elev_map <- terra::trim(elev_map)
     return(elev_map)
   }
   
-  # ---- No cache: download full extent -------------------------------------
   eau.ext <- terra::as.polygons(terra::ext(eau))
   terra::crs(eau.ext) <- terra::crs(eau)
   eau.ext.sf <- sf::st_as_sf(eau.ext)
-  elev_roi   <- terra::rast(elevatr::get_elev_raster(locations = eau.ext.sf, z = 10))
   
-  # Save the full-extent (unmasked) elevation to cache for reuse on subset
+  # Bound the network call so a slow/blocked AWS fetch can't hang the session.
+  old_timeout <- getOption("timeout")
+  on.exit(options(timeout = old_timeout), add = TRUE)
+  options(timeout = 60)   # seconds for download.file-based fetches
+  
+  elev_raw <- NULL
+  for (attempt in 1:2) {
+    elev_raw <- tryCatch(
+      withCallingHandlers(
+        {
+          setTimeLimit(elapsed = 90, transient = TRUE)  # hard ceiling on the whole fetch
+          on.exit(setTimeLimit(), add = TRUE)
+          elevatr::get_elev_raster(locations = eau.ext.sf, z = 10)
+        },
+        warning = function(w) {
+          message("[elevation] warning on attempt ", attempt, ": ", conditionMessage(w))
+          invokeRestart("muffleWarning")
+        }
+      ),
+      error = function(e) {
+        message("[elevation] download failed on attempt ", attempt, ": ", conditionMessage(e))
+        NULL
+      }
+    )
+    if (!is.null(elev_raw)) break
+  }
+  
+  if (is.null(elev_raw)) {
+    message("[elevation] giving up after retries — returning NULL")
+    return(NULL)   # description observer handles NULL gracefully (blank plot)
+  }
+  
+  elev_roi <- terra::rast(elev_raw)
+  
   if (!is.null(cache_path)) {
     terra::writeRaster(elev_roi, cache_path, overwrite = TRUE)
   }
