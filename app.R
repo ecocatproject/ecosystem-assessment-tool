@@ -95,6 +95,7 @@ server <- function(input, output, session) {
   # Session-scoped temp directory — isolated per user, cleaned up on exit
   session_tmp <- file.path(tempdir(), session$token)
   dir.create(session_tmp, showWarnings = FALSE)
+  terra::terraOptions(tempdir = session_tmp)   # once, here
   session$onSessionEnded(function() {
     unlink(session_tmp, recursive = TRUE)
   })
