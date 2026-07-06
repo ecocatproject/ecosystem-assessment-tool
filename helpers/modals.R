@@ -143,7 +143,7 @@ upload_modal <- modalDialog(
         
     )
   ),
-  easyClose = TRUE,
+  easyClose = FALSE,
   footer = NULL
 )
 
