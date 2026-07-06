@@ -451,25 +451,34 @@ description_module_server <- function(id, upload_module, countries,
       }
     })
     
-    ## section for removing modal after descriptive vars compelte
-    desc_tasks_remaining <- reactiveVal(0)
-    
-    # Call this at the START of each descriptive observer
-    begin_desc_task <- function() desc_tasks_remaining(desc_tasks_remaining() + 1)
-    
-    # Call this at the END of each descriptive observer  
+    # ## section for removing modal after descriptive vars compelte
+    # desc_tasks_remaining <- reactiveVal(0)
+    # 
+    # # Call this at the START of each descriptive observer
+    # begin_desc_task <- function() desc_tasks_remaining(desc_tasks_remaining() + 1)
+    # 
+    # # Call this at the END of each descriptive observer  
+    # # end_desc_task <- function() {
+    # #   desc_tasks_remaining(max(0, desc_tasks_remaining() - 1))
+    # #   if (desc_tasks_remaining() == 0) removeModal()
+    # # }
     # end_desc_task <- function() {
     #   desc_tasks_remaining(max(0, desc_tasks_remaining() - 1))
-    #   if (desc_tasks_remaining() == 0) removeModal()
+    #   if (desc_tasks_remaining() == 0) {
+    #     removeModal()
+    #     # Only show on a full-extent run, not on refine reprocess
+    #     if (!isTRUE(upload_module$is_subsetted())) {
+    #       showModal(draw_instructions_modal)
+    #     }
+    #   }
     # }
+    
+    # No counter needed — one synchronous compute pass.
     end_desc_task <- function() {
-      desc_tasks_remaining(max(0, desc_tasks_remaining() - 1))
-      if (desc_tasks_remaining() == 0) {
-        removeModal()
-        # Only show on a full-extent run, not on refine reprocess
-        if (!isTRUE(upload_module$is_subsetted())) {
-          showModal(draw_instructions_modal)
-        }
+      message("[desc] end_desc_task reached; is_subsetted=", isolate(upload_module$is_subsetted()))
+      removeModal()
+      if (!isTRUE(isolate(upload_module$is_subsetted()))) {
+        showModal(draw_instructions_modal)
       }
     }
     
@@ -506,7 +515,7 @@ description_module_server <- function(id, upload_module, countries,
       # req(upload_module$run_description())
       req(upload_module$rasters_original()) # see app.R server for tifs_inputs
       
-      begin_desc_task()
+      # begin_desc_task()
       
       tryCatch({
       # reset all reactive values to NULL first
@@ -519,8 +528,8 @@ description_module_server <- function(id, upload_module, countries,
 
       years <- year_inputs()                # see app.R server for year_inputs
       
-      # Add drawn_poly store near other reactiveVals in the server
-      drawn_poly <- reactiveVal(NULL)
+      # # Add drawn_poly store near other reactiveVals in the server
+      # drawn_poly <- reactiveVal(NULL)
       
       
       # Description data ------------------------------------------------------
