@@ -472,6 +472,18 @@ description_module_server <- function(id, upload_module, countries,
     #     }
     #   }
     # }
+    ## ---- Modal close for descriptive vars -------------------------------
+    ## Computes are synchronous and sequential, so no task counter is needed.
+    ## A single flag tells the rasters_original-triggered observer whether the
+    ## latest rasters_original() change came from a genuine process run
+    ## (recompute) or from a revert-to-full-extent (restore from cache instead).
+    desc_process_pending <- reactiveVal(FALSE)
+    
+    # A real process click arms the flag; revert does not touch process_btn.
+    observeEvent(process_btn(), {
+      req(process_btn() > 0)
+      desc_process_pending(TRUE)
+    }, ignoreInit = TRUE)
     
     # No counter needed — one synchronous compute pass.
     end_desc_task <- function() {
@@ -503,123 +515,214 @@ description_module_server <- function(id, upload_module, countries,
       }
     }, ignoreNULL = FALSE)
     
+    # # ========================================================================
+    # # Processing 
+    # # ========================================================================
+    # # Process uploaded TIFs when the process_button is clicked
+    # observeEvent(process_btn(), {
+    # # observeEvent(upload_module$rasters_original(), {
+    #       message("[desc] observer fired; run_description = ",
+    #           deparse(isTRUE(upload_module$run_description())),
+    #           "; rasters_original null? ", is.null(upload_module$rasters_original()))
+    #   # req(isTRUE(upload_module$run_description()))   # guard — only runs if checked
+    #   req(isTRUE(isolate(upload_module$run_description()))) # isolate means toggling the checkbox alone doesn't re-fire the compute
+    #   # req(upload_module$run_description())
+    #   # req(upload_module$rasters_original()) # see app.R server for tifs_inputs
+    #   
+    #   # begin_desc_task()
+    #   
+    #   tryCatch({
+    #   # reset all reactive values to NULL first
+    #   rv$countries    <- NULL
+    #   rv$rainfall     <- NULL
+    #   rv$temperature  <- NULL
+    #   rv$elevation    <- NULL
+    #   rv$typology     <- NULL
+    #   
+    # 
+    #   years <- year_inputs()                # see app.R server for year_inputs
+    #   
+    #   # # Add drawn_poly store near other reactiveVals in the server
+    #   # drawn_poly <- reactiveVal(NULL)
+    #   
+    #   
+    #   # Description data ------------------------------------------------------
+    #   # Create a Progress object
+    #   progress <- shiny::Progress$new(min = 0,
+    #                                   max = 2)
+    #   progress$set(message = "extacting data...", value = 0)
+    #   
+    #   latest <- upload_module$rasters_original()#[[length(years)]]
+    #   
+    #   # # 1. country overlap
+    #   # progress$inc(2/6, detail = "countries")
+    #   # rv$countries <- tryCatch(compute_countries(latest, countries), error = function(e) {
+    #   #   message("[desc] countries failed: ", conditionMessage(e)); NULL
+    #   # })
+    #   # 
+    #   # # 2. temperature
+    #   # progress$inc(3/6, detail = "monthly temperature")
+    #   # rv$temperature <- tryCatch(compute_temperature(latest), error = function(e) {
+    #   #   message("[desc] temperature failed: ", conditionMessage(e)); NULL
+    #   # })
+    #   # #      rv$temperature <- tryCatch(compute_temperature(...), error = function(e) NULL)
+    #   # # if (!is.null(rv$temperature)) {
+    #   # #   # update temperature display
+    #   # # } else {
+    #   # #   # show "no data for this area" message
+    #   # # }
+    #   # 
+    #   # # 3. elevation
+    #   # progress$inc(4/6, detail = "elevation")
+    #   # rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache), error = function(e) {
+    #   #   message("[desc] elevation failed: ", conditionMessage(e)); NULL
+    #   # })
+    #   # 
+    #   # # 4. global ecosystem typology (get)
+    #   # progress$inc(5/6, detail = "global ecosystem typology")
+    #   # rv$typology <- tryCatch(compute_typology(latest, efg_lookup), error = function(e) {
+    #   #   message("[desc] typology failed: ", conditionMessage(e)); NULL
+    #   # })
+    #   # 
+    #   # # 5. precipitation
+    #   # progress$inc(6/6, detail = "monthly rainfall")
+    #   # rv$rainfall <- tryCatch(compute_precipitation(latest), error = function(e) {
+    #   #   message("[desc] rainfall failed: ", conditionMessage(e)); NULL
+    #   # })
+    #   message("[desc] >>> countries START")
+    #   rv$countries <- tryCatch(compute_countries(latest, countries),
+    #                            error = function(e) { message("[desc] countries ERR: ", conditionMessage(e)); NULL })
+    #   message("[desc] <<< countries DONE (null? ", is.null(rv$countries), ")")
+    #   
+    #   message("[desc] >>> temperature START")
+    #   rv$temperature <- tryCatch(compute_temperature(latest),
+    #                              error = function(e) { message("[desc] temperature ERR: ", conditionMessage(e)); NULL })
+    #   message("[desc] <<< temperature DONE (null? ", is.null(rv$temperature), ")")
+    #   
+    #   message("[desc] >>> elevation START")
+    #   rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
+    #                            error = function(e) { message("[desc] elevation ERR: ", conditionMessage(e)); NULL })
+    #   message("[desc] <<< elevation DONE (null? ", is.null(rv$elevation), ")")
+    #   
+    #   message("[desc] >>> typology START")
+    #   rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
+    #                           error = function(e) { message("[desc] typology ERR: ", conditionMessage(e)); NULL })
+    #   message("[desc] <<< typology DONE (null? ", is.null(rv$typology), ")")
+    #   
+    #   message("[desc] >>> rainfall START")
+    #   rv$rainfall <- tryCatch(compute_precipitation(latest),
+    #                           error = function(e) { message("[desc] rainfall ERR: ", conditionMessage(e)); NULL })
+    #   message("[desc] <<< rainfall DONE (null? ", is.null(rv$rainfall), ")")
+    #   
+    #   # # hide modal once done
+    #   progress$close()
+    #   
+    #   # ---- Cache full-extent results for instant revert -------------------
+    #   # Only cache when this run was on the unmasked rasters_original.
+    #   # Subset runs leave the cache untouched (it still holds the full-extent result).
+    #   if (!isTRUE(upload_module$is_subsetted())) {
+    #     desc_cache$countries   <- rv$countries
+    #     desc_cache$rainfall    <- rv$rainfall
+    #     desc_cache$temperature <- rv$temperature
+    #     desc_cache$typology    <- rv$typology
+    #     desc_cache$elevation   <- rv$elevation
+    #   }
+    # }, error = function(e) {
+    #   message("[desc] unexpected top-level error: ", conditionMessage(e))
+    #   if (exists("progress")) try(progress$close(), silent = TRUE)
+    # }, finally = {
+    #   end_desc_task()    # ALWAYS runs now, no if any above fails
+    # }) # close trycatch
+    # }) # close observeevent
+    
     # ========================================================================
-    # Processing 
+    # Processing — compute descriptive variables when rasters_original is ready
     # ========================================================================
-    # Process uploaded TIFs when the process_button is clicked
-    observeEvent(process_btn(), {
-      message("[desc] observer fired; run_description = ",
-              deparse(isTRUE(upload_module$run_description())),
-              "; rasters_original null? ", is.null(upload_module$rasters_original()))
-      req(isTRUE(upload_module$run_description()))   # guard — only runs if checked
-      # req(upload_module$run_description())
-      req(upload_module$rasters_original()) # see app.R server for tifs_inputs
+    # Triggered by rasters_original() becoming populated (set at the END of the
+    # classification process observer), so it can never race ahead of the data.
+    # The NULL transition (set at the START of that observer) is swallowed by req().
+    observeEvent(upload_module$rasters_original(), {
       
-      # begin_desc_task()
+      message("[desc] observer fired on rasters_original; run_description = ",
+              deparse(isTRUE(isolate(upload_module$run_description()))),
+              "; pending = ", isolate(desc_process_pending()),
+              "; rasters_original null? ", is.null(upload_module$rasters_original()))
+      
+      # Only proceed when the data is genuinely ready
+      req(upload_module$rasters_original())
+      # Only run descriptive vars if the user asked for them (read without depending on it)
+      req(isTRUE(isolate(upload_module$run_description())))
+      # Only recompute for a real process run; revert restores from cache elsewhere
+      req(isTRUE(isolate(desc_process_pending())))
+      isolate(desc_process_pending(FALSE))   # consume the flag
+      
+      # begin_desc_task_placeholder <- NULL  # (no counter needed)
       
       tryCatch({
-      # reset all reactive values to NULL first
-      rv$countries    <- NULL
-      rv$rainfall     <- NULL
-      rv$temperature  <- NULL
-      rv$elevation    <- NULL
-      rv$typology     <- NULL
-      
-
-      years <- year_inputs()                # see app.R server for year_inputs
-      
-      # # Add drawn_poly store near other reactiveVals in the server
-      # drawn_poly <- reactiveVal(NULL)
-      
-      
-      # Description data ------------------------------------------------------
-      # Create a Progress object
-      progress <- shiny::Progress$new(min = 0,
-                                      max = 2)
-      progress$set(message = "extacting data...", value = 0)
-      
-      latest <- upload_module$rasters_original()#[[length(years)]]
-      
-      # # 1. country overlap
-      # progress$inc(2/6, detail = "countries")
-      # rv$countries <- tryCatch(compute_countries(latest, countries), error = function(e) {
-      #   message("[desc] countries failed: ", conditionMessage(e)); NULL
-      # })
-      # 
-      # # 2. temperature
-      # progress$inc(3/6, detail = "monthly temperature")
-      # rv$temperature <- tryCatch(compute_temperature(latest), error = function(e) {
-      #   message("[desc] temperature failed: ", conditionMessage(e)); NULL
-      # })
-      # #      rv$temperature <- tryCatch(compute_temperature(...), error = function(e) NULL)
-      # # if (!is.null(rv$temperature)) {
-      # #   # update temperature display
-      # # } else {
-      # #   # show "no data for this area" message
-      # # }
-      # 
-      # # 3. elevation
-      # progress$inc(4/6, detail = "elevation")
-      # rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache), error = function(e) {
-      #   message("[desc] elevation failed: ", conditionMessage(e)); NULL
-      # })
-      # 
-      # # 4. global ecosystem typology (get)
-      # progress$inc(5/6, detail = "global ecosystem typology")
-      # rv$typology <- tryCatch(compute_typology(latest, efg_lookup), error = function(e) {
-      #   message("[desc] typology failed: ", conditionMessage(e)); NULL
-      # })
-      # 
-      # # 5. precipitation
-      # progress$inc(6/6, detail = "monthly rainfall")
-      # rv$rainfall <- tryCatch(compute_precipitation(latest), error = function(e) {
-      #   message("[desc] rainfall failed: ", conditionMessage(e)); NULL
-      # })
-      message("[desc] >>> countries START")
-      rv$countries <- tryCatch(compute_countries(latest, countries),
-                               error = function(e) { message("[desc] countries ERR: ", conditionMessage(e)); NULL })
-      message("[desc] <<< countries DONE (null? ", is.null(rv$countries), ")")
-      
-      message("[desc] >>> temperature START")
-      rv$temperature <- tryCatch(compute_temperature(latest),
-                                 error = function(e) { message("[desc] temperature ERR: ", conditionMessage(e)); NULL })
-      message("[desc] <<< temperature DONE (null? ", is.null(rv$temperature), ")")
-      
-      message("[desc] >>> elevation START")
-      rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
-                               error = function(e) { message("[desc] elevation ERR: ", conditionMessage(e)); NULL })
-      message("[desc] <<< elevation DONE (null? ", is.null(rv$elevation), ")")
-      
-      message("[desc] >>> typology START")
-      rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
-                              error = function(e) { message("[desc] typology ERR: ", conditionMessage(e)); NULL })
-      message("[desc] <<< typology DONE (null? ", is.null(rv$typology), ")")
-      
-      message("[desc] >>> rainfall START")
-      rv$rainfall <- tryCatch(compute_precipitation(latest),
-                              error = function(e) { message("[desc] rainfall ERR: ", conditionMessage(e)); NULL })
-      message("[desc] <<< rainfall DONE (null? ", is.null(rv$rainfall), ")")
-      
-      # # hide modal once done
-      progress$close()
-      
-      # ---- Cache full-extent results for instant revert -------------------
-      # Only cache when this run was on the unmasked rasters_original.
-      # Subset runs leave the cache untouched (it still holds the full-extent result).
-      if (!isTRUE(upload_module$is_subsetted())) {
-        desc_cache$countries   <- rv$countries
-        desc_cache$rainfall    <- rv$rainfall
-        desc_cache$temperature <- rv$temperature
-        desc_cache$typology    <- rv$typology
-        desc_cache$elevation   <- rv$elevation
-      }
-    }, error = function(e) {
-      message("[desc] unexpected top-level error: ", conditionMessage(e))
-      if (exists("progress")) try(progress$close(), silent = TRUE)
-    }, finally = {
-      end_desc_task()    # ALWAYS runs now, no if any above fails
-    }) # close trycatch
-    }) # close observeevent
+        # reset all reactive values to NULL first
+        rv$countries    <- NULL
+        rv$rainfall     <- NULL
+        rv$temperature  <- NULL
+        rv$elevation    <- NULL
+        rv$typology     <- NULL
+        
+        years <- isolate(year_inputs())
+        
+        # Progress bar for descriptive variable extraction
+        progress <- shiny::Progress$new(min = 0, max = 6)
+        progress$set(message = "extracting data...", value = 0)
+        on.exit(try(progress$close(), silent = TRUE), add = TRUE)
+        
+        latest <- isolate(upload_module$rasters_original())
+        
+        progress$inc(1, detail = "countries")
+        message("[desc] >>> countries START")
+        rv$countries <- tryCatch(compute_countries(latest, countries),
+                                 error = function(e) { message("[desc] countries ERR: ", conditionMessage(e)); NULL })
+        message("[desc] <<< countries DONE (null? ", is.null(rv$countries), ")")
+        
+        progress$inc(1, detail = "monthly temperature")
+        message("[desc] >>> temperature START")
+        rv$temperature <- tryCatch(compute_temperature(latest),
+                                   error = function(e) { message("[desc] temperature ERR: ", conditionMessage(e)); NULL })
+        message("[desc] <<< temperature DONE (null? ", is.null(rv$temperature), ")")
+        
+        progress$inc(1, detail = "elevation")
+        message("[desc] >>> elevation START")
+        rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
+                                 error = function(e) { message("[desc] elevation ERR: ", conditionMessage(e)); NULL })
+        message("[desc] <<< elevation DONE (null? ", is.null(rv$elevation), ")")
+        
+        progress$inc(1, detail = "global ecosystem typology")
+        message("[desc] >>> typology START")
+        rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
+                                error = function(e) { message("[desc] typology ERR: ", conditionMessage(e)); NULL })
+        message("[desc] <<< typology DONE (null? ", is.null(rv$typology), ")")
+        
+        progress$inc(1, detail = "monthly rainfall")
+        message("[desc] >>> rainfall START")
+        rv$rainfall <- tryCatch(compute_precipitation(latest),
+                                error = function(e) { message("[desc] rainfall ERR: ", conditionMessage(e)); NULL })
+        message("[desc] <<< rainfall DONE (null? ", is.null(rv$rainfall), ")")
+        
+        progress$inc(1, detail = "done")
+        
+        # ---- Cache full-extent results for instant revert -----------------
+        if (!isTRUE(isolate(upload_module$is_subsetted()))) {
+          desc_cache$countries   <- rv$countries
+          desc_cache$rainfall    <- rv$rainfall
+          desc_cache$temperature <- rv$temperature
+          desc_cache$typology    <- rv$typology
+          desc_cache$elevation   <- rv$elevation
+        }
+      },
+      error = function(e) {
+        message("[desc] unexpected top-level error: ", conditionMessage(e))
+      },
+      finally = {
+        end_desc_task()   # ALWAYS closes the modal, whatever happened above
+      })
+    }, ignoreInit = TRUE)
     
     # ========================================================================
     # Restore descriptive variables on revert
