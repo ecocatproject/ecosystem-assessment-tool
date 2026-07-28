@@ -1093,6 +1093,10 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       for (i in seq_along(files)) {
         print("going through files ")
         r_all <- rast(files[i])
+
+        print(r_all)
+        print(mem_info(r_all))
+        print(free_RAM())
         
         # # ---- Crop to subset polygon if one is active ----
         if (!is.null(subset_poly())) {
