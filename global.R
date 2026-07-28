@@ -58,7 +58,7 @@ library(tinytex)
 })
 
 # memory options
-options(shiny.maxRequestSize = 15 * 1024^2)
+options(shiny.maxRequestSize = 45 * 1024^2)
 terraOptions(progress = 1, memfrac = 0.1, tempdir = tempdir())
 
 # logos
