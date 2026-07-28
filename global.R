@@ -59,7 +59,7 @@ library(tinytex)
 
 # memory options
 options(shiny.maxRequestSize = 15 * 1024^2)
-terraOptions(progress = 1, memfrac = 0.8, tempdir = tempdir())
+terraOptions(progress = 1, memfrac = 0.1, tempdir = tempdir())
 
 # logos
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
