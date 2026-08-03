@@ -27,7 +27,7 @@ The ecosystem is classified as **Endangered (EN)** under the IUCN Red List of Ec
 
 The thicket grows on specialised **acidic, sandy soils with duricrust** (pH 4.0–4.5), which strongly determine its distribution and are distinct from the surrounding Miombo woodland. The interlaced canopy eliminates a grass layer, naturally suppressing fire. The ecosystem occurs at 800–1,500 m elevation, with mean annual rainfall of 500–1,100 mm and temperatures of 21–24°C.
 
-Key characteristic species include *Baphia massaiensis*, *Burttia prunoides*, *Pseudoprosopis fischeri*, *Bussea massaiensis*, and *Combretum* spp. The Tanzanian and Zambian types share only \~25% of their floristic composition, suggesting they may represent two distinct ecosystem sub-types.
+Key characteristic species include [*Baphia massaiensis*](https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:480887-1 "Kew POTW database link to Baphia massaiensis"), [*Burttia prunoides*](https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:264146-1), [*Pseudoprosopis fischeri*](https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:515937-1), [*Bussea massaiensis*](https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:482537-1), and *Combretum* spp. The Tanzanian and Zambian types share only \~25% of their floristic composition, suggesting they may represent two distinct ecosystem sub-types.
 
 ------------------------------------------------------------------------
 
