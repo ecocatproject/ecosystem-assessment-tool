@@ -79,7 +79,7 @@ ui <- page_navbar(
   nav_spacer(),
   links_menu,
   
-  # Add custom CSS -----------------------------------------------------------
+# Add custom CSS -----------------------------------------------------------
   tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"))
 )
 
@@ -149,7 +149,8 @@ server <- function(input, output, session) {
                                                   main_tab = main_tab
   )
   
-  # Data download details ------------------------------------------------------
+  # ============================================================================
+  # Data download details 
   # Firstly provide list of potential datasets for download 
   available_datasets <- reactive({
     all <- list(
@@ -167,7 +168,8 @@ server <- function(input, output, session) {
     }, all)
   })
   
-  # Run report module ---------------------------------------------------------
+  # ============================================================================
+  # Run report module 
   # report module server
   report_module_server("report",
                        datasets = available_datasets,
@@ -207,8 +209,10 @@ server <- function(input, output, session) {
                        criterion_a_module  = criterion_a_module,
                        criterion_b_module  = criterion_b_module)
   
-  # Run about module --------------------------------------------------------
+  # ============================================================================
+  # Run about module 
   # about_module_server("about")
+  # about UI is currently loaded in through the about.R module
   
   
   
