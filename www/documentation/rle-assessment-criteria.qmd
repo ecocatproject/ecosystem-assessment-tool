@@ -1,7 +1,5 @@
 ---
 title: "RLE Assessment Criteria"
-author: "Rob Critchlow"
-date: today
 format:
   html:
     toc: true

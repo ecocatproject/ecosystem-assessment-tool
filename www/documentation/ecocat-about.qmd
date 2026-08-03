@@ -1,8 +1,6 @@
 ---
 title: "EcoCAT Red List of Ecosystems Assessment Tool"
-subtitle: "About"
-date: last-modified
-author: "Rob Critchlow"
+subtitle: "About this tool"
 format: 
   html:
     toc: true
@@ -31,15 +29,15 @@ Ecosystems encompass communities of interacting species and their physical envir
 
 This ecosystem assessment tool is part of a wider project to develop [EcoCAT (Ecosystem Conservation Assessment Tool)](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the EcoCAT webpage"){target="_blank" rel="noopener noreferrer"} as an open, flexible, and modular application to map ecosystem distribution and time-series trends, and assess ecosystem degradation and risk of collapse, following the guidelines of the IUCN Red List of Ecosystems.
 
-## What is an ecosytem risk assessement?
+## What is an ecosystem risk assessment?
 
 The IUCN Red List of Ecosystems protocol involves mapping, quantifying distribution changes, and estimating degradation severity and extent, following science-backed foundations (Red List of Ecosystems guidelines). It has been adopted as a headline indicator in the [Global Biodiversity Framework (GBF)](https://www.cbd.int/gbf "url link to the global biodiversity framework website"){target="_blank" rel="noopener noreferrer"} of the UN Convention on Biological Diversity, attesting to its global relevance as an indicator for ecosystem monitoring.
 
 ## What is this tool?
 
-This ecosystem assessment tool from the [ECOsystem and Conservation Assessment Tools (EcoCAT)](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the RBG Kew EcoCAT project webpage"){target="_blank" rel="noopener noreferrer"} can be used to upload maps and assess the changes and extent of ecosystems. The tool follows the [IUCN Red List of Ecosystem assessment guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf "pdf file of the RLE ecosytem assessment guidelines"){target="_blank" rel="noopener noreferrer"} to generate ecosystem metrics. The user can then use this tool to down load reports, assessment data, maps and figures to be used in any additional work such as for official reports and publications. 
+This ecosystem assessment tool from the [ECOsystem and Conservation Assessment Tools (EcoCAT)](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the RBG Kew EcoCAT project webpage"){target="_blank" rel="noopener noreferrer"} can be used to upload maps and assess the changes and extent of ecosystems. The tool follows the [IUCN Red List of Ecosystem assessment guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf "pdf file of the RLE ecosytem assessment guidelines"){target="_blank" rel="noopener noreferrer"} to generate ecosystem metrics. The user can then use this tool to down load reports, assessment data, maps and figures to be used in any additional work such as for official reports and publications.
 
-The ecosystem assessment tool can help provide standardised ecosystem assessments, to ensure ecosystem status are comparable across all assessed ecosystems at a global scale. 
+The ecosystem assessment tool can help provide standardised ecosystem assessments, to ensure ecosystem status are comparable across all assessed ecosystems at a global scale.
 
 ## Who is this tool for?
 
