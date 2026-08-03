@@ -7,8 +7,11 @@
 # This module renders html documents on: 
 # 1) intro/guidance
 # 2) methods
-# 3) example data (itigi thicket treport summary)
+# 3) example data (itigi thicket report summary)
 # 4) RLE guidelines
+
+# To create the html docs in the 1st instance, the www/documentation folder has
+# quarto files (.QMD) that can be run to compile the the html docs
 
 # ==============================================================================
 # UI
@@ -19,7 +22,7 @@ about_module_ui <- function(id) {
   nav_panel("About & Help",
             navset_card_pill(
               # ----------------------------------------------------------------
-              # about
+              # about 
               nav_panel(
                 "About",
                 tags$iframe(
@@ -80,9 +83,25 @@ about_module_ui <- function(id) {
 # ==============================================================================
 # server
 # ==============================================================================
-about_module_server <- function(input, output, session) {}
+about_module_server <- function(input, output, session) {
+  
+  
+  # Reactive value to store cache-busting parameter
+  cache_buster <- reactiveVal(Sys.time())
+  
+  observeEvent(input$reload, {
+    cache_buster(Sys.time())  # Update timestamp to force reload
+  })
+  
+  output$iframe_ui <- renderUI({
+    tags$iframe(
+      src = paste0("www/myfile.html?t=", as.numeric(cache_buster())),
+      style = "width:100%; height:800px; border:none;"
+    )
+  })
+  
+}
 
 shinyApp(about_module_ui, about_module_server)
 
-
-
+# i've edited the qmd files that create the html files to remove author and date information.  However teh new files are not being rendered  in the app - why?

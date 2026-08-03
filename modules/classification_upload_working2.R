@@ -1,9 +1,9 @@
 # modules/classification_upload
 
 
-# -----------------------------------------------------------------------------
+# ============================================================================
 # UI
-# -----------------------------------------------------------------------------
+# ============================================================================
 # UI  - sidebar only
 classification_module_ui <- function(id) {
   ns <- NS(id)
@@ -48,16 +48,28 @@ classification_module_ui <- function(id) {
     uiOutput(ns("process_btn_ui")),
     #div(style = "margin:0; padding:0; line-height:0;",
         uiOutput(ns("subset_guide_ui")),
+    # conditionalPanel(
+    #   condition = "input.main_tab == description",
+    #   uiOutput(ns("subset_guide_ui"))
+    # ),
     #),
     div(style = "margin-top:-5px;", # -10 reduces all spacing between revert and above button
         uiOutput(ns("refine_revert_ui"))
     )
+    # div(style = "margin-top:-5px;",
+    #     conditionalPanel(
+    #       condition = "input.main_tab == description",
+    #       uiOutput(ns("refine_revert_ui"))
+    #     )
+    # )
+    
   )
 }
 
-# -----------------------------------------------------------------------------
+
+# ============================================================================
 # SERVER
-# -----------------------------------------------------------------------------
+# ============================================================================
 classification_module_server <- function(id, drawn_poly=reactive(NULL), session_tmp = tempdir()) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -291,7 +303,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     process_btn <- reactive({
       input$process
     })
-    process_btn <- reactive(process_trigger())
+   process_btn <- reactive(process_trigger())
     
     # Helper reactives to avoid repeated work -------------------------------------
     r_rast <- reactive({
@@ -842,9 +854,12 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
                  padding:8px 10px; border-radius:3px;
                  font-size:12px; margin-top:2px; line-height:1.5; margin-bottom: -8px;",
 
-        tags$i(class = "fas fa-info-circle", style = "color:#669900; margin-right:4px;"),
-        tags$strong("Maps processed."),
-        paste0(" Optionally refine your ecosystem area by applying area filter after using the map drawing tools."),# (", step,")"),
+        tagList(
+          tags$i(class = "fas fa-info-circle", style = "color:#669900; margin-right:4px;"),
+          tags$strong("Maps processed."),
+          " Optionally refine your ecosystem area by applying an area filter after using the map drawing tools in the ",
+          tags$strong('Description'),
+          "tab."),
         tags$div(
           style = "display:flex; justify-content:flex-end; margin-top:6px;",
           actionLink(
@@ -959,7 +974,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     # =============================================================================
     # Process uploaded TIFs when the process_button is clicked
     # =============================================================================
-    observeEvent(process_trigger(), {
+    observeEvent(process_btn(), {
       req(process_trigger() > 0)   # don't fire on initialisation (value = 0)
       req(tifs())
       files <- tifs()$datapath
@@ -989,6 +1004,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       # Create a Progress object
       progress <- shiny::Progress$new(min = 0, max = length(files))
       progress$set(message = "Processing classification maps...", value = 0)
+      # on.exit(try(progress$close(), silent = TRUE), add = TRUE)
       
       # ------------------------------------------------------------------------
       # reset previous data
@@ -1088,12 +1104,38 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
         return(r_all[[1]])
       }
       
+      # Load a raster, optimizing to INT1U if stored as float
+      # Writes to a temp file if conversion is needed; otherwise loads as-is.
+      optimize_raster <- function(file, target_dtype = "INT1U") {
+        r <- terra::rast(file)
+        current_dtype <- terra::datatype(r)
+        if (current_dtype %in% c("FLT4S", "FLT8S", "FLT4U", "FLT8U")) {
+          message(
+            "Optimizing: ", basename(file),
+            " (", current_dtype, " -> ", target_dtype, ")"
+          )
+          tmp <- tempfile(fileext = ".tif")
+          terra::writeRaster(r, tmp,
+                             datatype = target_dtype,
+                             gdal = c("COMPRESS=LZW"),
+                             overwrite = TRUE)
+          r <- terra::rast(tmp)
+        }
+        r
+      }
       
       # loop through each file to calculate areas ------------------------------
       for (i in seq_along(files)) {
         print("going through files ")
+        progress$inc(1, detail = paste0(i, " of ", length(files)))
         r_all <- rast(files[i])
-
+        
+        print(r_all)
+        print(mem_info(r_all))
+        print(free_RAM())
+        
+        r_all <- optimize_raster(files[i])
+        
         print(r_all)
         print(mem_info(r_all))
         print(free_RAM())
@@ -1236,45 +1278,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
           
           # Loss map: work entirely on small sampled rasters to avoid memory issues.
           # Loss = cell was present (value == 1) in oldest but absent (NA) in latest.
-          # if (length(files) > 1) {
-          #   r_oldest_raw <- rast(files[1])
-          #   r_oldest_raw <- if (is_bound_raster_val) {
-          #     r_oldest_raw[["opt"]]
-          #   } else {
-          #     select_layer_or_mask(r_oldest_raw, sel_name)
-          #   }
-          #   
-          #   # Sample oldest at same density BEFORE projecting — keeps memory low.
-          #   # na.rm = FALSE retains absence/outside cells so loss areas stay visible.
-          #   r_oldest_samp <- spatSample(r_oldest_raw, 1000000, method = "regular",
-          #                               as.raster = TRUE, na.rm = FALSE)
-          #   r_oldest_samp <- tryCatch({
-          #     project(r_oldest_samp, "EPSG:4326", method = "near")
-          #   }, error = function(e) { crs(r_oldest_samp) <- "EPSG:4326"; r_oldest_samp })
-          #   
-          #   # Snap to r_map's exact grid — all further ops are on small rasters only
-          #   r_oldest_grid <- resample(r_oldest_samp, r_map, method = "near")
-          #   
-          #   # Loss: present in oldest and absent (NA) in latest sample
-          #   r_loss <- ifel(r_oldest_grid == 1 & is.na(r_map), 1L, NA)
-          #   
-          #   # ---- Crop to subset polygon if one is active ----
-          #   if (!is.null(subset_poly())) {
-          #     crop_vect <- terra::project(subset_poly(), terra::crs(r_all))
-          #     
-          #     if (!terra::relate(terra::ext(r_all), terra::ext(crop_vect), "intersects")) {
-          #       subset_poly(NULL)
-          #       is_subsetted(FALSE)
-          #     } else {
-          #       r_loss <- terra::mask(r_loss, crop_vect)   # cells outside any polygon → NA
-          #     }
-          #   }
-          #   
-          #   
-          #   rasters_change(r_loss)
-          #   rm(r_oldest_raw, r_oldest_samp, r_oldest_grid, r_loss)
-          #   gc()
-          # }
+          
           if (length(files) > 1) {
             r_oldest_raw <- rast(files[1])
             r_oldest_raw <- if (is_bound_raster_val) {
