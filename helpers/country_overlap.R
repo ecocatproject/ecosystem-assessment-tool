@@ -6,7 +6,7 @@
 # library(exactextractr)
 # library(sf)
 # # load data
-countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
+# countries <- vect(ne_countries(scale = "medium", returnclass = "sf"))
 
 # country_overlap.R
 

@@ -23,6 +23,8 @@
 # 1.  start up modal
 # =============================================================================
 start_up_modal <- modalDialog(
+    tags$style(HTML(".modal-title { width:100%; text-align:center; }")),
+  
   title = div(
     style = "text-align:center; padding-bottom:0.25rem; ",
     tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
@@ -30,6 +32,14 @@ start_up_modal <- modalDialog(
     tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
            "An interactive tool for RLE ecosystem assessments")
   ),
+  # title = div(
+  #   style = "padding-bottom:0.25rem;",
+  #   tags$p(style = "justify-content:center; text-align:center !important; font-size:20px; font-weight:500; margin:0 auto;",
+  #          "Welcome to the EcoCAT RLE Assessment Tool"),
+  #   tags$p(style = "justify-content:center; text-align:center !important; font-size:13px; color:#6b7280; margin:0 auto;",
+  #          "An interactive tool for RLE ecosystem assessments")
+  # ),
+  # 
   tagList(
     tags$div(
       style = "padding:0.5rem 0.25rem;",
@@ -72,7 +82,7 @@ start_up_modal <- modalDialog(
               )
     )
   ),
-  easyClose = TRUE,
+  easyClose = FALSE,
   footer = modalButton("Start")
 )
 
@@ -118,7 +128,7 @@ years_modal <-  function(rows, ns){
 }
 
 # =============================================================================
-# 2.  upload modal 
+# 2b.  upload modal 
 # =============================================================================
 upload_modal <- modalDialog(
   title = div(
@@ -166,12 +176,17 @@ draw_instructions_modal  <- modalDialog(
       
       # Step rows
       purrr::pmap(list(
-        n     = 1:3,
-        title = c("Find drawing tools",
+        n     = 1:4,
+        title = c("Go to the 'Description' tab",
+                  "Find drawing tools",
                   "Draw the area(s) of interest",
                   "Return to sidebar"),
         body  = list(
           # tagList mixes text and icon() inline
+          tagList(
+            "Ensure 'Description' tab is visible",
+            "The drawing tools are only visible on the 'Description' tab map."
+          ),
           tagList(
             "The ", tags$span(style = "font-size:1.3em; line-height:1;", "\u2B1F"), 
             " polygon and/or ",
@@ -210,6 +225,23 @@ draw_instructions_modal  <- modalDialog(
           )
         )
       })
+    )
+  ),
+  tags$hr(),
+  # Tip box
+  tagList(
+    tags$p(
+      style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+      tags$b("Tip:"),
+      "These instructions can be found when selecting the",
+      tags$span(
+        style = "display:inline-block; font-size:12px; text-decoration:none;
+               border:1px solid #669900; border-radius:4px;
+               padding:3px 8px; color:#669900;
+               white-space:nowrap; vertical-align:middle;",
+        bs_icon("pencil"), " How to refine"
+      ),
+      "button at the top of the map; it also appears in the sidebar once maps have been processed."
     )
   ),
   easyClose = FALSE,
@@ -284,8 +316,8 @@ b_quick_modal <- modalDialog(
   ),
   easyClose = TRUE,
   footer = tagList(
-    modalButton("Close"),
-    actionButton(("open_help"), "More help")
+    modalButton("Close")#,
+    # actionButton(("open_help"), "More help")
   ),
   size = "m"
 )
