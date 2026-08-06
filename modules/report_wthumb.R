@@ -50,7 +50,7 @@ report_module_ui <- function(id) {
                 tags$span(tags$b("Choose report format:"),tooltip(bs_icon("info-circle"), "HTML format will include interactive maps and figures."),
                                                                   #PDF format will include static map and figures."),
                           style = "color: #555;"),
-                choices = c("HTML" = "html", "PDF" = "pdf") # "PDF" = "pdf"
+                choices = c("HTML" = "html")#, "PDF" = "pdf") # "PDF" = "pdf"
               )),
             downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
           )
