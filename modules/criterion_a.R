@@ -678,9 +678,6 @@ criterion_A_module_server <- function(id, upload_module, main_tab) {
     # ==============================================================================
     # Return data
     # ==============================================================================
-    # ==============================================================================
-    # Return data
-    # ==============================================================================
     return(list(
       area_change_data     = reactive({ rv$area_change_data }),
       area_prediction_data = reactive({ rv$area_prediction_data }),

@@ -68,8 +68,8 @@ make_fig_loss <- function(r_map, r_loss = NULL, years) {
       ylim   = c(y_range[1] - y_buffer, y_range[2]),
       crs    = sf::st_crs(4326)
     )
-  ggplot2::labs(x = NULL, y = NULL,
-                caption = "Generated with EcoCAT Assessment tool") +
+  ggplot2::labs(x = NULL, y = NULL)+#,
+               # caption = "Generated with EcoCAT Assessment tool") +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0, 0), "mm"))
   
@@ -262,8 +262,8 @@ make_fig_a <- function(area_prediction_data, is_bound = FALSE) {
         values = fig_linetype,
         labels = c("recent" = "Near-term", "median" = "Long-term")) +
       ggplot2::labs(x = "Year", y = expression("Area (km"^2*")"),
-                    colour = "Method", linetype = "Scenario",
-                    caption = "Generated with EcoCAT Assessment tool") +
+                    colour = "Method", linetype = "Scenario")+#,
+                    # caption = "Generated with EcoCAT Assessment tool") +
       ggplot2::theme_bw(base_size = 13)
     
   } else {
@@ -289,8 +289,8 @@ make_fig_a <- function(area_prediction_data, is_bound = FALSE) {
         values = fig_linetype,
         labels = c("recent" = "Near-term", "median" = "Long-term")) +
       ggplot2::labs(x = "Year", y = expression("Area (km"^2*")"),
-                    colour = "Method", linetype = "Scenario",
-                    caption = "Generated with EcoCAT Assessment tool") +
+                    colour = "Method", linetype = "Scenario")+#,
+                    # caption = "Generated with EcoCAT Assessment tool") +
       ggplot2::theme_bw(base_size = 13)
   }
 }
@@ -617,11 +617,17 @@ make_fig_b1 <- function(mcp_poly_list, rasters_list, years) {
     ggplot2::labs(
       title    = paste0("Criterion B1 \u2014 Extent of Occurrence (", latest_year, ")"),
       subtitle = paste0("EOO area: ", eoo_area, " km²  |  Assessment: ", eoo_assessment),
-      caption  = "Generated with EcoCAT Assessment tool",
+      #caption  = "Generated with EcoCAT Assessment tool",
       x = NULL, y = NULL
     ) +
     ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0, 0), "mm"))
+    ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0, 0), "mm")) + 
+    theme_minimal() +  # Removes grey background
+    theme(
+      panel.background = element_blank(),  # Remove panel background
+      plot.background = element_blank(),   # Remove plot background
+      panel.grid = element_blank()          # Remove grid lines (optional)
+    )
 }
 
 
@@ -729,10 +735,15 @@ make_fig_b2 <- function(b2_poly, rasters_list, years) {
       title    = paste0("Criterion B2 \u2014 Area of Occupancy (", max(years, na.rm = TRUE), ")"),
       subtitle = paste0("Total occupied cells: ", nrow(dat_all),
                         ", cells >1% occupancy (AOO): ", nrow(dat_sel), "  |  Assessment: ", aoo_assessment),
-      caption  = "Generated with EcoCAT Assessment tool",
+     # caption  = "Generated with EcoCAT Assessment tool",
       x = NULL, y = NULL) +
     ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0, 0), "mm"))
+    ggplot2::theme(plot.margin = grid::unit(c(0.2, 0, 0, 0), "mm")) +
+    theme(
+      panel.background = element_blank(),  # Remove panel background
+      plot.background = element_blank(),   # Remove plot background
+      panel.grid = element_blank()          # Remove grid lines (optional)
+    )
 }
 
 

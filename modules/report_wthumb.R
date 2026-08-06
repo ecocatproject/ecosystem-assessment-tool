@@ -65,29 +65,23 @@ report_module_ui <- function(id) {
           downloadButton(ns("download_file"), "Download data")
         )
       ),
+
+      
+      # # -----------------------------------------------------------------------
+      # # scripts
       # nav_panel(
-      #   "Data",
+      #   tags$span("Script", tooltip(bs_icon("info-circle"),
+      #                               "Download a standalone R script that reproduces your assessment outside the app,",
+      #                               "including all figures and maps.",
+      #                               style = "color: #555; font-size: 0.9em;"
+      #   )),
       #   card_body(
-      #     tags$p(style = "color:#666; font-size:13px;",
-      #            "Tick datasets to include in the download. Click a name to preview."),
-      #     uiOutput(ns("dataset_chooser")),
-      #     tags$br(),
-      #     downloadButton(ns("download_file"), "Download data")
+      #     script_export_ui("script_export"),
+      #     # height=50
       #   )
       # ),
-      # -----------------------------------------------------------------------
-      # scripts
-      nav_panel(
-        tags$span("Script", tooltip(bs_icon("info-circle"),
-                                    "Download a standalone R script that reproduces your assessment outside the app,",
-                                    "including all figures and maps.",
-                                    style = "color: #555; font-size: 0.9em;"
-        )),
-        card_body(
-          script_export_ui("script_export"),
-          # height=50
-        )
-      ),
+      
+      
       # -----------------------------------------------------------------------
       # Thumbnails 
       nav_panel(
