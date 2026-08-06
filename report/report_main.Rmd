@@ -2,9 +2,9 @@
 title: "IUCN Red List of Ecosystem Assessment: `r params$ecosystem_name`"
 output: 
   rmdformats::robobook: default
-  pdf_document:
-    toc: true
-    number_sections: false
+#  pdf_document:
+#    toc: true
+#    number_sections: false
 always_allow_html: true
 fontsize: 12pt
 geometry: margin=1in
