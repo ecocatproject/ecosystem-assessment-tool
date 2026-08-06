@@ -59,7 +59,10 @@ library(tinytex)
 
 # memory options
 options(shiny.maxRequestSize = 45 * 1024^2)
-terraOptions(progress = 1, memfrac = 0.1, tempdir = tempdir())
+terraOptions(progress = 1, memfrac = 0.1, tempdir = tempdir(), # or session_tmp()??
+             memmax = 4, todisk=FALSE)
+Sys.setenv(GDAL_CACHEMAX = "256")  # MB — GDAL's cache is separate from memfrac
+
 
 # logos
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
