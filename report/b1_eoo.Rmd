@@ -63,7 +63,7 @@ has_any_b <- !is.null(b1_latest) || !is.null(b2_latest)
 
 
 
-### Subcriterion summary
+### Subcriteria assessment summary
 ```{r criterion_b_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_b)}
 # Callout box with B1 + B2 status circles, mirroring criterion_a_summary.
 # Status for each is the assessment recorded for the most recent year.
@@ -73,7 +73,7 @@ has_any_b <- !is.null(b1_latest) || !is.null(b2_latest)
 b1_status <- as_status_code(if (!is.null(b1_latest)) b1_latest$assessment else NA)
 b2_status <- as_status_code(if (!is.null(b2_latest)) b2_latest$assessment else NA)
 
-summary_subtitle <- "Status from the latest assessment year"
+summary_subtitle <- "Based on the most recent distribution map"
 
 
 if (knitr::is_html_output()) {
@@ -137,7 +137,7 @@ if (knitr::is_html_output()) {
 
 ### Subcriterion B1 — Extent of Occurrence (EOO)
 
-Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) — the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystem types.
+Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) — the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the ecosystem classification maps, allowing comparison across global ecosystem types.
 
 ```{r b1_text_missing, echo=FALSE, results='asis', eval = is.null(b1_latest)}
 cat(paste0(
@@ -250,7 +250,7 @@ if (knitr::is_html_output()) {
 ```
 
 ```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly)}
-map_title <- "Extent of Occurrence (EOO) per year of available EAU data"
+map_title <- paste0("Extent of Occurrence (EOO) in ", max(params$years))
 mcp_list <- params$mcp_poly %||% list()
 
 if (length(mcp_list) > 0) {

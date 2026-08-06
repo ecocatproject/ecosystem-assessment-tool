@@ -13,11 +13,11 @@ if (is.null(params$countries)) {
   country_text <- ""
 } else {
   country_text <- paste0(
-    "From the most recent ", max(params$years),
-    " classification, the ecosystem is found in the following countries: ",
-    paste(params$countries$Country, collapse = ", "),
-    ". The area and percentage of the ecosystem within each country as ",
-    "measured in ", max(params$years), " is summarised in the table below:"
+    "Based on the most recent distribution map (", max(params$years),
+    "), the ecosystem occurs in the following countries: **",
+    paste(params$countries$Country, collapse = "; "),
+    "**. The area and percentage of the ecosystem within each country as ",
+    "measured in **", max(params$years), "** is summarised in the table below:"
   )
 }
 ```

@@ -15,24 +15,35 @@ b1_eoo.Rmd, which runs immediately before this child.
 
 ### Subcriterion B2 — Area of Occupancy (AOO)
 
-Subcriterion B2 is assessed by estimating the area of occupancy (AOO) by counting the number of 10 km<sup>2</sup> cells covered by the ecosystem. This method is consistent regardless of the resolution of the EAU mapping, allowing comparison across global ecosystem types.
+Subcriterion B2 is assessed by estimating the area of occupancy (AOO) by counting the number of 10 km<sup>2</sup> cells covered by the ecosystem. This method is consistent regardless of the resolution of the ecosystem classification maps, allowing comparison of assessments across ecosystem types at a global scale.
 
 ```{r b2_text, echo=FALSE, results='asis', eval = !is.null(params$b2_data)}
 b2_data    <- params$b2_data
 b2_code    <- b2_data$assessment[which.max(as.numeric(b2_data$year))]
 b2_n       <- b2_data$n[which.max(as.numeric(b2_data$year))]
 b2_nexceed <- b2_data$n_exceed[which.max(as.numeric(b2_data$year))]
+# cat(paste0(
+#   "From overlaying a 10 \u00d7 10 km grid on the ", params$ecosystem_name,
+#   " ecosystem, ", b2_n, " 10 km\u00b2 grid cells intersect the most recent (",
+#   max(params$years), ") ecosystem map, which is highlighted in the map below. ",
+#   "Small patches of the mapped ecosystem (<1% of total mapped ecosystem area) ",
+#   "are then excluded from the total number of intersecting 10 km\u00b2 grid cells ",
+#   "to provide the AOO measurement. From the most recent mapping, the AOO for the ",
+#   params$ecosystem_name, " ecosystem is **", b2_nexceed, " grid cells**. ",
+#   "This number of grid cells classes the ecosystem as **",
+#   assessment_map[b2_code], "** under subcriterion B2."
+# ))
+
+
 cat(paste0(
-  "From overlaying a 10 \u00d7 10 km grid on the ", params$ecosystem_name,
-  " ecosystem, ", b2_n, " 10 km\u00b2 grid cells intersect the most recent (",
-  max(params$years), ") ecosystem map, which is highlighted in the map below. ",
-  "Small patches of the mapped ecosystem (<1% of total mapped ecosystem area) ",
-  "are then excluded from the total number of intersecting 10 km\u00b2 grid cells ",
-  "to provide the AOO measurement. From the most recent mapping, the AOO for the ",
-  params$ecosystem_name, " ecosystem is **", b2_nexceed, " grid cells**. ",
-  "This number of grid cells classes the ecosystem as **",
+  "A regular grid with 10 km × 10 km cells (100 km²) was overlaid on the most recent (**",
+  max(params$years), "**) map of the **", params$ecosystem_name,
+  "** ecosystem. Of the **", b2_n, "** grid cells intersecting the mapped ecosystem, **", b2_nexceed, "** remained after applying the RLE Guidelines v2.0 correction to exclude cells collectively representing less than 1% of the mapped area. The resulting Area of Occupancy (AOO) of **", b2_nexceed, "** grid cells classifies the ecosystem as **",
   assessment_map[b2_code], "** under subcriterion B2."
+
 ))
+
+
 ```
 
 ```{r b2_text_missing, echo=FALSE, results='asis', eval = is.null(params$b2_data)}

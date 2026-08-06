@@ -212,13 +212,14 @@ ecosystem_label <- if (is.na(params$ecosystem_name) || !nzchar(params$ecosystem_
 }
 ```
 
-# **Report summary**
+# **About this report**
 
-This report documents an ecosystem assessment following the IUCN Red List of Ecosystems (RLE) Guidelines, for the `r ecosystem_label` `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. This report has been created from the Ecosystem Classification Assessment Tool (EcoCAT) developed as part of the EcoCAT project from RBG Kew. 
+This report documents an ecosystem assessment of the `r ecosystem_label`, following the IUCN Red List of Ecosystems (RLE) Guidelines, `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. The report was created using the [EcoCAT](https://www.kew.org/science/our-science/projects/EcoCAT) RLE Assessment Tool. 
 
- - This tool and report currently covers **Criterion A** and **Criterion B** of the RLE assessment. 
- - The graphs in this report can be downloaded by selecting the 'download as png' icon at the top of each graph.
- - To download the data and mapping files as part of this assessment, please revisit the 'Report/Data download' tab in the tool, select the required data files for download and select the 'Download data' button.
+ - This report covers **Criterion A** and **Criterion B** of the RLE assessment. 
+ - Graphs are interactive and can be downloaded using the camera icon (‘Download plot as a png’) at the top of each graph.
+ - To download data and mapping files, return to the 'Report & Data' tab, select the required files under 'Data', and click 'Download data'.
+
   
 ------------------------------------------------------------------------
   

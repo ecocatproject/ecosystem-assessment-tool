@@ -7,11 +7,19 @@ Global Ecosystem Classification
 # Empty when typology wasn't requested (single consolidated "not requested"
 # message lives in report_main.Rmd, and the parent suppresses the section
 # header in that case too).
+
+ecosystem_label <- if (is.na(params$ecosystem_name) || !nzchar(params$ecosystem_name)) {
+  "ecosystem"
+} else {
+  params$ecosystem_name
+}
+
+
 if (is.null(params$typology)) {
   get_text <- ""
 } else {
   get_text <- paste0(
-    "To summarise the [IUCN Global Ecosystem Typology (GET)](https://global-ecosystems.org/) of the ecosystem, the most recent (", max(params$years), ") classification map was overlayed on the global GET maps and the percentage of each ecosystem functional group (EFG) (both major and minor occurrence) intersecting with the ecosystem were calculated.  A summary of EFGs within the mapped ecosystem is presented in the table below with '", params$typology[1,3], "' the most prevalent major EFG. Any EFG with <1% occurrence coverage in the ecosystem is not displayed in this table.")
+    "To help the assessor identify the best match for the **", ecosystem_label, "** within the [IUCN Global Ecosystem Typology (GET)](https://global-ecosystems.org/), the most recent classification map (**", max(params$years), "**)  was overlayed on the global GET maps and the percentage cover of each ecosystem functional group (EFG), including both major and minor occurrences was calculated.  A summary of EFGs within the mapped ecosystem is presented in the table below with **'", params$typology[1,3], "'** the most prevalent major EFG. Any EFG with <1% occurrence coverage in the ecosystem is not displayed in this table.")
 }
 ```
 

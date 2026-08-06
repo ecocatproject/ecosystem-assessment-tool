@@ -63,7 +63,7 @@ if (nrow(params$areas) > 1) {
 }
 ```
 
-### Subcriterion assessment summary
+### Subcriteria assessment summary
 
 ```{r criterion_a_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
 # Subcriterion outcomes "callout box".
@@ -85,7 +85,7 @@ a1_status  <- as_status_code(worst_from(filter_method(params$a1_result,  headlin
 a2a_status <- as_status_code(worst_from(filter_method(params$a2a_result, headline_method)))
 a2b_status <- as_status_code(worst_from(filter_method(params$a2b_result, headline_method)))
 
-summary_subtitle <- "Worst case across scenarios; based on Proportional Rate of Change (PRC)"
+summary_subtitle <- "taken from the worst case scenario and based on Proportional Rate of Change (PRC) method (see subcriterion details)"
 
 if (knitr::is_html_output()) {
   htmltools::tagList(
@@ -109,13 +109,13 @@ if (knitr::is_html_output()) {
         style = "margin-top: 6px;",
         htmltools::HTML(status_circle(a1_status)), " ",
         htmltools::tags$b("A1"),
-        " \u2014 Observed and inferred reduction over the past ~50 years"
+        " \u2014 Observed and/or inferred reduction over the past 50 years"
       ),
       htmltools::div(
         style = "margin-top: 6px;",
         htmltools::HTML(status_circle(a2a_status)), " ",
         htmltools::tags$b("A2a"),
-        " \u2014 Projected reduction over the next ~50 years"
+        " \u2014 Projected reduction over the next 50 years"
       ),
       htmltools::div(
         style = "margin-top: 6px;",
@@ -130,8 +130,8 @@ if (knitr::is_html_output()) {
   a_summary <- data.frame(
     Subcriterion = c("A1", "A2a", "A2b"),
     Description = c(
-      "Observed and inferred reduction over the past ~50 years",
-      "Projected reduction over the next ~50 years",
+      "Observed and/or inferred reduction over the past 50 years",
+      "Projected reduction over the next 50 years",
       "Worst-case reduction over any 50-year window (past + future)"
     ),
     Status = c(a1_status, a2a_status, a2b_status),
@@ -147,7 +147,7 @@ if (knitr::is_html_output()) {
   ft <- flextable::set_caption(
     ft,
     caption = flextable::as_paragraph(
-      flextable::as_b("Subcriterion outcomes "),
+      flextable::as_b("Assessment outcomes "),
       paste0("\u2014 ", summary_subtitle)
     )
   )
@@ -166,12 +166,12 @@ if (knitr::is_html_output()) {
 
 if (nrow(params$areas) > 1) {
   cat(paste0(
-    "Between ", start_year, " and ", end_year,
-    " the area of this ecosystem has ", trend, " by ",
-    abs(change_percent), "% from ",
-    format(round(start_area, 0), big.mark = ","), "km\u00b2 to ",
+    "Between **", start_year, "** and **", end_year,
+    "** the observed area of this ecosystem has ", trend, " by **",
+    abs(change_percent), "%** from **",
+    format(round(start_area, 0), big.mark = ","), "km\u00b2** to **",
     format(round(end_area, 0),   big.mark = ","),
-    "km\u00b2. The proportional rate of change (PRC; % of annual area change) and absolute rate or change (ARC; ",
+    "km\u00b2**. The proportional rate of change (PRC; % of annual area change) and absolute rate of change (ARC; ",
     "total annual change in area) between each mapped ecosystem period are detailed in the table below."
   ))
 } else {
@@ -274,14 +274,10 @@ a_tab
 
 
 ```{r area_prediction_text, echo=FALSE, results='asis', eval = !is.null(params$area_prediction_data)}
-cat(paste0(
-  "To assess the subcriteria of Criterion A, the changes in ecosystem area can ",
-  "be estimated for both past and present using various of methods depending on ",
-  "data availability. This includes prediciting the absolute rate of change in area (ARC) and ",
-  "proportional rate of change in area (PRC). Some of these trends are presented in the ",
-  "the graph below."),
-  "Predicted historical changes are based on the average trend over the observed period",
-   "Future changes are either based on the average trend ('Long-term'), or most recent period of change ('Near-term')."
+cat(
+  
+  "The observed trends in ecosystem area and extrapolated changes based on the absolute rate of change in area (ARC) and the proportional rate of change in area (PRC) were used to assess the subcriteria under Criterion A: (A1) changes over the past 50 years, (A2a) the next 50 years and any  (A2b) 50-year period including the past, present and future. Observed and extrapolated trends are shown in the graph below. Historical projections are based on the average trend observed during the assessment period. Future projections are based either on the average long-term trend (\"Long-term\") or on the most recent observed period of change (\"Near-term\")."
+
 )
 ```
 
@@ -302,7 +298,7 @@ if (knitr::is_html_output()) {
 ```
 
 
-### Subcriterion details
+### Subcriteria details
 ```{r criterion_a_detail, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
 # Per-subcriterion "cards" with column-aligned rows.
 # HTML  -> styled htmltools divs with status circles inline
@@ -328,9 +324,9 @@ build_detail_rows <- function(df) {
 }
 
 sub_meta <- list(
-  list(code = "A1",  desc = "Observed and inferred reduction over the past ~50 years",
+  list(code = "A1",  desc = "Observed and/or inferred reduction over the past 50 years",
        rows = build_detail_rows(params$a1_result)),
-  list(code = "A2a", desc = "Projected reduction over the next ~50 years",
+  list(code = "A2a", desc = "Projected reduction over the next 50 years",
        rows = build_detail_rows(params$a2a_result)),
   list(code = "A2b", desc = "Worst-case reduction over any 50-year window (past + future)",
        rows = build_detail_rows(params$a2b_result))

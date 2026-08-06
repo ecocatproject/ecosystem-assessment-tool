@@ -2,14 +2,19 @@
 Temperature across ecosystem
 -->
 
-
 ```{r temperature_text, echo=FALSE, message=FALSE, warning=FALSE}
 if (is.null(params$temperature)) {
   temp_text <- ""
 } else {
+  ecosystem_label <- if (is.na(params$ecosystem_name) || !nzchar(params$ecosystem_name)) {
+  "ecosystem"
+} else {
+  params$ecosystem_name
+}
+  
   temp_text <- paste0(
-    # "**Temperature:** ",
-    "Historical temperature data was taken from [WorldClim version 2.1](https://www.worldclim.org/data/worldclim21.html). The average annual temperature with the ecosystem between 1970 and 2000 was ", round(mean(params$temperature$mean), 1), "°C. The average monthly temperature patterns are shown in the graph below:"
+    # "**Rainfall:** ",
+    "The average annual temperature across the **", ecosystem_label, "** between 1970 and 2000 was ", round(mean(params$temperature$mean), 1), "°C, based on historical temperature data taken from [WorldClim version 2.1](https://www.worldclim.org/data/worldclim21.html) The average monthly temperature is shown in the graph below:"
     )
 }
 ```
