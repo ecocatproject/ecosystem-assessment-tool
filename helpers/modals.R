@@ -176,37 +176,27 @@ draw_instructions_modal  <- modalDialog(
       
       # Step rows
       purrr::pmap(list(
-        n     = 1:4,
-        title = c("Go to the 'Description' tab",
-                  "Find drawing tools",
+        n     = 1:3,
+        title = c("Find drawing tools",
                   "Draw the area(s) of interest",
-                  "Return to sidebar"),
+                  "Apply area filter "),
         body  = list(
           # tagList mixes text and icon() inline
           tagList(
-            "Ensure 'Description' tab is visible",
-            "The drawing tools are only visible on the 'Description' tab map."
+            "The drawing tools are available on the the left hand side of the map in the", tags$b("Description") ,"tab."
           ),
           tagList(
-            "The ", tags$span(style = "font-size:1.3em; line-height:1;", "\u2B1F"), 
-            " polygon and/or ",
-            tags$i(class = "fas fa-square"), " rectangle tools can be found on the ",
-            "left-hand side of the map."
+            "Use the", tags$b("polygon"), tags$span(style = "font-size:1.3em; line-height:1;", "\u2B1F"), " and/or", tags$b("rectangle"),  tags$i(class = "fas fa-square"),
+            " tools to draw one or more areas. Drawn areas can be edited",  tags$i(class = "fas fa-pen-to-square"),"or deleted", tags$i(class = "fas fa-trash-alt"),"."
           ),
           tagList(
-            "Multiple areas can be drawn to restrict the classification to areas ",
-            "within the polygons. Drawn areas can also be ",
-            tags$i(class = "fas fa-pen-to-square"), " edited or ",
-            tags$i(class = "fas fa-trash-alt"), " deleted using the relevant tools."
-          ),
-          tagList(
-            "Return to the sidebar and click '",
+            "Click ",
             tags$i(class = "fas fa-crop"),
-            tags$strong("Apply area filter'"),
-            " at the bottom of the sidebar. ",
-            "To revert to original, click '",
+            tags$b("Apply area filter'"),
+            " at the bottom of the sidebar panel to restrict assessement to the selected areas. ",
+            "To restore the original extent, click '",
             tags$i(class = "fas fa-rotate-left"),
-            tags$strong(" Revert to full extent'"), ". These buttons will be available once data has been uploaded and drawing tools have been used."
+            tags$strong(" Revert to full extent'"), "."
           )
         )
        ), function(n, title, body) {
@@ -233,7 +223,7 @@ draw_instructions_modal  <- modalDialog(
     tags$p(
       style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
       tags$b("Tip:"),
-      "These instructions can be found when selecting the",
+      "Click",
       tags$span(
         style = "display:inline-block; font-size:12px; text-decoration:none;
                border:1px solid #669900; border-radius:4px;
@@ -241,7 +231,7 @@ draw_instructions_modal  <- modalDialog(
                white-space:nowrap; vertical-align:middle;",
         bs_icon("pencil"), " How to refine"
       ),
-      "button at the top of the map; it also appears in the sidebar once maps have been processed."
+      " at the top of the map or sidebar panel to see the instructions."
     )
   ),
   easyClose = FALSE,
