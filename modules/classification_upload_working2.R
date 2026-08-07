@@ -973,6 +973,14 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
 
       list(ok = TRUE, res = ncells)
     }
+    
+    # small helper to render "417 million" style counts
+    fmt_cells <- function(n) {
+      if (n >= 1e9)      paste0(round(n / 1e9, 1), " billion")
+      else if (n >= 1e6) paste0(round(n / 1e6),   " million")
+      else               format(n, big.mark = ",")
+    }
+    
     # ---- add near your other reactiveVals ----
     ack_big <- reactiveVal(FALSE)   # user has acknowledged the big-raster warning
     
@@ -1065,26 +1073,56 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       
       # big-raster warning — only if too large AND not already acknowledged
       check <- check_ncells(files)
+      # if (!check$ok && !ack_big()) {
+      #   showModal(modalDialog(
+      #     title = div(
+      #       style = "text-align:center; padding-bottom:0.25rem;",
+      #       tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+      #              tagList(icon("exclamation-triangle"),
+      #                      "The map files may be too large to process"))),
+      #     tagList(
+      #       tags$div(
+      #         style = "padding:0.5rem 0.25rem;",
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                paste0("The maps have ", format(check$res, big.mark = ","),
+      #                       " cells — this will increase processing time significantly. It may also impact functionality by queuing analysis depending on the number of concurrent users or cause the tool to crash")),
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                "It is recommended to reduce the resolution (aggregate) or reduce the extent"),
+      #         # p(HTML(paste0("Reducing the resolution fixes this: memory falls with the ",
+      #         #               "<b>square</b> of cell size, so 30 m \u2192 90 m uses about ",
+      #         #               "9\u00d7 less.")))
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                "Future versions of this tool will provide instructions/functionality to process large data files"),
+      #       )
+      #     ),
+      #     easyClose = FALSE,
+      #     footer = tagList(
+      #       modalButton("Cancel"),
+      #       actionButton(ns("proceed_big"), "Process anyway",
+      #                    style = "background:#669900; border-color:#669900; color:#fff;")
+      #     )
+      #   ))
+      #   return(NULL)
+      # }
       if (!check$ok && !ack_big()) {
         showModal(modalDialog(
           title = div(
             style = "text-align:center; padding-bottom:0.25rem;",
             tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
                    tagList(icon("exclamation-triangle"),
-                           "The map files may be too large to process"))),
+                           "Large dataset detected"))),
           tagList(
             tags$div(
               style = "padding:0.5rem 0.25rem;",
-              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     paste0("The maps have ", format(check$res, big.mark = ","),
-                            " cells — this will increase processing time significantly. It may also impact functionality by queuing analysis depending on the number of concurrent users or cause the tool to crash")),
               tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     "It is recommended to reduce the resolution (aggregate) or reduce the extent"),
-              # p(HTML(paste0("Reducing the resolution fixes this: memory falls with the ",
-              #               "<b>square</b> of cell size, so 30 m \u2192 90 m uses about ",
-              #               "9\u00d7 less.")))
+                     paste0("The uploaded maps contain ", fmt_cells(check$res),
+                            " cells, which exceeds the recommended size for the current shared processing capacity.")),
               tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     "Future versions of this tool will provide instructions/functionality to process large data files"),
+                     "Processing may be queued depending on the number of concurrent users, take longer to complete, or fail if computing resource limits are reached."),
+              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+                     "To improve performance, consider reducing the map resolution or study area extent, or processing smaller areas separately."),
+              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+                     "Future releases of the RLE Assessment Tool will include further support for processing larger datasets."),
             )
           ),
           easyClose = FALSE,
@@ -1485,9 +1523,14 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     
     # this works- attemtp to hold back teh modal creation....
     observeEvent(input$show_draw_help, {
-      if(is.null(rasters_original()))
+      if(!is.null(rasters_original()))
       showModal(draw_instructions_modal)
     })
+    # observeEvent(input$show_draw_help, {
+    #   message("[classif] show_draw_help fired; modal in scope? ", exists("draw_instructions_modal"))
+    #   req(exists("draw_instructions_modal"))
+    #   showModal(draw_instructions_modal)
+    # })
     
     
     
