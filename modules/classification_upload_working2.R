@@ -1114,9 +1114,13 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
           tagList(
             tags$div(
               style = "padding:0.5rem 0.25rem;",
+              # tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+              #        paste0("The uploaded maps contain ", fmt_cells(check$res),
+              #               " cells, which exceeds the recommended size for the current shared processing capacity.")),
               tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     paste0("The uploaded maps contain ", fmt_cells(check$res),
-                            " cells, which exceeds the recommended size for the current shared processing capacity.")),
+                     tagList("The uploaded maps contain ",
+                             tags$b(paste0(fmt_cells(check$res), " cells")),
+                             ", which exceeds the recommended size for the current shared processing capacity.")),
               tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
                      "Processing may be queued depending on the number of concurrent users, take longer to complete, or fail if computing resource limits are reached."),
               tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
