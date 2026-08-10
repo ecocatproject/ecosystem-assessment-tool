@@ -14,8 +14,8 @@
 # 5. b help
 # 6. b1
 # 7. b2
-
 # currently not the report modal..... 
+
 # =============================================================================
 
 
@@ -79,7 +79,12 @@ start_up_modal <- modalDialog(
               tags$p(
                 style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
                 tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
-              )
+              ),
+      # security warning
+      tags$hr(),
+      tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+              tags$b("Security notice:"), "No sign-in is required to access the tool. If an unexpected sign-in pop-up appears, please close it and do not enter any credentials, as it is not part of the tool. If in doubt, contact your IT support team.
+")
     )
   ),
   easyClose = FALSE,
