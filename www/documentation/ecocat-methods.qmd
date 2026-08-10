@@ -17,6 +17,7 @@ format:
     csl: conservation-biology.csl
     link-citations: true
     link-external-icon: true
+    link-external-newwindow: true
     # page-layout: fulle
 execute:
   echo: false
