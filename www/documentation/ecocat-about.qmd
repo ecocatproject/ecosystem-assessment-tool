@@ -15,6 +15,7 @@ format:
     # csl: conservation-biology.csl
     link-citations: true
     link-external-icon: true
+    link-external-newwindow: true
     # page-layout: fulle
 execute:
   echo: false
@@ -37,7 +38,7 @@ The IUCN RLE has been adopted as a headline indicator in the [Global Biodiversi
 
 This RLE Assessment tool is part of the [**EcoCAT (Ecosystem Conservation Assessment Tools)**](https://www.kew.org/science/our-science/projects/EcoCAT) project, a broader initiative to develop open, modular and user-friendly tools that support ecosystem mapping and assessment in line with the IUCN Red List of Ecosystems framework.
 
-## How does this tool support ecosystem assessments?    
+## How does this tool support ecosystem assessments?
 
 The **EcoCAT RLE Assessment Tool** helps users assess the risk of ecosystem collapse following the guidelines and criteria of the IUCN Red List of Ecosystems.
 
