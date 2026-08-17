@@ -575,7 +575,8 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
         status_col = "assessment",
         data_col_1 = "n",
         data_col_2 = "n_exceed",
-        hover_text = "AOO (10x10 km cells)",
+        hover_text = "To qualify as threatened under Criterion B, an ecosystem must also meet at least one of the conditions for continuing
+          decline or the number of threat-defined locations.",
         type = "b2"
       )
       output$criterion_boxes_b2 <- renderUI({

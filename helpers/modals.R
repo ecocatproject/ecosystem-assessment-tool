@@ -92,7 +92,7 @@ start_up_modal <- modalDialog(
 )
 
 # =============================================================================
-# 2.  years modal 
+# 2a.  years modal 
 # =============================================================================
 years_modal <-  function(rows, ns){
   modalDialog(
@@ -170,7 +170,7 @@ draw_instructions_modal  <- modalDialog(
     style = "text-align:center; padding-bottom:0.25rem; ",
     tags$p(icon("draw-polygon"), " Refine assessment area (optional)"),
     tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
-           "You can restrict the assessment to a specific area using the drawing tools on the map:")
+           "Use the map drawing tools to restrict the assessment extent:")
   ),
   tagList(
     tags$div(
@@ -344,7 +344,7 @@ b_help_modal <- modalDialog(
 # 6.  subcriterion b1
 # =============================================================================
 b1_modal <- modalDialog(
-  title = "Subcriteria B1 Assessment",
+  title = "Subcriterion B1 Assessment",
   tagList(
     div(style = "text-align:center;",
         tags$h4("Please wait... "),
@@ -352,7 +352,7 @@ b1_modal <- modalDialog(
         withSpinner(uiOutput("dummy_spinner"), type = 5, color = "#669900"),  # CSS spinner
         # Tip box
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
-                tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
+                tags$b("Tip:"), "Map layers can be toggled on and off. Assessment results will appear in the boxes below and can be downloaded from the", tags$b("Report & Data")," tab")
     )
   ),
   easyClose = FALSE,
@@ -363,16 +363,14 @@ b1_modal <- modalDialog(
 # 7.  subcriterion b2 
 # =============================================================================
 b2_modal <- modalDialog(
-  title = "Subcriteria B2 Assessment",
+  title = "Subcriterion B2 Assessment",
   tagList(
     div(style = "text-align:center;",
         tags$h4("Please wait... "),
         tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occupancy (AOO)"),
         withSpinner(uiOutput("dummy_spinner"), type = 5, color = "#669900"),  # CSS spinner
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
-                tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
-        
-
+                tags$b("Tip:"), "Map layers can be toggled on and off. Assessment results will appear in the boxes below and can be downloaded from the", tags$b("Report & Data")," tab")
     )
   ),
   easyClose = FALSE,
