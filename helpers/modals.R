@@ -370,9 +370,7 @@ b2_modal <- modalDialog(
         tags$p("Computing the occupied grid cell area (of 10km grid cells) to measure the ecosystem Area of Occupancy (AOO)"),
         withSpinner(uiOutput("dummy_spinner"), type = 5, color = "#669900"),  # CSS spinner
         tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
-                tags$b("Tip:"), "Map layers can be toggled on and off; assessment results will appear in the boxes below and downloadable in the report tab.")
-        
-
+                tags$b("Tip:"), "Map layers can be toggled on and off. Assessment results will appear in the boxes below and can be downloaded from the", tags$b("Report & Data")," tab")
     )
   ),
   easyClose = FALSE,
