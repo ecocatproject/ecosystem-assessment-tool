@@ -93,7 +93,7 @@ compute_aoo_fast <- function(eau) {
 # Projects ecosystem raster to LAEA,exact_extract use to count cells per 10km block,
 # then converts occupied blocks back to polygons for display.
 # ==============================================================================
-compute_aoo_slow <- function(eau) {
+_slow <- function(eau) {
   
   # Compute centre of data extent in WGS84
   eau_4326 <- project(eau, "EPSG:4326")
@@ -443,7 +443,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       
       progress$set(message = "computing AOO grid", value = 2)
       
-      result <- compute_aoo_slow(eau)
+      result <- compute_aoo_fast(eau)
       
       if (is.null(result)) {
         showNotification("No ecosystem cells found in raster.", type = "error")
