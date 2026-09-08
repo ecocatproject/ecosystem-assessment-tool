@@ -93,7 +93,7 @@ compute_aoo_fast <- function(eau) {
 # Projects ecosystem raster to LAEA,exact_extract use to count cells per 10km block,
 # then converts occupied blocks back to polygons for display.
 # ==============================================================================
-_slow <- function(eau) {
+compute_aoo_slow <- function(eau) {
   
   # Compute centre of data extent in WGS84
   eau_4326 <- project(eau, "EPSG:4326")
