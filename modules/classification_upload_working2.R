@@ -1506,10 +1506,12 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       progress$close()
       
       # removeModal()
-      if (!isTRUE(input$run_description)) {
-        removeModal()    # no descriptive vars — close immediately
-        if (is.null(subset_poly())) showModal(draw_instructions_modal) # If run_description TRUE, description module handles removeModal + showModal
-        
+        if (!isTRUE(input$run_description)) {
+        show_draw <- is.null(subset_poly())        # read the reactive HERE, in the observer
+        session$onFlushed(function() {
+          removeModal(session = session)
+          if (show_draw) showModal(draw_instructions_modal, session = session)
+        }, once = TRUE)
       }
       
     })
