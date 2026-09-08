@@ -443,7 +443,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
       
       progress$set(message = "computing AOO grid", value = 2)
       
-      result <- compute_aoo_slow(eau)
+      result <- compute_aoo_fast(eau)
       
       if (is.null(result)) {
         showNotification("No ecosystem cells found in raster.", type = "error")
