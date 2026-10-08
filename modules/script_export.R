@@ -30,8 +30,8 @@ export_function_files <- c(
 export_map_layers <- c(
   world  = "countries.sf",  # sf country polygons (needed for the static B maps)
   relief = "relief",        # SpatRaster shaded relief, EPSG:4326
-  lakes  = "lakes",         # sf polygons
-  rivers = "rivers"         # sf lines
+  lakes  = "lakes.sf",         # sf polygons
+  rivers = "rivers.sf"         # sf lines
 )
 
 
@@ -86,7 +86,9 @@ check_raster_years <- function(raster_names, years) {
 #   raster_file : one of the processed rasters (defines the area)
 #   layers      : named list of objects, e.g. list(world = countries.sf, ...)
 crop_map_layers <- function(raster_file, layers, pad_deg = 1) {
-  layers <- Filter(Negate(is.null), layers)
+  # keep only spatial objects - anything else (e.g. a same-named dataset) is skipped
+  is_spatial <- function(x) inherits(x, c("sf", "SpatVector", "SpatRaster"))
+  layers <- Filter(is_spatial, layers)
   if (length(layers) == 0) return(list())
 
   r    <- terra::rast(raster_file)
@@ -380,7 +382,8 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
           raster_sources = x$raster_sources,
           map_layers     = crop_map_layers(
             x$map_area_file,
-            lapply(export_map_layers, get0, envir = globalenv())
+            lapply(export_map_layers, get0, envir = globalenv(),
+                   inherits=FALSE) # this doesnt then get any default datasets
           )
         )
 
