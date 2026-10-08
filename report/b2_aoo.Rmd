@@ -159,20 +159,29 @@ dat_all  <- cells_sf[cells_sf$type == "all", ]
 dat_sel  <- cells_sf[cells_sf$type == "assessment", ]
 
 if (knitr::is_html_output()) {
- m <- make_fig_b2_leaflet(dat_all, dat_sel, r_recent, latest_year)
- # Wrap the map with title
-htmltools::tagList(
-  tags$div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    map_title),
-  m
-)
-} else {
-    make_fig_b2(params$b2_poly, rasters, params$years)
+#  m <- make_fig_b2_leaflet(dat_all, dat_sel, r_recent, latest_year,
+#                            base_provider = "Esri.WorldGrayCanvas",
+#                               base_label    = "Basemap",
+#                               draw_tools    = FALSE)
+#  # Wrap the map with title
+# htmltools::tagList(
+#   htmltools::tags$div(
+#     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
+#     map_title),
+#   m
+# )
+       make_fig_b2(params$b2_poly, rasters, latest_year,
+                  world = countries.sf, 
+                  lakes = lakes.sf,
+                  rivers = rivers.sf,
+                  basemap = relief)
+  } else {
+           make_fig_b2(params$b2_poly, rasters, latest_year,
+                  world = countries.sf, 
+                  lakes = lakes.sf,
+                  rivers = rivers.sf,
+                  basemap = relief)
 }
 
 # Interactive Leaflet  - using function from figures1.R 
-#m
-
-
 ```

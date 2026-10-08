@@ -299,6 +299,12 @@ if (knitr::is_html_output()) {
 
 
 ### Subcriteria details
+```{r b1_text_missing, echo=FALSE, results='asis', eval = !isTRUE(has_any_a)}
+cat(paste0(
+  "The area of ecosystem change for criterion A could not be assessed for this ecosystem. "
+))
+```
+
 ```{r criterion_a_detail, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
 # Per-subcriterion "cards" with column-aligned rows.
 # HTML  -> styled htmltools divs with status circles inline

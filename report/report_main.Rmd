@@ -229,7 +229,7 @@ This report documents an ecosystem assessment of the `r ecosystem_label`, follow
 
 `r if (!is.null(rasters) && length(rasters) > 0) "### Mapped distribution" else ""`
 
-```{r mapped_distribution, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width="100%", eval = !is.null(rasters) && length(rasters) > 0}
+```{r mapped_distribution, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width="100%", eval = !is.null(rasters) && length(rasters) > 0, fig.alt="A map of the ecosystem showing the most recent distribution"}
 # Always-shown recent + loss map.  Uses the same figure helpers as the app tab
 # (figures.R sourced by the Shiny app at startup, in scope at render time).
 #
@@ -247,11 +247,20 @@ r_loss   <- if (is.null(rasters_change)) {
   NULL
 }
 
-if (knitr::is_html_output()) {
-  make_fig_distribution_leaflet(r_recent, r_loss, years)
-} else {
-  make_fig_loss(r_recent, r_loss, years)
-}
+#if (knitr::is_html_output()) {
+ # make_fig_distribution_leaflet(r_recent, r_loss, years,
+ #                              base_provider = "Esri.WorldGrayCanvas",
+ #                              base_label    = "Basemap",
+ #                              draw_tools    = FALSE)
+#} else {
+  # make_fig_loss(r_recent, r_loss, years)
+  make_fig_distribution(r_map = r_recent, r_loss = r_loss, years,
+                world = countries.sf,
+                lakes = lakes.sf,
+                rivers = rivers.sf,
+                basemap = relief)
+
+#}
 ```
 
 `r if (descriptive_flags$typology) "### Classification" else ""`
