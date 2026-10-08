@@ -6,46 +6,32 @@
 # -------------------------------------------------------
 #########################################################
 
-# -------------------------------------------------------
-# load global
+# 1. global settings ------------------------------------------------------
 source("global.R")
 
-# -------------------------------------------------------
-# Load all modules
-# source("modules/classification_upload.R")
-# source("modules/description_eu.R")
-source("modules/classification_upload_working2.R")
-source("modules/description_eu_working2.R")    # was description.R
+
+# 2. load modules ---------------------------------------------------------
+source("modules/map_upload.R")
+source("modules/description.R")
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
-source("modules/report_wthumb.R")
+source("modules/report.R")
 source("modules/data_download.R")
 source("modules/about.R")
 source("modules/script_export.R")
-source("modules/figures1.R")
+source("modules/figures.R")
 
-# -------------------------------------------------------
-# load  helpers
+
+# 3. load helper functions ------------------------------------------------
 source("helpers/helpers.R")              # info_icon, get_box_status, empty_assess_table
 source("helpers/analysis_functions.R")   # calc_area_change, predict_area_change, makeEOO.SpatRaster   
 source("helpers/value_boxes.R")          # format_assessment_lines, make_b_value_boxes, make_value_box, 
+source("helpers/rle_assessment.R")
 
-# -------------------------------------------------------
-# description variable helpers currently loaded in description_eu.R
 
-# -------------------------------------------------------
-# load modals
+# 4. modals ---------------------------------------------------------------
+# modals (i.e., pop up helper boxes/screens) created in separate helper file
 source("helpers/modals.R")
-
-# -------------------------------------------------------
-# links menu
-links_menu <- nav_menu(
-  title = "Links",
-  align = "right",
-  nav_item(kew_ecocat_url),
-  nav_item(get_url),
-  nav_item(rle_url)
-)
 
 
 #########################################################
@@ -58,7 +44,7 @@ ui <- page_navbar(
   id = "main_tab",
   title = tagList(
     tags$a(
-      tags$img(src = "cat_bw3.png", height = "50px", style = "margin-right:10px;")#, was logo.png
+      tags$img(src = "ecocat-icon-b3.png", height = "50px", style = "margin-right:10px;")#, was logo.png
       # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
     ),
     "EcoCAT RLE Assessment Tool"
@@ -77,7 +63,13 @@ ui <- page_navbar(
   
 # add links ----------------------------------------------------------------
   nav_spacer(),
-  links_menu,
+nav_menu(
+  title = "Links",
+  align = "right",
+  nav_item(kew_ecocat_url),
+  nav_item(get_url),
+  nav_item(rle_url)
+),
   
 # Add custom CSS -----------------------------------------------------------
   tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"))
@@ -92,66 +84,56 @@ ui <- page_navbar(
 
 server <- function(input, output, session) {
   
-  # Session-scoped temp directory — isolated per user, cleaned up on exit
+
+# 1. session directory ----------------------------------------------------
+# Session specific temp directory, per user
   session_tmp <- file.path(tempdir(), session$token)
   dir.create(session_tmp, showWarnings = FALSE)
-  terra::terraOptions(tempdir = session_tmp)   # once, here
+  terra::terraOptions(tempdir = session_tmp)  
   session$onSessionEnded(function() {
     unlink(session_tmp, recursive = TRUE)
   })
   
-  # show instruction modal on start -------------------------------------------  
+
+# 2. instructions modal ---------------------------------------------------
+# show on start up
   showModal(start_up_modal)
   
-  # classification upload module -----------------------------------------------
+
+# 3. map upload module ----------------------------------------------------
   upload_module <- classification_module_server("upload", drawn_poly = description_module$drawn_poly,
                                                 session_tmp = session_tmp)
-  
-  # Description module --------------------------------------------------------
+
+
+# 4. description module ---------------------------------------------------
   description_module <- description_module_server("description",
                                                   upload_module = upload_module,
                                                   process_btn = upload_module$process,
                                                   tifs_input = upload_module$tifs,
                                                   year_inputs = upload_module$years,
                                                   countries = countries,
-                                                  session_tmp = session_tmp)#,
-                                                  # clear_trigger = upload_module$clear_aoi_trigger)
-# 
-#   # Wire drawn AOI from description module → classification module
-#   observeEvent(description_module$drawn_aoi(), {
-#     print("=== APP.R AOI WIRING FIRED ===")
-#     print(paste("drawn_aoi is NULL:", is.null(description_module$drawn_aoi())))
-#     req(description_module$drawn_aoi())
-#     upload_module$aoi_polygon(description_module$drawn_aoi())
-#     print(paste("aoi_polygon set:", !is.null(upload_module$aoi_polygon())))
-#   })
-# 
-#   observeEvent(description_module$map_rendered(), {
-#     req(description_module$map_rendered() > 0)
-#     upload_module$trigger_aoi_modal(
-#       upload_module$trigger_aoi_modal() + 1
-#     )
-#   }, ignoreInit = TRUE)
-#   
-  # Run Criterion A module ----------------------------------------------------
-  main_tab <- reactive(input$main_tab)  # or whatever your navbar id is
+                                                  session_tmp = session_tmp)
+
+  
+
+# 5. Criterion A module ---------------------------------------------------
+  main_tab <- reactive(input$main_tab)  # this is the navbar id
   criterion_a_module <- criterion_A_module_server("criteria_a",
                                                   upload_module = upload_module,
                                                   main_tab = main_tab)
   
-  
-  # Run Criterion B module ----------------------------------------------------
-  main_tab <- reactive(input$main_tab)  # or whatever your navbar id is
+
+# 6. Criterion B module ---------------------------------------------------
+  main_tab <- reactive(input$main_tab) 
   criterion_b_module <- criterion_b_module_server(id = "criteria_b",
                                                   rasters = upload_module$rasters,
-                                                  year_inputs = upload_module$years, # this becomes upload_module$year_inputs?
+                                                  year_inputs = upload_module$years,
                                                   rasters_original = upload_module$rasters_original,
-                                                  main_tab = main_tab
-  )
+                                                  main_tab = main_tab)
   
-  # ============================================================================
-  # Data download details 
-  # Firstly provide list of potential datasets for download 
+
+# 7. data download details -----------------------------------------------
+# provide list of potential datasets for download 
   available_datasets <- reactive({
     all <- list(
       "Criterion A - area change data" = criterion_a_module$area_change_data,
@@ -162,16 +144,15 @@ server <- function(input, output, session) {
       "Criterion B - AOO spatial data" = criterion_b_module$b2_poly
     )
     
-    # Keep only those whose reactive returns *non-null*
+# Keep only those whose reactive returns *non-null*
     Filter(function(r) {
       !is.null(r())  # run reactive to check if data exists
     }, all)
   })
   
-  # ============================================================================
-  # Run report module 
-  # report module server
-  report_module_server("report",
+
+# 8. report module --------------------------------------------------------
+  report_module <- report_module_server("report",
                        datasets = available_datasets,
                        ecosystem_name = input$ecosystem_name,
                        author = input$author,
@@ -202,25 +183,23 @@ server <- function(input, output, session) {
                        b2_poly = criterion_b_module$b2_poly,
                        criterion_b_status   = criterion_b_module$criterion_b_status
   )
-  
-  # script_export  --------------------------------------------------------
+
+
+# 9. script export module -------------------------------------------------
   script_export_server("script_export",
                        upload_module       = upload_module,
                        criterion_a_module  = criterion_a_module,
-                       criterion_b_module  = criterion_b_module)
+                       criterion_b_module  = criterion_b_module,
+                       ecosystem_name      = report_module$ecosystem_name)
   
-  # ============================================================================
-  # Run about module 
-  # about_module_server("about")
-  # about UI is currently loaded in through the about.R module
-  
-  
+
+# 10. about module --------------------------------------------------------
+# about module UI is currently loaded in through the about.R module listed above
   
   
 }
 
-
-# run the app -----------------------------------------------------------------
+# run app
 shinyApp(ui, server)
 
 
