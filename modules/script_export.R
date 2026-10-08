@@ -250,9 +250,16 @@ script_export_ui <- function(id) {
     tags$p(
       "Download a zip containing an R script, the EcoCAT functions and the app's ",
       "results, to reproduce this assessment on your own computer.",
-      style = "color: #555; font-size: 0.9em; margin-bottom: 8px;"
+      style = "color: #555; font-size: 0.9em; color: #555; font-size: 0.9em; margin-bottom: 8px;"
     ),
-    tags$p("Unzip the file adn instructions can be found in the ", style = "color: #555; font-size: 0.9em; margin-bottom: 8px;"),
+    tags$p("To run it, unzip the download and either:", style = "color: #555; font-size: 0.9em; margin-bottom: 4px;"),
+    tags$ul(
+      style = "color: #555; font-size: 0.9em;",
+      tags$li("double-click ", tags$code("EcoCAT_assessment.Rproj"), ", then run ",
+              tags$code('source("run_assessment.R")')),
+      tags$li("or, in R or RStudio, run ",
+              tags$code('source("path/to/unzipped/folder/run_assessment.R", chdir = TRUE)'))
+    ),
     uiOutput(ns("data_options")),
     uiOutput(ns("download_ui"))
   )
@@ -317,8 +324,8 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
         return(tags$p(problem, style = "color: #b35806; font-size: 0.9em;"))
       }
       downloadButton(
-        ns("download_script"), "Download R script (.zip)",
-        style = "background-color: #2c7bb6; color: white; border: none;"
+        ns("download_script"), "Download R script (.zip)"
+        # style = "background-color: #2c7bb6; color: white; border: none;"
       )
     })
 
