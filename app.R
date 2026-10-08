@@ -44,10 +44,10 @@ ui <- page_navbar(
   id = "main_tab",
   title = tagList(
     tags$a(
-      tags$img(src = "ecocat-icon-b3.png", height = "50px", style = "margin-right:10px;")#, was logo.png
+      tags$img(src = "text_logo4.png", height = "50px", style = "margin-right:10px;")#, was logo.png
       # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
     ),
-    "EcoCAT RLE Assessment Tool"
+    #"EcoCAT RLE Assessment Tool"
   ),
   theme = custom_theme,
   
