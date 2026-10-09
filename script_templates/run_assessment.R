@@ -58,15 +58,27 @@ if (!file.exists("R/ecocat_functions.R")) {
 
 # PACKAGES ---------------------------------------------------------------------
 required <- c("terra", "sf", "dplyr", "purrr", "tidyr", "ggplot2", "ggspatial", "exactextractr")
-missing  <- required[!vapply(required, requireNamespace, logical(1), quietly = TRUE)]
-if (length(missing) > 0) {
-  stop("Please install the missing packages first:\n  install.packages(c(",
-       paste0('"', missing, '"', collapse = ", "), "))", call. = FALSE)
+optional <- c("plotly", "leaflet", "htmlwidgets")   # interactive HTML figures only
+
+is_missing <- function(pkgs) pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+
+# Offer to install anything missing (asks first - nothing is installed silently)
+to_install <- c(is_missing(required), if (save_interactive_figures) is_missing(optional))
+if (length(to_install) > 0) {
+  cat("These R packages are needed but not installed:\n  ",
+      paste(to_install, collapse = ", "), "\n", sep = "")
+  answer <- if (interactive()) readline("Install them now from CRAN? [y/n]: ") else "n"
+  if (tolower(substr(trimws(answer), 1, 1)) == "y") {
+    install.packages(to_install)
+  }
 }
 
-interactive_pkgs <- c("plotly", "leaflet", "htmlwidgets")
-if (save_interactive_figures &&
-    !all(vapply(interactive_pkgs, requireNamespace, logical(1), quietly = TRUE))) {
+still_missing <- is_missing(required)
+if (length(still_missing) > 0) {
+  stop("Please install the missing packages, then run the script again:\n  install.packages(c(",
+       paste0('"', still_missing, '"', collapse = ", "), "))", call. = FALSE)
+}
+if (save_interactive_figures && length(is_missing(optional)) > 0) {
   message("plotly / leaflet / htmlwidgets not installed - skipping interactive figures.")
   save_interactive_figures <- FALSE
 }
