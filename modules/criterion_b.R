@@ -213,7 +213,7 @@ criterion_b_module_server <- function(id, rasters_original, year_inputs, rasters
           data_col = "area_km2",
           hover_text = "To qualify as threatened under Criterion B, an ecosystem must also meet at least one of the conditions for continuing
           decline or the number of threat-defined locations.
-          See the RLE Criteria for details",#"EOO (km2)",
+          See the RLE tab in the " , tags$b("'About & Help'"), "tab for details",#"EOO (km2)",
           type = "b1"
         )
         

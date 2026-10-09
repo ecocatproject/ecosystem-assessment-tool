@@ -843,8 +843,8 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       tags$span(
         tags$strong(style = "font-size:14px;",
                     paste0(step, ") Click the process button below to start the ecosystem assessment:")),
-        tooltip(bs_icon("info-circle"),
-                "Draw polygon(s) on the map to restrict the analysis to a specific area.")
+        # tooltip(bs_icon("info-circle"),
+        #         "Draw polygon(s) on the map to restrict the analysis to a specific area.")
       )
     })
     
@@ -942,7 +942,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
             tags$strong(style = "font-size:14px;",
                         paste0(step, ") Refine by area (optional)")),
             tooltip(bs_icon("info-circle"),
-                    "Draw polygon(s) on the map to restrict the analysis to a specific area.")
+                    "Click the button below to refine by the drawn area(s)")
           ),
           if (!is.null(drawn_poly())) {
             actionButton(ns("refine_area"), "Apply area filter",
