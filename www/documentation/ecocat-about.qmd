@@ -1,5 +1,5 @@
 ---
-title: "EcoCAT Red List of Ecosystems Assessment Tool"
+title: "EcoCAT Assessment Tool"
 # subtitle: "About this tool"
 format: 
   html:
@@ -36,11 +36,11 @@ The IUCN RLE has been adopted as a headline indicator in the [Global Biodiversi
 
 ## The EcoCAT project
 
-This RLE Assessment tool is part of the [**EcoCAT (Ecosystem Conservation Assessment Tools)**](https://www.kew.org/science/our-science/projects/EcoCAT) project, a broader initiative to develop open, modular and user-friendly tools that support ecosystem mapping and assessment in line with the IUCN Red List of Ecosystems framework.
+This Ecosystem Assessment tool is part of the [**EcoCAT (Ecosystem Conservation Assessment Tools)**](https://www.kew.org/science/our-science/projects/EcoCAT) project, a broader initiative to develop open, modular and user-friendly tools that support ecosystem mapping and assessment in line with the IUCN Red List of Ecosystems framework.
 
 ## How does this tool support ecosystem assessments?
 
-The **EcoCAT RLE Assessment Tool** helps users assess the risk of ecosystem collapse following the guidelines and criteria of the IUCN Red List of Ecosystems.
+The **EcoCAT Assessment Tool** helps users assess the risk of ecosystem collapse following the guidelines and criteria of the IUCN Red List of Ecosystems.
 
 Users begin the assessment process by uploading ecosystem maps, which may have been generated using mapping tools or obtained from published datasets. The tool accepts ecosystem maps in GeoTIFF (.tif) raster format for a single year or multiple years (*n.b.:* maps from at least two distinct years are required to assess change over time, i.e. Criterion A). Currently, the tool assists with the following steps of the RLE assessment process:
 
@@ -60,12 +60,14 @@ The tool generates outputs that support the assessment process and can be downlo
 
 -   Publication-ready figures
 
+-   R scripts (to repeat analysis)
+
 ## Who is this tool for?
 
 This tool is intended for practitioners, researchers, conservationists, and decision-makers undertaking IUCN Red List of Ecosystems assessments. It is designed for users who already have ecosystem maps and wish to assess ecosystem risk of collapse following the [IUCN Red List of Ecosystem assessment guidelines](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf "pdf file of the RLE ecosytem assessment guidelines"){target="_blank" rel="noopener noreferrer"}.
 
 ## Future work
 
-Future releases of the EcoCAT RLE Assessment Tool will include support for the calculation of ecosystem degradation based on widely applicable indicators to support assessments of **Criterion C** (Environmental degradation) and **Criterion D** (Disruption of biotic processes or interactions). Additional planned developments include methods to account for uncertainties in spatial distribution and integration with the EcoCAT Mapping Tool.
+Future releases of the EcoCAT Assessment Tool will include support for the calculation of ecosystem degradation based on widely applicable indicators to support assessments of **Criterion C** (Environmental degradation) and **Criterion D** (Disruption of biotic processes or interactions). Additional planned developments include methods to account for uncertainties in spatial distribution and integration with the EcoCAT Mapping Tool.
 
-The EcoCAT team is currently developing the Ecosystem Mapping Tool to support the production of ecosystem maps and time series required for the assessment and reassessment of the RLE spatial distribution criteria. These maps will include measures of mapping uncertainty and will be optimised for direct use in the RLE Assessment Tool.
+The EcoCAT team is currently developing an ecosystem Mapping Tool to support the production of ecosystem maps and time series required for the assessment and reassessment of the RLE spatial distribution criteria. These maps will include measures of mapping uncertainty and will be optimised for direct use in the EcoCAT Assessment Tool.

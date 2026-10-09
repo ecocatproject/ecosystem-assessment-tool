@@ -1,5 +1,5 @@
 ---
-title: "EcoCAT Red List of Ecosystems Assessment Tool"
+title: "EcoCAT Assessment Tool"
 subtitle: "Methods and data description"
 #date: last-modified
 #author: "Rob Critchlow"

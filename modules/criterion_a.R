@@ -20,7 +20,7 @@ criterion_a_module_ui <- function(id) {
                   tooltip(
                     bs_icon("info-circle"),
                     tags$p("To view the full table, click the expand button in the bottom‑right corner.",  style = "text-align: left"),
-                    tags$p("The data can be downloaded from the ", tags$b("'Report/Data download'"), "tab",  style = "text-align: left")
+                    tags$p("The data can be downloaded from the ", tags$b("'Report & Data'"), "tab",  style = "text-align: left")
                   )),
       uiOutput(ns("area_change_table"))
     ),
