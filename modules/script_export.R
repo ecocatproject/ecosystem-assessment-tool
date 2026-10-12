@@ -248,14 +248,14 @@ script_export_ui <- function(id) {
   ns <- NS(id)
   tagList(
     tags$p(
-      "Download a zip containing an R script, the EcoCAT functions and the app's ",
+      "Download a zip containing an R script, the EcoCAT functions and the tool's ",
       "results, to reproduce this assessment on your own computer.",
       style = "color: #555; font-size: 0.9em; color: #555; font-size: 0.9em; margin-bottom: 8px;"
     ),
     tags$p("To run it, unzip the download and either:", style = "color: #555; font-size: 0.9em; margin-bottom: 4px;"),
     tags$ul(
       style = "color: #555; font-size: 0.9em;",
-      tags$li("double-click ", tags$code("EcoCAT_assessment.Rproj"), ", then run ",
+      tags$li("double-click the", tags$code(".Rproj"), ", file then run: ",
               tags$code('source("run_assessment.R")')),
       tags$li("or, in R or RStudio, run ",
               tags$code('source("path/to/unzipped/folder/run_assessment.R", chdir = TRUE)'))
