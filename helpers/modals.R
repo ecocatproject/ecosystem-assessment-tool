@@ -192,7 +192,7 @@ draw_instructions_modal  <- modalDialog(
           ),
           tagList(
             "Use the", tags$b("polygon"), tags$span(style = "font-size:1.3em; line-height:1;", "\u2B1F"), " and/or", tags$b("rectangle"),  tags$i(class = "fas fa-square"),
-            " tools to draw one or more areas. Drawn areas can be edited",  tags$i(class = "fas fa-pen-to-square"),"or deleted", tags$i(class = "fas fa-trash-alt"),"."
+            " tools to draw one or more areas. Drawn areas can be", tags$b("edited"),  tags$i(class = "fas fa-pen-to-square"),"or", tags$b("deleted"), tags$i(class = "fas fa-trash-alt"),"."
           ),
           tagList(
             "Click ",
