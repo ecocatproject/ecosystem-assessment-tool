@@ -44,8 +44,9 @@ ui <- page_navbar(
   id = "main_tab",
   title = tagList(
     tags$a(
-      tags$img(src = "logo-text-magicked.png", height = "40px", style = "margin-right:10px;")#, was logo.png
-      # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
+      tooltip(tags$img(src = "logo-text-magicked.png", height = "50px", style = "margin-right:10px;"),
+                "Ecosystem Conservation Assessment Tools - Assessment Tool", placement="bottom")#, was logo.png
+      # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")"ecocat-icon-b3.png"
     ),
     #"EcoCAT RLE Assessment Tool"
   ),
