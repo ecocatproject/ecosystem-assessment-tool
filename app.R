@@ -55,13 +55,18 @@ links_menu <- nav_menu(
 #########################################################
 
 ui <- page_navbar(
+  header = tags$head(
+    tags$link(rel = "icon", type = "image/png", href = "e-magicked.png")
+  ),
   id = "main_tab",
+  window_title = "EcoCAT – Assessment Tool",   # <- browser tab text
   title = tagList(
     tags$a(
-      tags$img(src = "cat_bw3.png", height = "50px", style = "margin-right:10px;")#, was logo.png
-      # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")
+      tooltip(tags$img(src = "logo-text-magicked.png", height = "50px", style = "margin-right:10px;"),
+                "Ecosystem Conservation Assessment Tools - Assessment Tool", placement="bottom")#, was logo.png
+      # tags$img(src = rle_logo, height = "50px", style = "margin-right:10px;")"ecocat-icon-b3.png"
     ),
-    "EcoCAT RLE Assessment Tool"
+  #  "EcoCAT RLE Assessment Tool"
   ),
   theme = custom_theme,
   
