@@ -42,7 +42,7 @@ source("helpers/modals.R")
 
 ui <- page_navbar(
   header = tags$head(
-    tags$link(rel = "icon", type = "image/png", href = "e-magicked.png")
+    tags$link(rel = "icon", type = "image/png", href = "e-favicon.png")
   ),
   id = "main_tab",
   window_title = "EcoCAT – Assessment Tool",   # <- browser tab text
