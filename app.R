@@ -41,11 +41,11 @@ source("helpers/modals.R")
 #########################################################
 
 ui <- page_navbar(
-#  header = tags$head(
-#    tags$link(rel = "icon", type = "image/png", href = "e-favicon.png")
-#  ),
+  header = tags$head(
+    tags$link(rel = "icon", type = "image/png", href = "e-favicon.png")
+  ),
   id = "main_tab",
- # window_title = "EcoCAT – Assessment Tool",   # <- browser tab text
+  window_title = "EcoCAT – Assessment Tool",   # <- browser tab text
   title = tagList(
     tags$a(
       tooltip(tags$img(src = "logo-text-magicked.png", height = "50px", style = "margin-right:10px;"),
