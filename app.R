@@ -57,7 +57,7 @@ links_menu <- nav_menu(
 ui <- page_navbar(
 header = tags$head(
   tags$title("EcoCAT – Assessment Tool"),
-  tags$link(rel = "icon", type = "image/png", href = dataURI(file = "www/e.png", mime = "image/png"))
+  tags$link(rel = "icon", type = "image/png", href = "e.png")
 ),
   id = "main_tab",
   window_title = "EcoCAT – Assessment Tool",   # <- browser tab text
