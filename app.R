@@ -55,9 +55,10 @@ links_menu <- nav_menu(
 #########################################################
 
 ui <- page_navbar(
-  header = tags$head(
-    tags$link(rel = "icon", type = "image/png", href = "e-magicked.png")
-  ),
+header = tags$head(
+  tags$title("EcoCAT – Assessment Tool"),
+  tags$link(rel = "icon", type = "image/png", href = "e-magicked.png")
+),
   id = "main_tab",
   window_title = "EcoCAT – Assessment Tool",   # <- browser tab text
   title = tagList(
