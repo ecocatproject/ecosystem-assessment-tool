@@ -286,8 +286,7 @@ description_module_server <- function(id, upload_module, countries,
     # Functions for descriptive variables
     # =========================================================================
     # Compute overlap with countries
-    source("helpers/country_overlap.R", encoding = "UTF-8") #compute_countries
-    
+    source("helpers/country_overlap.R") #compute_countries
     
     # Compute temperature
     source("helpers/temperature.R") # compute_temperature
