@@ -13,7 +13,7 @@ source("global.R")
 # 2. load modules ---------------------------------------------------------
 source("modules/map_upload.R")
 #source("modules/description.R")
-source("modules/description.R")
+source("modules/description2.R")
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
 source("modules/report.R")
