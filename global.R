@@ -134,7 +134,7 @@ countries <- vect("data/naturalearth/ne_10m_admin_0_countries")
 countries.sf <- st_read("data/naturalearth/ne_10m_admin_0_countries")
 lakes.sf <- st_read("data/naturalearth/ne_10m_lakes")
 rivers.sf <- st_read("data/naturalearth/ne_10m_rivers_lake_centerlines")
-relief <- rast("data/naturalearth/SR_HR_COG.tif")
+relief <- rast("data/naturalearth/SR_HR_cog.tif")
 
 
 
