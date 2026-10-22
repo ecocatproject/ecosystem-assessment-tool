@@ -156,24 +156,24 @@ description_module_ui <- function(id) {
     card(
       full_screen = TRUE,
       height = 190,
-      card_header(
-        tagList(tags$strong("Protected Area Overlap"), uiOutput(ns("p_value"), inline = TRUE)),
-        tooltip(bs_icon("info-circle"),
-                "Proportion of the mapped ecosystem inside designated protected areas, queried live from the
-                World Database on Protected and Conserved Areas (WDPCA). Proposed sites are excluded.
-                Where sites overlap, area is counted once and assigned to the strictest IUCN category.
-                Site areas in the table can overlap, so they do not sum to the total.")
+        card_header(
+        tags$div(
+          style = "display:flex; justify-content:space-between; align-items:center;",
+          tags$span(
+            tags$strong("Protected Area Overlap"), uiOutput(ns("p_value"), inline = TRUE),
+            tooltip(bs_icon("info-circle"), "Proportion of the ecosystem inside designated protected areas")
+          ),
+          tooltip(
+            tags$a("Source: Protected Planet", href = "https://www.protectedplanet.net",
+                   target = "_blank", style = "font-size:12px; text-decoration:none;"),
+            "UNEP-WCMC and IUCN, Protected Planet: The World Database on Protected and Conserved Areas (WDPCA).",
+            id = ns("pa_cite_tip")
+          )
+        )
       ),
       card_body(
-        uiOutput(ns("pa_summary")),
-        # layout_column_wrap(
-        #   width = 1/2,
-        #   plotlyOutput(ns("pa_cat_graph"), height = "220px"),
-        #   uiOutput(ns("pa_site_table"))
-        # )
-      ),
-      card_footer(tags$small(class = "text-muted", uiOutput(ns("pa_citation"), inline = TRUE)))
-    )
+        uiOutput(ns("pa_summary"))
+      ))
   )
 }
 # ==============================================================================
@@ -550,11 +550,9 @@ description_module_server <- function(id, upload_module, countries,
     #   DT::dataTableOutput(ns("pa_site_dt"))
     # })
     
-    output$pa_citation <- renderUI({
-      if (is.null(rv$protected)) return(NULL)
-      tagList(rv$protected$citation, " ",
-              tags$a("protectedplanet.net", href = "https://www.protectedplanet.net",
-                     target = "_blank"))
+  observe({
+      req(rv$protected$citation)
+      bslib::update_tooltip("pa_cite_tip", rv$protected$citation)
     })
     
     # ## section for removing modal after descriptive vars compelte
