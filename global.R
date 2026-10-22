@@ -57,6 +57,7 @@ library(stars)
 library(quarto)
 library(ggspatial)
 library(tinytex)
+library(httr2)
 })
 
 
@@ -65,6 +66,7 @@ options(shiny.maxRequestSize = 45 * 1024^2)
 terraOptions(progress = 1, memfrac = 0.1, tempdir = tempdir(), # or session_tmp()??
              memmax = 4, todisk=FALSE)
 Sys.setenv(GDAL_CACHEMAX = "256")  # MB — GDAL's cache is separate from memfrac
+
 
 # 3. tool theme -----------------------------------------------------------
 custom_theme <- bs_theme(
@@ -75,10 +77,12 @@ custom_theme <- bs_theme(
   base_font = font_google("Roboto")
 )
 
+
 # 4. logos ----------------------------------------------------------------
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
 get_logo <- dataURI(file = "www/logo_GET.png", mime = "image/png")
-cat_logo <- dataURI(file = "www/ecocat-icon-b3.png", mime = "image/png")
+# cat_logo <- dataURI(file = "www/ecocat-icon-b3.png", mime = "image/png")
+
 
 # 5. links ----------------------------------------------------------------
 kew_ecocat_url <- tags$a(
@@ -130,7 +134,7 @@ countries <- vect("data/naturalearth/ne_10m_admin_0_countries")
 countries.sf <- st_read("data/naturalearth/ne_10m_admin_0_countries")
 lakes.sf <- st_read("data/naturalearth/ne_10m_lakes")
 rivers.sf <- st_read("data/naturalearth/ne_10m_rivers_lake_centerlines")
-relief <- rast("data/naturalearth/SR_HR_cog.tif")
+relief <- rast("data/naturalearth/SR_HR_COG.tif")
 
 
 
