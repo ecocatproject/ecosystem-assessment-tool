@@ -340,7 +340,7 @@ make_fig_distribution_leaflet <- function(r_map, r_loss = NULL, years,
     leaflet::addLayersControl(
       # baseGroups    = c("OSM", "ESRI Satellite"),
       baseGroups = c(base_label, "ESRI Satellite"),
-      overlayGroups = overlay_groups,
+      overlayGroups = c(overlay_groups, "Protected areas"),
       options       = leaflet::layersControlOptions(collapsed = FALSE)
     ) |>
     leaflet.extras::addDrawToolbar(
