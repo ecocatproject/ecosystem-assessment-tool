@@ -276,7 +276,7 @@ report_module_server <- function(datasets,
         
         # Choose output format  ----------------------------------------------
         fmt <- switch(input$report_format,
-                      html = "html_document",
+                      html = NULL,
                       pdf = "pdf_document")
         
         # --- Render the report ----------------------------------------------
