@@ -119,7 +119,54 @@ params:
 .nav-tabs > li.active > a {
   border-top: 3px solid #669900;
 }
+/* All links in the main content, including visited/hover/focus states */
+#content a,
+#content a:visited {
+  color: #4d7300;
+}
+#content a:hover,
+#content a:focus {
+  color: #669900;
+  text-decoration: underline;
+}
 
+/* Tab labels (inactive and active) */
+.nav-tabs > li > a,
+.nav-tabs > li > a:visited {
+  color: #4d7300;
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: #2f3a24;
+  border-top: 3px solid #669900;
+}
+
+/* Inline code, which readthedown also colours red */
+#content code {
+  color: #4d7300;
+}
+
+/* Buttons and other small controls (e.g. back-to-top, mobile menu toggle) */
+#content .btn,
+#nav-top a,
+#main button {
+  color: #4d7300;
+  border-color: #669900;
+}
+
+/* DataTables controls, if any tables show paging or search */
+.dataTables_wrapper .paginate_button.current,
+.dataTables_wrapper .paginate_button:hover {
+  background: #669900 !important;
+  color: white !important;
+  border-color: #669900 !important;
+}
+
+#main :not(.leaflet-control) > a {
+    color: #669900;
+}
+``
 </style>
 
 ```{r setup3, include=FALSE}
