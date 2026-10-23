@@ -7,6 +7,7 @@ if (is.null(params$elevation)) {
   elev_text <- ""
 } else {
   elev_q <- global(params$elevation, quantile, probs=c(0.05,.95), na.rm=TRUE)
+  elev_q <- format(round(unlist(elev_q)), big.mark = ",", trim = TRUE)
   ecosystem_label <- if (is.na(params$ecosystem_name) || !nzchar(params$ecosystem_name)) {
   "ecosystem"
 } else {
@@ -16,8 +17,8 @@ if (is.null(params$elevation)) {
   elev_text <- paste0(
     # "**Elevation:** ",
     "The elevation of the mapped ecosystem in **", max(params$years),
-    "** ranged from **", as.numeric(min(values(params$elevation), na.rm=TRUE)),
-    "m** to **", as.numeric(max(values(params$elevation), na.rm=TRUE)),
+    "** ranged from **", format(round(as.numeric(min(values(params$elevation), na.rm=TRUE), big.mark = ",", trim = TRUE))),
+    "m** to **", format(round(as.numeric(max(values(params$elevation), na.rm=TRUE), big.mark = ",", trim = TRUE))),
     "m**, with 95% of the ecosystem elevation between **",
     elev_q[1], "m** and **", elev_q[2], "m**. The elevation distribution across the ecosystem is shown in the graph below:"
   )

@@ -1,7 +1,16 @@
 ---
 title: "IUCN Red List of Ecosystem Assessment: `r params$ecosystem_name`"
-output: 
-  rmdformats::robobook: default
+output:
+  # rmdformats::robobook:
+  #   toc_depth: 3
+  rmdformats::readthedown:
+    toc_depth: 3
+  # html_document:
+  #   toc: true
+  #   toc_depth: 3
+  #   toc_float:
+  #     collapsed: false
+  #     smooth_scroll: false
 #  pdf_document:
 #    toc: true
 #    number_sections: false
@@ -65,6 +74,52 @@ params:
 .status-circle.NT { background:#91bfdb; }
 .status-circle.LC { background:#1a9850; }
 .status-circle.NE { background:#999999; }
+
+
+<!-- /* Sidebar background */ -->
+<!-- #sidebar { -->
+<!--   background: #2f3a24; -->
+<!-- } -->
+
+/* Title box at the top of the sidebar */
+#sidebar h2 {
+  background: #669900;
+  color: white;
+}
+
+/* Sidebar TOC links */
+#sidebar a,
+#toc a {
+  color: #e8efe0;
+}
+#sidebar a:hover,
+#toc a:hover {
+  background: #4d7300;
+  color: white;
+}
+
+/* Currently highlighted TOC entry */
+#toc .active > a,
+#toc li.active a {
+  background: #669900;
+  color: white;
+}
+
+/* Main content headings and links */
+#content h1,
+#content h2,
+#content h3 {
+  color: #4d7300;
+}
+#content a {
+  color: #4d7300;
+}
+
+/* Tabs */
+.nav-tabs > li.active > a {
+  border-top: 3px solid #669900;
+}
+
 </style>
 
 ```{r setup3, include=FALSE}
