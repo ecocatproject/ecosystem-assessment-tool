@@ -52,7 +52,7 @@ report_module_ui <- function(id) {
                           style = "color: #555;"),
                 choices = c("HTML" = "html")#, "PDF" = "pdf") # "PDF" = "pdf"
               )),
-            downloadButton(ns("generate_report"), "Generate RLE Assessment Report")
+            downloadButton(ns("generate_report"), "Generate Ecosystem Assessment Report")
           )
         ),
       ),
