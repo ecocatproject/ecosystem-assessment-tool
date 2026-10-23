@@ -969,26 +969,28 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
     # PROCESS RASTERS
     # =============================================================================
     
-    check_ncells <- function(file){
-      r <- rast(file)
-      ncells <- ncell(r)  # metres
-     
-      if (ncells  > 40000) {
-        return(list(
-          ok = FALSE,
-          res = ncells
-        ))
-      }
-
-      list(ok = TRUE, res = ncells)
-    }
+    # check_ncells <- function(file){
+    #   r <- rast(file)
+    #   ncells <- ncell(r)  # metres
+    #  
+    #   if (ncells  > 40000) {
+    #     return(list(
+    #       ok = FALSE,
+    #       res = ncells
+    #     ))
+    #   }
+    # 
+    #   list(ok = TRUE, res = ncells)
+    # }
     
-    # small helper to render "417 million" style counts
-    fmt_cells <- function(n) {
-      if (n >= 1e9)      paste0(round(n / 1e9, 1), " billion")
-      else if (n >= 1e6) paste0(round(n / 1e6),   " million")
-      else               format(n, big.mark = ",")
-    }
+  
+    
+    # # small helper to render "417 million" style counts
+    # fmt_cells <- function(n) {
+    #   if (n >= 1e9)      paste0(round(n / 1e9, 1), " billion")
+    #   else if (n >= 1e6) paste0(round(n / 1e6),   " million")
+    #   else               format(n, big.mark = ",")
+    # }
     
     # ---- add near your other reactiveVals ----
     ack_big <- reactiveVal(FALSE)   # user has acknowledged the big-raster warning
@@ -998,6 +1000,7 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       ncells <- max(vapply(files, function(f) terra::ncell(terra::rast(f)), numeric(1)))
       list(ok = ncells <= limit, res = ncells)
     }
+    
 
     
     # Single trigger — incremented by any of the three buttons
@@ -1119,38 +1122,44 @@ classification_module_server <- function(id, drawn_poly=reactive(NULL), session_
       #   ))
       #   return(NULL)
       # }
+      # if (!check$ok && !ack_big()) {
+      #   showModal(modalDialog(
+      #     title = div(
+      #       style = "text-align:center; padding-bottom:0.25rem;",
+      #       tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+      #              tagList(icon("exclamation-triangle"),
+      #                      "Large dataset detected"))),
+      #     tagList(
+      #       tags$div(
+      #         style = "padding:0.5rem 0.25rem;",
+      #         # tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #         #        paste0("The uploaded maps contain ", fmt_cells(check$res),
+      #         #               " cells, which exceeds the recommended size for the current shared processing capacity.")),
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                tagList("The uploaded maps contain ",
+      #                        tags$b(paste0(fmt_cells(check$res), " cells")),
+      #                        ", which exceeds the recommended size for the current shared processing capacity.")),
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                "Processing may be queued depending on the number of concurrent users, take longer to complete, or fail if computing resource limits are reached."),
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                "To improve performance, consider reducing the map resolution or study area extent, or processing smaller areas separately."),
+      #         tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
+      #                "Future releases of the RLE Assessment Tool will include further support for processing larger datasets."),
+      #       )
+      #     ),
+      #     easyClose = FALSE,
+      #     footer = tagList(
+      #       modalButton("Cancel"),
+      #       actionButton(ns("proceed_big"), "Process anyway",
+      #                    style = "background:#669900; border-color:#669900; color:#fff;")
+      #     )
+      #   ))
+      #   return(NULL)
+      # }
+      
+      check <- check_ncells(files)
       if (!check$ok && !ack_big()) {
-        showModal(modalDialog(
-          title = div(
-            style = "text-align:center; padding-bottom:0.25rem;",
-            tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
-                   tagList(icon("exclamation-triangle"),
-                           "Large dataset detected"))),
-          tagList(
-            tags$div(
-              style = "padding:0.5rem 0.25rem;",
-              # tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-              #        paste0("The uploaded maps contain ", fmt_cells(check$res),
-              #               " cells, which exceeds the recommended size for the current shared processing capacity.")),
-              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     tagList("The uploaded maps contain ",
-                             tags$b(paste0(fmt_cells(check$res), " cells")),
-                             ", which exceeds the recommended size for the current shared processing capacity.")),
-              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     "Processing may be queued depending on the number of concurrent users, take longer to complete, or fail if computing resource limits are reached."),
-              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     "To improve performance, consider reducing the map resolution or study area extent, or processing smaller areas separately."),
-              tags$p(style = "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;",
-                     "Future releases of the RLE Assessment Tool will include further support for processing larger datasets."),
-            )
-          ),
-          easyClose = FALSE,
-          footer = tagList(
-            modalButton("Cancel"),
-            actionButton(ns("proceed_big"), "Process anyway",
-                         style = "background:#669900; border-color:#669900; color:#fff;")
-          )
-        ))
+        showModal(big_raster_modal(check$res, ns))
         return(NULL)
       }
       
