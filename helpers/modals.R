@@ -7,7 +7,8 @@
 
 # 1. start up 
 # 2. upload_modal
-# 2b.years
+# 2ab. big raster  
+# 2b. years
 # 2c. draw instructions for subsetting
 # 3. a quick
 # 4. b quick
@@ -28,18 +29,10 @@ start_up_modal <- modalDialog(
   title = div(
     style = "text-align:center; padding-bottom:0.25rem; ",
     tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
-           "Welcome to the EcoCAT RLE Assessment Tool​"),
+           "Welcome to the EcoCAT Assessment Tool"),
     tags$p(style = "font-size:13px; color:#6b7280; margin:0;",
-           "An interactive tool for RLE ecosystem assessments")
+           "An interactive tool for Red List of Ecosystems assessments")
   ),
-  # title = div(
-  #   style = "padding-bottom:0.25rem;",
-  #   tags$p(style = "justify-content:center; text-align:center !important; font-size:20px; font-weight:500; margin:0 auto;",
-  #          "Welcome to the EcoCAT RLE Assessment Tool"),
-  #   tags$p(style = "justify-content:center; text-align:center !important; font-size:13px; color:#6b7280; margin:0 auto;",
-  #          "An interactive tool for RLE ecosystem assessments")
-  # ),
-  # 
   tagList(
     tags$div(
       style = "padding:0.5rem 0.25rem;",
@@ -80,11 +73,11 @@ start_up_modal <- modalDialog(
                 style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
                 tags$b("Tip:"), "Hover over info icons \U001F6C8\ufe0f throughout the app for additional guidance."
               ),
-      # security warning
-      tags$hr(),
-      tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
-              tags$b("Security notice:"), "No sign-in is required to access the tool. If an unexpected sign-in pop-up appears, please close it and do not enter any credentials, as it is not part of the tool. If in doubt, contact your IT support team.
-")
+#       # security warning
+#       tags$hr(),
+#       tags$p( style = "font-size: 13px; font-style: italic; color: #7f8c8d;",
+#               tags$b("Security notice:"), "No sign-in is required to access the tool. If an unexpected sign-in pop-up appears, please close it and do not enter any credentials, as it is not part of the tool. If in doubt, contact your IT support team.
+# ")
     )
   ),
   easyClose = FALSE,
@@ -128,6 +121,50 @@ years_modal <-  function(rows, ns){
         )
       ),
       tags$tbody(lapply(rows, identity))
+    )
+  )
+}
+
+# =============================================================================
+# 2ab.  big raster warning modal
+# =============================================================================
+# n_cells: largest cell count across the included files
+# ns:      module namespace, so "Process anyway" reaches the module's observer
+
+# render counts as e.g. "417 million"
+fmt_cells <- function(n) {
+  if (n >= 1e9)      paste0(round(n / 1e9, 1), " billion")
+  else if (n >= 1e6) paste0(round(n / 1e6),   " million")
+  else               format(n, big.mark = ",")
+}
+
+big_raster_modal <- function(n_cells, ns) {
+  txt_style <- "font-size:12px; font-weight:500; color:#6b7280; letter-spacing:0.05em; margin:0 0 0.9rem;"
+  
+  modalDialog(
+    title = div(
+      style = "text-align:center; padding-bottom:0.25rem;",
+      tags$p(style = "font-size:20px; font-weight:500; margin:0 0 0.2rem;",
+             tagList(icon("exclamation-triangle"), "Large dataset detected"))
+    ),
+    tags$div(
+      style = "padding:0.5rem 0.25rem;",
+      tags$p(style = txt_style,
+             tagList("The uploaded maps contain ",
+                     tags$b(paste0(fmt_cells(n_cells), " cells")),
+                     ", which exceeds the recommended size for the current shared processing capacity.")),
+      tags$p(style = txt_style,
+             "Processing may be queued depending on the number of concurrent users, take longer to complete, or fail if computing resource limits are reached."),
+      tags$p(style = txt_style,
+             "To improve performance, consider reducing the map resolution or study area extent, or processing smaller areas separately."),
+      tags$p(style = txt_style,
+             "Future releases of the RLE Assessment Tool will include further support for processing larger datasets.")
+    ),
+    easyClose = FALSE,
+    footer = tagList(
+      modalButton("Cancel"),
+      actionButton(ns("proceed_big"), "Process anyway",
+                   style = "background:#669900; border-color:#669900; color:#fff;")
     )
   )
 }
