@@ -54,6 +54,8 @@ params:
   b2_poly: NA
 ---
 
+<!-- REPORT STYLE -->
+
 <style>
 .status-circle {
   display: inline-flex;
@@ -119,6 +121,7 @@ params:
 .nav-tabs > li.active > a {
   border-top: 3px solid #669900;
 }
+
 /* All links in the main content, including visited/hover/focus states */
 #content a,
 #content a:visited {
@@ -167,6 +170,88 @@ params:
     color: #669900;
 }
 ``
+
+.nav-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.nav-tabs > li {
+  float: none;
+  flex: 1 1 0;
+}
+.nav-tabs > li > a {
+  white-space: normal;
+  height: 100%;
+  text-align: center;
+  font-weight: 600;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: #2f3a24 !important;
+  background: white !important;
+  border-color: #ddd #ddd transparent !important;
+  border-top: 3px solid #669900 !important;
+}
+
+/* Remove readthedown's bullets from tab/pill navigation */
+#content ul.nav,
+#content ul.nav > li {
+  list-style: none !important;
+  margin-left: 0 !important;
+}
+#content ul.nav {
+  padding-left: 0 !important;
+}
+#content ul.nav > li::before,
+#content ul.nav > li::marker {
+  content: none !important;
+}
+
+
+/* DT pagination: remove bullets */
+#content ul.pagination,
+#content ul.pagination > li {
+  list-style: none !important;
+  margin-left: 0 !important;
+}
+#content ul.pagination {
+  padding-left: 0 !important;
+}
+#content ul.pagination > li::marker {
+  content: none !important;
+}
+
+/* DT pagination: current page in green instead of blue */
+#content .pagination > .active > a,
+#content .pagination > .active > a:hover,
+#content .pagination > .active > a:focus,
+#content .page-item.active .page-link,
+.dataTables_wrapper .paginate_button.current,
+.dataTables_wrapper .paginate_button.current:hover,
+.dt-paging-button.current {
+  background: #669900 !important;
+  border-color: #669900 !important;
+  color: white !important;
+}
+
+/* Other page buttons */
+#content .pagination > li > a,
+#content .page-link,
+.dataTables_wrapper .paginate_button,
+.dt-paging-button {
+  color: #4d7300 !important;
+}
+#content .pagination > li > a:hover,
+#content .page-link:hover,
+.dataTables_wrapper .paginate_button:hover,
+.dt-paging-button:hover {
+  background: #eef3e6 !important;
+  border-color: #cfdcbc !important;
+  color: #2f3a24 !important;
+}
+
 </style>
 
 ```{r setup3, include=FALSE}
@@ -398,11 +483,14 @@ result_a <- params$criterion_a_status
 result_b <- params$criterion_b_status
 ```
 
-## `r status_circle(result_a)` Criterion A: Reduction in geographic distribution {.active}
+## `r status_circle(result_a)` Criterion A {.active}
+**Reduction in geographic distribution**
+
 ```{r child='criterion_a.Rmd'}
 ```
 
-## `r status_circle(result_b)` Criterion B: Restricted geographic distribution
+## `r status_circle(result_b)` Criterion B
+**Restricted geographic distribution**
 ```{r child='b1_eoo.Rmd'}
 ```
 
