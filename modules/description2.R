@@ -72,21 +72,44 @@ description_module_ui <- function(id) {
         
 
 # rainfall ----------------------------------------------------------------
-        card(
-          full_screen = TRUE,
-          card_header(tagList( tags$strong("Rainfall"), uiOutput(ns("r_value"), inline = TRUE)),
-                      tooltip(bs_icon("info-circle"),"Mean monthly rainfall across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")),
-          
-          card_body(plotlyOutput(ns("rain_graph")),  min_height = 150)
-        ),
-        
+card(
+  full_screen = TRUE,
+  card_header(
+    tags$div(
+      style = "display:flex; justify-content:space-between; align-items:center;",
+      tags$span(
+        tags$strong("Rainfall"), uiOutput(ns("r_value"), inline = TRUE),
+        tooltip(bs_icon("info-circle"), "Mean monthly rainfall across mapped pixels (1970-2000)")
+      ),
+      tooltip(
+        tags$a("Source: WorldClim v2.1", href = "https://www.worldclim.org/data/worldclim21.html",
+               target = "_blank", style = "font-size:12px; text-decoration:none;"),
+        "Fick, S.E. and R.J. Hijmans, 2017. WorldClim 2: new 1km spatial resolution climate surfaces for global land areas. International Journal of Climatology 37 (12): 4302-4315"
+      )
+    )
+  ),
+  card_body(plotlyOutput(ns("rain_graph")),  min_height = 150)
+),
 
 # temperature -------------------------------------------------------------
         card(
           full_screen = TRUE,
           card_header(
-            tagList( tags$strong("Temperature"), uiOutput(ns("t_value"), inline = TRUE)),
-            tooltip(bs_icon("info-circle"), "Mean monthly temperature across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")),
+            # tagList( tags$strong("Temperature"), uiOutput(ns("t_value"), inline = TRUE)),
+            # tooltip(bs_icon("info-circle"), "Mean monthly temperature across mapped pixels (1970-2000 average) extracted from WorldClim v2.1")
+            tags$div(
+              style = "display:flex; justify-content:space-between; align-items:center;",
+              tags$span(
+                tags$strong("Temperature"), uiOutput(ns("t_value"), inline = TRUE),
+                tooltip(bs_icon("info-circle"), "Mean monthly temperature across mapped pixels (1970-2000)")
+              ),
+              tooltip(
+                tags$a("Source: WorldClim v2.1", href = "https://www.worldclim.org/data/worldclim21.html",
+                       target = "_blank", style = "font-size:12px; text-decoration:none;"),
+                "Fick, S.E. and R.J. Hijmans, 2017. WorldClim 2: new 1km spatial resolution climate surfaces for global land areas. International Journal of Climatology 37 (12): 4302-4315"
+              )
+            )
+            ),
           card_body(plotlyOutput(ns("temp_graph")),  min_height = 150)
         ),
         
@@ -94,11 +117,29 @@ description_module_ui <- function(id) {
 # elevation ---------------------------------------------------------------
         card(
           full_screen = TRUE,
-          card_header(tagList(tags$strong("Elevation"), uiOutput(ns("e_value"), inline = TRUE)),
-                      tooltip(bs_icon("info-circle"), "Elevation distribution within the ecosystem extracted from Amazon Web Services Terrain Tiles")),
+          # card_header(tagList(tags$strong("Elevation"), uiOutput(ns("e_value"), inline = TRUE)),
+          #             tooltip(bs_icon("info-circle"), "Elevation distribution within the ecosystem extracted from Amazon Web Services Terrain Tiles")),
+          card_header(
+            tags$div(
+              style = "display:flex; justify-content:space-between; align-items:center;",
+              tags$span(
+                tags$strong("Elevation"), uiOutput(ns("e_value"), inline = TRUE),
+                tooltip(bs_icon("info-circle"), "Elevation distribution within the ecosystem")
+              ),
+              tooltip(
+                tags$a("Source: Copernicus DEM GLO-90", href = "https://doi.org/10.5069/G9028PQB",
+                       target = "_blank", style = "font-size:12px; text-decoration:none;"),
+                paste0("European Space Agency (2024). Copernicus Global Digital Elevation Model. ",
+                       "Distributed by OpenTopography. https://doi.org/10.5069/G9028PQB. Accessed ",
+                       format(Sys.Date(), "%B %Y"), ".")
+              )
+            )
+          ),
           card_body(plotlyOutput(ns("elev_graph")),  min_height = 150)
         )
-      )),
+
+# layout change -----------------------------------------------------------
+      )), # end of layout column wrap
     
     layout_column_wrap(
       width = 1/2,
@@ -108,22 +149,45 @@ description_module_ui <- function(id) {
 # country overlap ---------------------------------------------------------
       card(
         full_screen = TRUE,
-        card_header(tags$strong("Ecosystem Country Overlap"),
-                    tooltip(bs_icon("info-circle"), "Proportion of the ecosystem within each country"
-                    )),
-        # card_body(DT::dataTableOutput(ns("roi_country_table")))
+        # card_header(tags$strong("Ecosystem Country Overlap"),
+        #             tooltip(bs_icon("info-circle"), "Proportion of the ecosystem within each country"
+        #             )),
+        card_header(
+          tags$div(
+            style = "display:flex; justify-content:space-between; align-items:center;",
+            tags$span(
+              tags$strong("Ecosystem Country Overlap"),
+              tooltip(bs_icon("info-circle"), "Proportion of the ecosystem within each country.")
+            ),
+            tooltip(
+              tags$a("Source: Natural Earth", href = "https://www.naturalearthdata.com/about/",
+                     target = "_blank", style = "font-size:12px; text-decoration:none;"),
+              paste0("Natural Earth. Free vector and raster map data @ naturalearthdata.com")
+            )
+          )
+        ),
         card_body(uiOutput(ns("roi_country_table")))
       ),
 
 # typology (GET) ----------------------------------------------------------
       card(
         full_screen = TRUE,
-        card_header(tags$strong(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank"), " overlap"),
-                    tooltip(bs_icon("info-circle"), 
-                            "Shows overlap between the classified map and the IUCN Global Ecosystem Typology (v. 2.1, Levels 1\u20133).
-                            Only ecosystem functional groups with overlap exceeding 1% of major or minor occurrence are included. Results are indicative due to the coarse resolution and ongoing development of the global typology. 
-                            The assessor should determine the most appropriate ecosystem typology."
-                    )),
+        card_header(
+          tags$div(
+            style = "display:flex; justify-content:space-between; align-items:center;",
+            tags$span(
+              tags$strong("Global Ecosystem Typology overlap"),
+              tooltip(bs_icon("info-circle"), "Shows overlap between the classified map and the IUCN Global Ecosystem Typology (v. 2.1, Levels 1\u20133).
+                            Only ecosystem functional groups with overlap exceeding 1% of major or minor occurrence are included. Results are indicative due to the coarse resolution and ongoing development of the global typology.
+                            The assessor should determine the most appropriate ecosystem typology.")
+            ),
+            tooltip(
+              tags$a("Source: Global Ecosystem Typology", href = "https://global-ecosystems.org/",
+                     target = "_blank", style = "font-size:12px; text-decoration:none;"),
+              paste0("Indicative distribution maps for Ecosystem Functional Groups - Level 3 of IUCN Global Ecosystem Typology. https://zenodo.org/records/10081251")
+            )
+          )
+        ),
         card_body(uiOutput(ns("get_table")))
       )
     ),
@@ -152,6 +216,9 @@ description_module_ui <- function(id) {
       ))
   )
 }
+
+
+
 # ==============================================================================
 # -----------------------------------------------------------------------------
 # SERVER
@@ -589,38 +656,28 @@ description_module_server <- function(id, upload_module, countries,
         latest <- isolate(upload_module$rasters_original())
         
         progress$inc(1, detail = "countries")
-        message("[desc] >>> countries START")
-        rv$countries <- tryCatch(compute_countries(latest, countries),
+                rv$countries <- tryCatch(compute_countries(latest, countries),
                                  error = function(e) { message("[desc] countries ERR: ", conditionMessage(e)); NULL })
-        message("[desc] <<< countries DONE (null? ", is.null(rv$countries), ")")
-        
+
         progress$inc(1, detail = "monthly temperature")
-        message("[desc] >>> temperature START")
-        rv$temperature <- tryCatch(compute_temperature(latest),
+                rv$temperature <- tryCatch(compute_temperature(latest),
                                    error = function(e) { message("[desc] temperature ERR: ", conditionMessage(e)); NULL })
-        message("[desc] <<< temperature DONE (null? ", is.null(rv$temperature), ")")
-        
+
         progress$inc(1, detail = "elevation")
-        message("[desc] >>> elevation START")
-        rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
+                rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
                                  error = function(e) { message("[desc] elevation ERR: ", conditionMessage(e)); NULL })
-        message("[desc] <<< elevation DONE (null? ", is.null(rv$elevation), ")")
-        
+
         progress$inc(1, detail = "global ecosystem typology")
-        message("[desc] >>> typology START")
-        rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
+                 rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
                                 error = function(e) { message("[desc] typology ERR: ", conditionMessage(e)); NULL })
-        message("[desc] <<< typology DONE (null? ", is.null(rv$typology), ")")
-        
+
         progress$inc(1, detail = "monthly rainfall")
-        message("[desc] >>> rainfall START")
-        rv$rainfall <- tryCatch(compute_precipitation(latest),
+                 rv$rainfall <- tryCatch(compute_precipitation(latest),
                                 error = function(e) { message("[desc] rainfall ERR: ", conditionMessage(e)); NULL })
-        message("[desc] <<< rainfall DONE (null? ", is.null(rv$rainfall), ")")
-        
+
         progress$inc(1, detail = "protected areas")
-        message("[desc] >>> protected areas START")
-        # On a refined subset, reuse the sites already fetched for the full
+
+                # On a refined subset, reuse the sites already fetched for the full
         # extent (the subset lies inside it), so no new web request is needed
         pa_sites <- if (isTRUE(isolate(upload_module$is_subsetted())) &&
                         !is.null(isolate(desc_cache$protected))) {
@@ -633,11 +690,10 @@ description_module_server <- function(id, upload_module, countries,
                                                           conditionMessage(e)),
                                                     type = "warning", duration = 8)
                                    NULL })
-        message("[desc] <<< protected areas DONE (null? ", is.null(rv$protected), ")")
         
         progress$inc(1, detail = "done")
         
-        # ---- Cache full-extent results for instant revert -----------------
+        #  Cache full-extent results for instant revert -----------------
         if (!isTRUE(isolate(upload_module$is_subsetted()))) {
           desc_cache$countries   <- rv$countries
           desc_cache$rainfall    <- rv$rainfall
@@ -706,13 +762,6 @@ description_module_server <- function(id, upload_module, countries,
       }
       
       # 2. Use isolate() for years so year selection doesn't re-render the map
-      # output$eu_map <- renderLeaflet({
-      #   make_fig_distribution_leaflet(
-      #     r_map  = upload_module$rasters(),
-      #     r_loss = upload_module$rasters_change(),
-      #     years  = isolate(upload_module$years())   # ← isolate prevents year-input re-renders
-      #   )
-      # })
       output$eu_map <- renderLeaflet({
         message("[trace] eu_map render START")
         on.exit(message("[trace] eu_map render END"))
