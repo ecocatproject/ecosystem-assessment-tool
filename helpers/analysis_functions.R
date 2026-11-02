@@ -279,25 +279,39 @@ makeEOO.SpatRaster <- function(input.data, year) {
 # Lambert azimuthal equal-area projection.
 compute_aoo_fast <- function(eau) {
 
-  mm <- terra::minmax(eau)
-  if (!any(is.na(mm)) && mm["min", 1] <= 0)
-    eau <- terra::classify(eau, matrix(c(-Inf, 0, NA), ncol = 3, byrow = TRUE))
-
-  res_xy <- terra::res(eau)
+  # mm <- terra::minmax(eau)
+  # if (!any(is.na(mm)) && mm["min", 1] <= 0)
+  #   eau <- terra::classify(eau, matrix(c(-Inf, 0, NA), ncol = 3, byrow = TRUE))
+  # ensure 1 and NA raster
+  eau <- terra::ifel(eau > 0, 1, NA)
+  
+   res_xy <- terra::res(eau)
+  # cell_area_km2 <- if (terra::is.lonlat(eau)) {
+  #   ctr <- mean(c(terra::ext(eau)$ymin, terra::ext(eau)$ymax))
+  #   prod(res_xy) * 111.32^2 * cos(ctr * pi / 180)
+  # } else {
+  #   prod(res_xy) / 1e6
+  # }
   cell_area_km2 <- if (terra::is.lonlat(eau)) {
-    ctr <- mean(c(terra::ext(eau)$ymin, terra::ext(eau)$ymax))
-    prod(res_xy) * 111.32^2 * cos(ctr * pi / 180)
+    prod(res(terra::mask(terra::cellSize(eau, unit = "km"), eau)))/1e6
   } else {
-    prod(res_xy) / 1e6
+    prod(terra::res(eau)) / 1e6      # presence (1/NA) x pixel area
   }
-
+  
+  # Centre: midpoint of the geographic (WGS84) bounding box
   ext_ll <- if (terra::is.lonlat(eau)) terra::ext(eau) else
     terra::ext(terra::project(
       terra::as.polygons(terra::ext(eau), crs = terra::crs(eau)), "EPSG:4326"))
   laea <- sprintf(
-    "+proj=laea +lat_0=%.4f +lon_0=%.4f +datum=WGS84 +units=m +no_defs",
+    # "+proj=laea +lat_0=%.4f +lon_0=%.4f +datum=WGS84 +units=m +no_defs",
+    "+proj=laea +lat_0=%f +lon_0=%.4f +datum=WGS84 +units=m +no_defs",
     mean(c(ext_ll$ymin, ext_ll$ymax)),
     mean(c(ext_ll$xmin, ext_ll$xmax)))
+  
+  # # Data extent in LAEA, snapped outwards to the grid (plus one cell of padding)
+  # pe      <- as.vector(terra::ext(terra::project(eau, crs)))
+  # snap_lo <- function(v, o) o + (floor((v - o) / res) - 1) * res
+  # snap_hi <- function(v, o) o + (ceiling((v - o) / res) + 1) * res
 
   pts <- terra::as.points(eau, na.rm = TRUE)
   if (nrow(pts) == 0) return(NULL)
@@ -313,7 +327,7 @@ compute_aoo_fast <- function(eau) {
   thresh_n  <- if (any(cum_props > 0.01))
     areas[which(cum_props > 0.01)[1]] / cell_area_km2 else 0
 
-  polys_all <- terra::as.polygons(counts) |>
+  polys_all <- terra::as.polygons(counts, aggregate = FALSE) |>
     sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "all")
   polys_sel <- terra::as.polygons(terra::ifel(counts >= thresh_n, counts, NA)) |>
     sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "assessment")

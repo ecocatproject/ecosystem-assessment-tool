@@ -27,7 +27,7 @@ wdpca_citation_fallback <- function() {
   paste0(
     "UNEP-WCMC and IUCN (", format(Sys.Date(), "%Y"), "), Protected Planet: ",
     "The World Database on Protected and Conserved Areas (WDPCA) [On-line], ",
-    format(Sys.Date(), "[%B %Y]"), ", Cambridge, UK: UNEP-WCMC and IUCN. ",
+    format(Sys.Date(), "%B %Y"), ", Cambridge, UK: UNEP-WCMC and IUCN. ",
     "Available at: https://www.protectedplanet.net/"
   )
 }
