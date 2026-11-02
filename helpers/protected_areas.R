@@ -1,19 +1,17 @@
 # helpers/protected_areas.R
+
 # =============================================================================
 # Protected area overlap
 # =============================================================================
 # Queries the live UNEP-WCMC WDPCA feature service for the raster's extent
 # only (no local copy of the database), then computes:
 #   - % of the ecosystem inside protected areas (overlaps counted once),
-#     estimated from a regular grid of sample points (no polygonising)
+#     estimated from a regular grid of sample points
 #   - breakdown by IUCN management category (strictest category wins
 #     where sites overlap)
-#   - the sites with the most ecosystem inside them
 #   - polygons (EPSG:4326) for the leaflet map
 #
 # Requires: httr2, sf, terra
-# Data terms: non-commercial use, cite with version month, link to
-# protectedplanet.net, no redistribution of the polygons without permission.
 # =============================================================================
 
 wdpca_layer_url <- "https://data-gis.unep-wcmc.org/server/rest/services/ProtectedPlanet/WDPCA/FeatureServer/1"
@@ -163,7 +161,7 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
   
   empty <- list(
     summary = data.frame(eco_km2 = eco_km2, prot_km2 = 0, pct_protected = 0,
-                         pct_strict = 0, n_sites = 0L, n_sites_extent = 0L),
+                         pct_strict = 0),
     by_category = NULL, by_site = NULL, pa = NULL, pa_all = NULL,
     n_points = length(pt_km2), citation = citation
   )
@@ -229,9 +227,7 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
       eco_km2        = eco_km2,
       prot_km2       = prot_km2,
       pct_protected  = 100 * prot_km2 / eco_km2,
-      pct_strict     = 100 * strict_km2 / eco_km2,
-      n_sites        = length(unique(sites$site_id)),
-      n_sites_extent = length(unique(pa$site_id))
+      pct_strict     = 100 * strict_km2 / eco_km2
     ),
     by_category = by_cat,
     by_site     = by_site,
@@ -255,223 +251,3 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
 # res <- compute_protected(eau)
 # res$summary; res$by_category; res$by_site
 # plot(sf::st_geometry(res$pa))
-
-# # helpers/protected_areas.R
-# # =============================================================================
-# # Protected area overlap
-# # =============================================================================
-# # Queries the live UNEP-WCMC WDPCA feature service for the raster's extent
-# # only (no local copy of the database), then computes:
-# #   - % of the ecosystem inside protected areas (overlaps counted once)
-# #   - breakdown by IUCN management category (strictest category wins
-# #     where sites overlap)
-# #   - the sites with the most ecosystem inside them
-# #   - polygons (EPSG:4326) for the leaflet map
-# #
-# # Requires: httr2, sf, terra
-# # Data terms: non-commercial use, cite with version month, link to
-# # protectedplanet.net, no redistribution of the polygons without permission.
-# # =============================================================================
-# 
-# wdpca_layer_url <- "https://data-gis.unep-wcmc.org/server/rest/services/ProtectedPlanet/WDPCA/FeatureServer/1"
-# 
-# # IUCN categories in order of strictness; OECMs last
-# pa_cat_levels <- c("Ia", "Ib", "II", "III", "IV", "V", "VI",
-#                    "Not Reported", "Not Assigned", "Not Applicable", "OECM")
-# 
-# # -----------------------------------------------------------------------------
-# # Citation (fetched from the service so the month stays current)
-# # -----------------------------------------------------------------------------
-# wdpca_citation_fallback <- function() {
-#   paste0(
-#     "UNEP-WCMC and IUCN (", format(Sys.Date(), "%Y"), "), Protected Planet: ",
-#     "The World Database on Protected and Conserved Areas (WDPCA) [On-line], ",
-#     format(Sys.Date(), "[%B %Y]"), ", Cambridge, UK: UNEP-WCMC and IUCN. ",
-#     "Available at: https://www.protectedplanet.net/"
-#   )
-# }
-# 
-# get_wdpca_citation <- function() {
-#   tryCatch({
-#     meta <- httr2::request(wdpca_layer_url) |>
-#       httr2::req_url_query(f = "json") |>
-#       httr2::req_timeout(10) |>
-#       httr2::req_perform() |>
-#       httr2::resp_body_json()
-#     cit <- meta$copyrightText
-#     if (is.null(cit) || !nzchar(cit)) wdpca_citation_fallback() else cit
-#   }, error = function(e) wdpca_citation_fallback())
-# }
-# 
-# # -----------------------------------------------------------------------------
-# # Query the service for a bounding box (EPSG:4326)
-# # bb: named numeric with xmin, xmax, ymin, ymax
-# # Returns an sf object (EPSG:4326), or NULL if nothing in the extent.
-# # -----------------------------------------------------------------------------
-# fetch_wdpca <- function(bb, include_oecm = FALSE,
-#                         fields = c("site_id", "site_pid", "name_eng", "desig_eng",
-#                                    "iucn_cat", "status", "status_yr",
-#                                    "site_type", "gov_type"),
-#                         max_features = 20000, page_size = 2000) {
-# 
-#   where <- if (include_oecm) {
-#     "status <> 'Proposed'"
-#   } else {
-#     "status <> 'Proposed' AND site_type = 'PA'"
-#   }
-# 
-#   base <- httr2::request(paste0(wdpca_layer_url, "/query")) |>
-#     httr2::req_url_query(
-#       where        = where,
-#       geometry     = paste(bb[c("xmin", "ymin", "xmax", "ymax")], collapse = ","),
-#       geometryType = "esriGeometryEnvelope",
-#       inSR         = 4326,
-#       outSR        = 4326,
-#       spatialRel   = "esriSpatialRelIntersects"
-#     ) |>
-#     httr2::req_timeout(120) |>
-#     httr2::req_retry(max_tries = 3)
-# 
-#   # 1. Count first: separates "no sites here" from "request failed"
-#   cnt <- base |>
-#     httr2::req_url_query(returnCountOnly = "true", f = "json") |>
-#     httr2::req_perform() |>
-#     httr2::resp_body_json()
-#   if (!is.null(cnt$error)) stop("WDPCA service error: ", cnt$error$message)
-#   n <- cnt$count
-#   if (is.null(n) || n == 0) return(NULL)
-#   if (n > max_features) {
-#     stop(sprintf("%s protected areas in extent (limit %s); extent too large",
-#                  format(n, big.mark = ","), format(max_features, big.mark = ",")))
-#   }
-# 
-#   # 2. Page through the results
-#   pages <- lapply(seq(0, n - 1, by = page_size), function(offset) {
-#     txt <- base |>
-#       httr2::req_url_query(
-#         outFields         = paste(fields, collapse = ","),
-#         returnGeometry    = "true",
-#         geometryPrecision = 5,           # ~1 m; keeps payload small
-#         orderByFields     = "objectid",  # stable paging
-#         resultOffset      = offset,
-#         resultRecordCount = page_size,
-#         f                 = "geojson"
-#       ) |>
-#       httr2::req_perform() |>
-#       httr2::resp_body_string()
-#     sf::read_sf(txt, quiet = TRUE)
-#   })
-# 
-#   pa <- do.call(rbind, pages)
-#   pa <- pa[!sf::st_is_empty(pa), ]
-#   suppressWarnings(sf::st_make_valid(pa))
-# }
-# 
-# # -----------------------------------------------------------------------------
-# # Main function
-# # x:   SpatRaster of the ecosystem (non-NA cells = ecosystem, as in
-# #      compute_countries). If several layers, the last is used.
-# # pa:  optional sf of sites already fetched (e.g. cached full-extent result);
-# #      if supplied, no web request is made.
-# # -----------------------------------------------------------------------------
-# compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
-#                               n_sample = 1e6, n_top = 10) {
-#   if (is.null(x)) stop("Raster not loaded")
-#   if (!inherits(x, "SpatRaster")) stop("x must be a SpatRaster")
-#   if (terra::nlyr(x) > 1) x <- x[[terra::nlyr(x)]]
-# 
-#   # 1. Raster extent in lon/lat (project() on an extent densifies the edges)
-#   e  <- terra::project(terra::ext(x), from = terra::crs(x), to = "EPSG:4326")
-#   bb <- c(xmin = e$xmin, xmax = e$xmax, ymin = e$ymin, ymax = e$ymax)
-#   bb <- setNames(as.numeric(bb), c("xmin", "xmax", "ymin", "ymax"))
-# 
-#   # 2. Fetch sites (unless supplied)
-#   if (is.null(pa)) pa <- fetch_wdpca(bb, include_oecm = include_oecm)
-# 
-#   # 3. Ecosystem cell areas on a sampled raster (same approach as countries)
-#   eco    <- terra::spatSample(x, n_sample, method = "regular", as.raster = TRUE)
-#   area_r <- terra::cellSize(eco, mask = TRUE, unit = "km")
-#   eco_km2 <- terra::global(area_r, "sum", na.rm = TRUE)[1, 1]
-#   if (is.na(eco_km2) || eco_km2 == 0) stop("No ecosystem pixels found")
-# 
-#   citation <- get_wdpca_citation()
-# 
-#   empty <- list(
-#     summary = data.frame(eco_km2 = eco_km2, prot_km2 = 0, pct_protected = 0,
-#                          pct_strict = 0, n_sites = 0L, n_sites_extent = 0L),
-#     by_category = NULL, by_site = NULL, pa = NULL, pa_all = NULL,
-#     citation = citation
-#   )
-#   if (is.null(pa) || nrow(pa) == 0) return(empty)
-# 
-#   # 4. Category rank per site (strictest wins where sites overlap)
-#   cat <- ifelse(pa$site_type == "OECM", "OECM", pa$iucn_cat)
-#   cat[is.na(cat) | !cat %in% pa_cat_levels] <- "Not Reported"
-#   pa$category <- factor(cat, levels = pa_cat_levels)
-#   pa$cat_rank <- as.integer(pa$category)
-# 
-#   pa_v <- terra::project(terra::vect(pa), terra::crs(x))
-# 
-#   # 5. Rasterize onto the sampled grid; overlapping sites counted once
-#   cat_r <- terra::rasterize(pa_v, eco, field = "cat_rank", fun = "min")
-#   prot_km2 <- terra::global(terra::mask(area_r, cat_r), "sum", na.rm = TRUE)[1, 1]
-#   if (is.na(prot_km2)) prot_km2 <- 0
-# 
-#   by_cat <- terra::zonal(area_r, cat_r, fun = "sum", na.rm = TRUE)
-#   names(by_cat) <- c("rank", "area_km2")
-#   by_cat <- by_cat[by_cat$area_km2 > 0, ]
-#   by_cat$Category <- factor(pa_cat_levels[by_cat$rank], levels = pa_cat_levels)
-#   by_cat$pct_eco  <- 100 * by_cat$area_km2 / eco_km2
-#   by_cat <- by_cat[order(by_cat$rank), c("Category", "area_km2", "pct_eco")]
-# 
-#   strict_km2 <- sum(by_cat$area_km2[by_cat$Category %in% c("Ia", "Ib", "II")])
-# 
-#   # 6. Ecosystem area inside each site (sites can overlap, so these
-#   #    do not sum to the protected total)
-#   site_area <- terra::extract(area_r, pa_v, fun = sum, na.rm = TRUE, ID = FALSE)
-#   pa$eco_km2 <- site_area[[1]]
-#   pa$eco_km2[is.na(pa$eco_km2)] <- 0
-# 
-#   sites <- sf::st_drop_geometry(pa)
-#   sites$name_eng[is.na(sites$name_eng)]   <- "Unnamed site"
-#   sites$desig_eng[is.na(sites$desig_eng)] <- "Not reported"
-#   sites <- aggregate(eco_km2 ~ site_id + name_eng + desig_eng + category,
-#                      data = sites, FUN = sum)   # merge parcels of one site
-#   sites <- sites[sites$eco_km2 > 0, ]
-#   sites$pct_eco <- 100 * sites$eco_km2 / eco_km2
-#   sites <- sites[order(-sites$eco_km2), ]
-# 
-#   by_site <- head(sites, n_top)
-#   by_site <- data.frame(
-#     Site            = by_site$name_eng,
-#     Designation     = by_site$desig_eng,
-#     IUCN            = as.character(by_site$category),
-#     `Area (km²)`    = format(round(by_site$eco_km2, 0), big.mark = ","),
-#     `% of Ecosystem` = format(round(by_site$pct_eco, 1)),
-#     check.names = FALSE
-#   )
-# 
-#   list(
-#     summary = data.frame(
-#       eco_km2        = eco_km2,
-#       prot_km2       = prot_km2,
-#       pct_protected  = 100 * prot_km2 / eco_km2,
-#       pct_strict     = 100 * strict_km2 / eco_km2,
-#       n_sites        = length(unique(sites$site_id)),
-#       n_sites_extent = length(unique(pa$site_id))
-#     ),
-#     by_category = by_cat,
-#     by_site     = by_site,
-#     pa          = pa[pa$eco_km2 > 0, c("site_id", "name_eng", "desig_eng",
-#                                        "category", "status", "status_yr",
-#                                        "site_type", "eco_km2")],
-#     pa_all      = pa,          # everything in the extent; reused for subsets
-#     citation    = citation
-#   )
-# }
-# 
-# # # test function
-# # eau <- terra::rast("path/to/ecosystem.tif")
-# # res <- compute_protected(eau)
-# # res$summary; res$by_category; res$by_site
-# # plot(sf::st_geometry(res$pa))
