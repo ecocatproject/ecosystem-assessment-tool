@@ -3,7 +3,6 @@
 # =============================================================================
 # Description Module
 # =============================================================================
-
 # This module processes data to present the following descriptive variables:
 # temperature
 # rainfall
@@ -12,7 +11,6 @@
 # elevation
 # protected area overlap (live query of UNEP-WCMC WDPCA service)
 # =============================================================================
-
 
 
 # ==============================================================================
@@ -32,21 +30,6 @@ description_module_ui <- function(id) {
       # Ecosystem / ROI map
       card(
         full_screen = TRUE,
-        # card_header(tags$strong("Ecosystem Distribution"), tooltip(bs_icon("info-circle"),
-        #                                                  "Distribution of uploaded ecosystem from the most recent mapped year"
-        # )),
-        
-        #   card_header(
-        #   tags$div(
-        #     style = "display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;",
-        #     tags$strong("Ecosystem Distribution"), tooltip(bs_icon("info-circle"),
-        #                                                    "Distribution of uploaded ecosystem from the most recent mapped year"
-        #     ),
-        #     actionLink(ns("show_draw_help"), tagList(bs_icon("info-circle"), " How to draw"),
-        #                style = "font-size:12px;")
-        #   
-        # )),
-        
         card_header(
           tags$div(
             style = "
@@ -70,9 +53,6 @@ description_module_ui <- function(id) {
         gap:12px;
         font-size:12px;
       ",
-              
-              
-              
               actionLink(
                 ns("show_draw_help"),
                 tagList(bs_icon("pencil"), " How to refine"),
@@ -85,15 +65,13 @@ description_module_ui <- function(id) {
           )
         ),
         
-        
-        
         card_body(leafletOutput(ns("eu_map"), height = 500),class = "p-0")),
       layout_column_wrap(
         width = 1,
         heights_equal = "row",
         
-        # ----------------------------------------------------------------------
-        # Rainfall 
+
+# rainfall ----------------------------------------------------------------
         card(
           full_screen = TRUE,
           card_header(tagList( tags$strong("Rainfall"), uiOutput(ns("r_value"), inline = TRUE)),
@@ -102,8 +80,8 @@ description_module_ui <- function(id) {
           card_body(plotlyOutput(ns("rain_graph")),  min_height = 150)
         ),
         
-        # ----------------------------------------------------------------------
-        # Temperature
+
+# temperature -------------------------------------------------------------
         card(
           full_screen = TRUE,
           card_header(
@@ -112,8 +90,8 @@ description_module_ui <- function(id) {
           card_body(plotlyOutput(ns("temp_graph")),  min_height = 150)
         ),
         
-        # ----------------------------------------------------------------------
-        # Elevation
+
+# elevation ---------------------------------------------------------------
         card(
           full_screen = TRUE,
           card_header(tagList(tags$strong("Elevation"), uiOutput(ns("e_value"), inline = TRUE)),
@@ -126,8 +104,8 @@ description_module_ui <- function(id) {
       width = 1/2,
       height = 300,
       
-      # ----------------------------------------------------------------------
-      # Country overlap
+      
+# country overlap ---------------------------------------------------------
       card(
         full_screen = TRUE,
         card_header(tags$strong("Ecosystem Country Overlap"),
@@ -136,9 +114,8 @@ description_module_ui <- function(id) {
         # card_body(DT::dataTableOutput(ns("roi_country_table")))
         card_body(uiOutput(ns("roi_country_table")))
       ),
-      
-      # ----------------------------------------------------------------------
-      # Typology
+
+# typology (GET) ----------------------------------------------------------
       card(
         full_screen = TRUE,
         card_header(tags$strong(tags$a(href = "https://global-ecosystems.org/", "Global Ecosystem Typology", target = "_blank"), " overlap"),
@@ -151,12 +128,11 @@ description_module_ui <- function(id) {
       )
     ),
     
-    # ----------------------------------------------------------------------
-    # Protected areas
+# protected areas ---------------------------------------------------------
     card(
       full_screen = TRUE,
       height = 190,
-        card_header(
+      card_header(
         tags$div(
           style = "display:flex; justify-content:space-between; align-items:center;",
           tags$span(
@@ -515,68 +491,18 @@ description_module_server <- function(id, upload_module, countries,
         style = "display:flex; gap:8px; margin-bottom:8px;",
         stat(sprintf("%.1f%%", s$pct_protected), "of ecosystem protected"),
         stat(format(round(s$prot_km2), big.mark = ","), "km\u00b2 protected"),
-        stat(sprintf("%.1f%%", s$pct_strict), "in strict PAs (Ia\u2013II)"),
-        stat(s$n_sites, "sites overlapping")
+        stat(sprintf("%.1f%%", s$pct_strict), "in strict PAs (Ia\u2013II)")
       )
     })
     
-    # output$pa_cat_graph <- renderPlotly({
-    #   dat <- rv$protected$by_category
-    #   if (is.null(rv$protected)) return(biotic_blank)
-    #   if (is.null(dat) || nrow(dat) == 0) {
-    #     return(plot_ly(type = "scatter") %>%
-    #              layout(xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
-    #                     annotations = list(list(text = "No protected areas overlap the ecosystem",
-    #                                             x = 0.5, y = 0.5, xref = "paper", yref = "paper",
-    #                                             showarrow = FALSE,
-    #                                             font = list(size = 13, color = "grey")))))
-    #   }
-    #   plot_ly(dat, x = ~Category, y = ~pct_eco, type = "bar",
-    #           marker = list(color = "#2E7D32"),
-    #           text = ~paste0(format(round(area_km2), big.mark = ","), " km\u00b2"),
-    #           hovertemplate = "%{x}: %{y:.1f}% (%{text})<extra></extra>") %>%
-    #     layout(xaxis = list(title = "IUCN category"),
-    #            yaxis = list(title = "% of ecosystem"))
-    # })
-    # 
-    # output$pa_site_dt <- DT::renderDataTable({
-    #   req(rv$protected$by_site)
-    #   rv$protected$by_site
-    # }, options = list(paging = FALSE, searching = FALSE, info = FALSE,
-    #                   dom = "t", scrollY = "180px"), rownames = FALSE, server = FALSE)
-    # 
-    # output$pa_site_table <- renderUI({
-    #   if (is.null(rv$protected$by_site) || nrow(rv$protected$by_site) == 0) return(NULL)
-    #   DT::dataTableOutput(ns("pa_site_dt"))
-    # })
-    
-  observe({
+    # pa citation  -------------------------------------------------------
+    observe({
       req(rv$protected$citation)
       bslib::update_tooltip("pa_cite_tip", rv$protected$citation)
     })
     
-    # ## section for removing modal after descriptive vars compelte
-    # desc_tasks_remaining <- reactiveVal(0)
-    # 
-    # # Call this at the START of each descriptive observer
-    # begin_desc_task <- function() desc_tasks_remaining(desc_tasks_remaining() + 1)
-    # 
-    # # Call this at the END of each descriptive observer  
-    # # end_desc_task <- function() {
-    # #   desc_tasks_remaining(max(0, desc_tasks_remaining() - 1))
-    # #   if (desc_tasks_remaining() == 0) removeModal()
-    # # }
-    # end_desc_task <- function() {
-    #   desc_tasks_remaining(max(0, desc_tasks_remaining() - 1))
-    #   if (desc_tasks_remaining() == 0) {
-    #     removeModal()
-    #     # Only show on a full-extent run, not on refine reprocess
-    #     if (!isTRUE(upload_module$is_subsetted())) {
-    #       showModal(draw_instructions_modal)
-    #     }
-    #   }
-    # }
-    ## ---- Modal close for descriptive vars -------------------------------
+
+    ##  Modal close for descriptive vars -------------------------------
     ## Computes are synchronous and sequential, so no task counter is needed.
     ## A single flag tells the rasters_original-triggered observer whether the
     ## latest rasters_original() change came from a genuine process run
