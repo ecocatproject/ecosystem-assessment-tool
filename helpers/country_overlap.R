@@ -216,7 +216,7 @@ compute_countries <- function(x, countries) {
 
     # # 1. Reduce country polygons to raster extent
     # countries_eau <- terra::mask(countries, terra::ext(x))
-
+    countries <- terra::makeValid(countries)
     # Project the raster's extent to the countries CRS (cheap — just 4 corners)
     # then crop countries before projecting (avoids domain errors for far countries)
     roi_ext <- terra::project(
@@ -281,21 +281,8 @@ compute_countries <- function(x, countries) {
 # eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiThicketRF3_L8_15_17_mosaic_240924_2015.tif")
 # result_eau <- compute_countries(eau, countries)
 # result_eau
-
-
-
-
-# # test function
-# # roi <- vect("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/R_scripts/ItigiSumbuThicket/ItigiSumbuThicketEcoregion20kmBuffer.shp")
-# # result_shp <- compute_country_overlap_roi(roi, countries)
-#
-#
-# countries_filtered <- countries[countries$admin %in% result_eau$Country, ]
-# countries_filtered
-#
-# library(wdpar)
-# test <- wdpa_fetch(countries_filtered$iso_a3[1])
-#
-
+# eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Documents/out/mh-forest_2025_100m.tif")
+# result_eau <- compute_countries(eau, countries)
+# result_eau
 
 
