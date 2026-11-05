@@ -35,7 +35,7 @@ if (!exists("status_circle")) {
 }
 
 # colour palette shared across HTML + Word outputs
-status_palette <-c(CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00", NT = "#ADFF2F", LC = "#008000", NE = "black")
+status_palette <-c(CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00", NT = "#ADFF2F", LC = "#008000", NE = "#999999")
 
 has_any_a <- !is.null(params$a1_result) ||
              !is.null(params$a2a_result) ||
@@ -63,7 +63,7 @@ if (nrow(params$areas) > 1) {
 }
 ```
 
-### Subcriteria assessment summary
+### Reduction in geographic distribution - subcriteria summary
 
 ```{r criterion_a_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
 # Subcriterion outcomes "callout box".
@@ -169,9 +169,9 @@ if (nrow(params$areas) > 1) {
     "Between **", start_year, "** and **", end_year,
     "** the observed area of this ecosystem has ", trend, " by **",
     abs(change_percent), "%** from **",
-    format(round(start_area, 0), big.mark = ","), "km\u00b2** to **",
+    format(round(start_area, 0), big.mark = ","), " km^2^** to **",
     format(round(end_area, 0),   big.mark = ","),
-    "km\u00b2**. The proportional rate of change (PRC; % of annual area change) and absolute rate of change (ARC; ",
+    " km^2^**. The proportional rate of change (PRC; % of annual area change) and absolute rate of change (ARC; ",
     "total annual change in area) between each mapped ecosystem period are detailed in the table below."
   ))
 } else {
@@ -191,84 +191,92 @@ title_text <- "Summary of ecosystem area change"
 area_change_data <- params$area_change_data
 
 criteria_a_data <- area_change_data %>%
-        mutate(area  = format(round(area, 0), big.mark = ",", trim = TRUE),
+        mutate(year = as.character(year),
+               area  = format(round(area, 0), big.mark = ",", trim = TRUE),
                area_change = format(round(area_change, 1), big.mark = ",", trim = TRUE),
                proportional_rate_change = round(proportional_rate_change, 2),
                absolute_rate_change = round(absolute_rate_change, 2)) %>%
-   dplyr::select(!dt) %>% # remove this column
-   dplyr::rename(
-          `Year` = year,
-          `Area (km²)` = area,
-          `Area change (km²)` = area_change,
-          `Proportional rate of change (%/year)` = proportional_rate_change,
-          `Absolute rate of change (km²/year)` = absolute_rate_change
-        )
+   dplyr::select(!dt)  # remove this column
+   # dplyr::rename(
+   #        `Year` = year,
+   #        `Area (km²)` = area,
+   #        `Area change (km²)` = area_change,
+   #        `Proportional rate of change (%/year)` = proportional_rate_change,
+   #        `Absolute rate of change (km²/year)` = absolute_rate_change
+   #      )
+  
+  km2 <- function(before, after = ")") {
+  flextable::as_paragraph(before, "km", flextable::as_sup("2"), after)
+  }
 
-if (knitr::is_html_output()) {
-  a_tab <- htmltools::tagList(
-    # # centered Title
-    # htmltools::div(
-    #   style = "text-align:left; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
-    # centered table too
-    htmltools::div(
-      style = "text-align:center;",
-      htmltools::div(
-        style = "display:inline-block; width:auto;",  # shrink to fit content
-        DT::datatable(criteria_a_data,,
-                      colnames = c("Year", "Area (km2)", "Area change (km2)",
-                                   "Proportional rate of change (%)", "Absolute rate of change (km2)"),
-                      options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
-                      rownames = FALSE
-        )
-      )
-    )
-  )
-  
-  a_tab
-  
-} else {
+# if (knitr::is_html_output()) {
+#   a_tab <- htmltools::tagList(
+#     # # centered Title
+#     # htmltools::div(
+#     #   style = "text-align:left; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
+#     # centered table too
+#     htmltools::div(
+#       style = "text-align:center;",
+#       htmltools::div(
+#         style = "display:inline-block; width:auto;",  # shrink to fit content
+#         DT::datatable(criteria_a_data,,
+#                       colnames = c("Year", "Area (km2)", "Area change (km2)",
+#                                    "Proportional rate of change (%)", "Absolute rate of change (km2)"),
+#                       options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
+#                       rownames = FALSE
+#         )
+#       )
+#     )
+#   )
+#   
+#   a_tab
+#   
+# } else {
   # flextable
-  set_flextable_defaults(
-    font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent"
-  )
+  # set_flextable_defaults(
+  #   font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent"
+  # )
+  # 
+  # a_tab <- flextable(criteria_a_data) %>%
+  #   set_caption( caption = as_paragraph(as_b(title_text))) %>%
+  #   autofit() %>%
+  #   flextable::theme_booktabs(bold_header = TRUE) %>%
+  #   colformat_num(j="Year", big.mark = "") %>%
+  #   set_table_properties(layout="autofit")
   
-  a_tab <- flextable(criteria_a_data) %>%
-    set_caption( caption = as_paragraph(as_b(title_text))) %>%
-    autofit() %>%
-    flextable::theme_booktabs(bold_header = TRUE) %>%
-    colformat_num(j="Year", big.mark = "") %>%
-    set_table_properties(layout="autofit")
   
-  a_tab
-}
+  
+flextable::flextable(criteria_a_data) |>
+  style_pdf_table(caption_text = title_text) |>
+  flextable::set_header_labels(year = "Year",
+                               proportional_rate_change = "Proportional rate of change (%/year)") |>
+  flextable::compose(j = "area",                 part = "header", value = km2("Area (")) |>
+  flextable::compose(j = "area_change",          part = "header", value = km2("Area change (")) |>
+  flextable::compose(j = "absolute_rate_change", part = "header", value = km2("Absolute rate of change (", "/year)"))
+
+  
+# }
 
 ```
 
 ```{r area_table_3, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5, eval = nrow(params$areas) == 1}
 area_data <- params$areas
+title_text <- "Ecosystem area"
 
 criteria_a_data <- area_data %>%
-        mutate(Area_km2  = format(round(Area_km2), big.mark = ",", trim = TRUE)) %>%
-  dplyr::select(Year, Area_km2) %>%
-  dplyr::rename(`Area (km²)` = Area_km2,)
+  mutate(area  = format(round(Area_km2), big.mark = ",", trim = TRUE)) %>%
+  dplyr::select(Year, area)
 
-a_tab <- htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;",
-    "Ecosystem area"
-  ),
-  # centrered table too
-htmltools::div(
-  style = "text-align:center;",
-  htmltools::div(
-    style = "display:inline-block; width:auto;",  # shrink to fit content
-      DT::datatable(criteria_a_data,
-        options = list(paging = FALSE, searching = FALSE, info = FALSE, dom = 't'), 
-        rownames = FALSE
-      ))))
+  km2 <- function(before, after = ")") {
+  flextable::as_paragraph(before, "km", flextable::as_sup("2"), after)
+  }
 
-a_tab
+flextable::flextable(criteria_a_data) |>
+  style_pdf_table(caption_text = title_text) |>
+  flextable::set_header_labels(year = "Year") |>
+  flextable::compose(j = "area",  part = "header", value = km2("Area (")) 
+  
+  
 ```
 
 
@@ -299,6 +307,12 @@ if (knitr::is_html_output()) {
 
 
 ### Subcriteria details
+```{r b1_text_missing, echo=FALSE, results='asis', eval = !isTRUE(has_any_a)}
+cat(paste0(
+  "The area of ecosystem change for criterion A could not be assessed for this ecosystem. "
+))
+```
+
 ```{r criterion_a_detail, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_a)}
 # Per-subcriterion "cards" with column-aligned rows.
 # HTML  -> styled htmltools divs with status circles inline

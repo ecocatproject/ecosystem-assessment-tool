@@ -37,7 +37,7 @@ if (!exists("status_circle")) {
 
 if (!exists("status_palette")) {
   status_palette <- c(CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00",
-                      NT = "#ADFF2F", LC = "#008000", NE = "black")
+                      NT = "#ADFF2F", LC = "#008000", NE = "#999999")
 }
 
 # Used by b2_aoo.Rmd's b2_text chunk too — defined here because b1 renders first.
@@ -62,8 +62,7 @@ has_any_b <- !is.null(b1_latest) || !is.null(b2_latest)
 ```
 
 
-
-### Subcriteria assessment summary
+### Restricted geographic distribution - subcriteria summary
 ```{r criterion_b_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_b)}
 # Callout box with B1 + B2 status circles, mirroring criterion_a_summary.
 # Status for each is the assessment recorded for the most recent year.
@@ -139,7 +138,7 @@ if (knitr::is_html_output()) {
 
 Subcriterion B1 is assessed by estimating the minimum convex polygon (MCP) — the smallest polygon that encompasses all known occurrences of the ecosystem. This method is consistent regardless of the resolution of the ecosystem classification maps, allowing comparison across global ecosystem types.
 
-```{r b1_text_missing, echo=FALSE, results='asis', eval = is.null(b1_latest)}
+```{r a_text_missing, echo=FALSE, results='asis', eval = is.null(b1_latest)}
 cat(paste0(
   "The extent of occurrence (EOO) under subcriterion B1 was not assessed for this ecosystem. "
 ))
@@ -150,7 +149,7 @@ b1_eoo <- format(round(as.numeric(b1_latest$area_km2), 0),big.mark = ",", trim =
 
 cat(paste0(
   "From the most recent mapping, the EOO for the ",
-  params$ecosystem_name, " ecosystem is **", b1_eoo, " km\u00b2**. ",
+  params$ecosystem_name, " ecosystem is **", b1_eoo, " km^2^**. ",
   "This area classes the ecosystem as **",
   assessment_map[as.character(b1_latest$assessment)], "** under subcriterion B1."
 ))
@@ -249,7 +248,7 @@ if (knitr::is_html_output()) {
 }
 ```
 
-```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly)}
+```{r b1_map, echo=FALSE, message=FALSE, warning=FALSE,  fig.align = "center", out.width = '100%', eval = !is.null(params$mcp_poly), error=TRUE}
 map_title <- paste0("Extent of Occurrence (EOO) in ", max(params$years))
 mcp_list <- params$mcp_poly %||% list()
 
@@ -257,57 +256,27 @@ if (length(mcp_list) > 0) {
   mcp_all <- try(vect(mcp_list), silent = TRUE)
   latest_year <- max(mcp_all$year, na.rm = TRUE)
   
-  r_recent <- try(rasters[[length(rasters)]], silent = TRUE) # get the most recent raster for plotting
-  
-  # the map - recent raster only
-  pal <- colorNumeric(palette = c("white", "black"), domain = c(1, 0), na.color = "transparent")
-  
-  # get eau extent for mapping zoom
-  ext_r <- as.vector(ext(r_recent)) 
-  
   if (!inherits(mcp_all, "try-error") && nrow(mcp_all) > 0) {
     if (knitr::is_html_output()) {
       # HTML Leaflet map ------------------------------------------------------
-      # map <- make_fig_b1_leaflet(mcp_all, r_recent, latest_year) 
+       # map <- make_fig_b1_leaflet(mcp_all, r_recent, latest_year,
+       #                     base_provider = "Esri.WorldGrayCanvas",
+       #                        base_label    = "Basemap",
+       #                        draw_tools    = FALSE)
+  make_fig_b1(mcp_list, rasters, params$years, world = countries.sf,
+              lakes = lakes.sf, rivers = rivers.sf, basemap = relief)
 
-      map <- leaflet() %>% addTiles() %>%
-          fitBounds(unname(ext_r["xmin"]),
-                    unname(ext_r["ymin"]),
-                    unname(ext_r["xmax"]),
-                    unname(ext_r["ymax"])) %>%
-       addPolygons(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
-                   fillOpacity = 0.3, color = "black", weight = 2,
-                   group = paste0(latest_year, " MCP"),
-                   label = ~paste0("Year: ", year, "<br>Area: ", round(area_km2, 2), " km\u00b2"),
-                   highlightOptions = highlightOptions(bringToFront = TRUE, color = "white", weight = 3)) %>%
-        addRasterImage(r_recent, opacity = 0.7, colors = "#000000", group = paste0(latest_year, " classification")) %>%
-        addProviderTiles(providers$Esri.WorldImagery, group = "ESRI Satellite") %>%
-        addLayersControl(baseGroups = c("OSM", "ESRI Satellite"),
-                         overlayGroups = c(paste0(latest_year, " MCP"),paste0(latest_year, " classification")),
-            options = layersControlOptions(collapsed = FALSE))
-      
-      htmltools::tagList(
-        tags$div(
-          style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
-        map)
-#     } else {
-#       ggplot() +
-#         geom_sf(data = sf::st_as_sf(terra::project(mcp_all[mcp_all$year == latest_year, ], "EPSG:4326")),
-#                                     aes(fill = factor(year)), alpha = 0.3) +
-#         theme_minimal() +
-#         ggtitle(map_title) +
-#         theme(legend.position = "bottom")
-#     }
-#   } else {
-#     cat("No valid MCP data available for mapping.\n")
-#   }
-# } else {
-#   cat("No MCP vectors provided, so no B1 map can be generated.\n")
-# }
+          
+      #  # Wrap the map with title
+      # htmltools::tagList(
+      #   htmltools::tags$div(
+      #     style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", map_title),
+      #   map)
     } else {
       # PDF/Word: full static map from figures1.R (includes the classification
       # raster, scale bar, and EOO assessment subtitle)
-      make_fig_b1(mcp_list, rasters, params$years)
+       make_fig_b1(mcp_list, rasters, params$years, world = countries.sf,
+              lakes = lakes.sf, rivers = rivers.sf, basemap = relief)
     }
   } else {
     cat("No valid MCP data available for mapping.\n")
