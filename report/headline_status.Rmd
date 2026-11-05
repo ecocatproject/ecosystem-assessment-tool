@@ -1,0 +1,161 @@
+<!--
+Headline assessment box (child of report_main.Rmd)
+
+Uses status_circle() and ecosystem_label from the parent, and reads params
+directly
+-->
+
+```{r headline_setup, include=FALSE}
+hl_order <- c("CO", "CR", "EN", "VU", "NT", "LC", "DD", "NE")   # highest risk first
+hl_names <- c(CO = "Collapsed", CR = "Critically Endangered", EN = "Endangered",
+              VU = "Vulnerable", NT = "Near Threatened", LC = "Least Concern",
+              DD = "Data Deficient", NE = "Not Evaluated")
+hl_cols <- c(CO = "#000000", CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00",
+             NT = "#ADFF2F", LC = "#008000", DD = "#bbbbbb", NE = "#999999")
+
+# Single valid code, anything else -> "NE"
+hl_code <- function(x) {
+  x <- if (is.null(x) || length(x) == 0) NA_character_ else as.character(x[1])
+  if (is.na(x) || !x %in% hl_order) "NE" else x
+}
+
+# Highest-risk category; NE/DD only win if nothing else was evaluated
+hl_worst <- function(codes) {
+  codes <- vapply(as.list(codes), hl_code, character(1))
+  ev <- codes[!codes %in% c("NE", "DD")]
+  if (length(ev) > 0) ev[which.min(match(ev, hl_order))]
+  else if ("DD" %in% codes) "DD" else "NE"
+}
+
+# Worst status in a Criterion A result table, PRC only (as in the A summary box)
+hl_from_a <- function(df, method = "PRC") {
+  if (is.null(df) || !is.data.frame(df) || !"status" %in% names(df)) return("NE")
+  if ("method" %in% names(df)) df <- df[df$method == method, , drop = FALSE]
+  if (nrow(df) == 0) return("NE")
+  hl_worst(df$status)
+}
+
+# Latest-year assessment from a Criterion B table (as in the B summary box)
+hl_from_b <- function(df) {
+  if (is.null(df) || !is.data.frame(df) || nrow(df) == 0 ||
+      !"assessment" %in% names(df)) return("NE")
+  row <- if ("year" %in% names(df)) which.max(as.numeric(df$year)) else nrow(df)
+  hl_code(df$assessment[row])
+}
+
+hl_sub <- c(
+  A1  = hl_from_a(params$a1_result),
+  A2a = hl_from_a(params$a2a_result),
+  A2b = hl_from_a(params$a2b_result),
+  B1  = hl_from_b(params$mcp_data),
+  B2  = hl_from_b(params$b2_data)
+)
+
+# Criterion-level statuses: same values used for the Risk Assessment tab labels
+hl_a <- hl_code(params$criterion_a_status)
+hl_b <- hl_code(params$criterion_b_status)
+if (hl_a == "NE") hl_a <- hl_worst(hl_sub[c("A1", "A2a", "A2b")])
+if (hl_b == "NE") hl_b <- hl_worst(hl_sub[c("B1", "B2")])
+
+hl_overall <- hl_worst(c(hl_a, hl_b))
+
+# What drives the overall category
+hl_sub_driving  <- names(hl_sub)[hl_sub == hl_overall]
+hl_crit_driving <- c("A", "B")[c(hl_a, hl_b) == hl_overall]
+
+hl_basis <- if (length(hl_sub_driving) > 0) {
+  paste0(if (length(hl_sub_driving) == 1) "subcriterion " else "subcriteria ",
+         paste(hl_sub_driving, collapse = ", "))
+} else {
+  paste0("Criterion ", paste(hl_crit_driving, collapse = " and "))
+}
+
+hl_eco <- htmltools::htmlEscape(ecosystem_label)
+hl_sentence <- if (hl_overall %in% c("NE", "DD")) {
+  paste0("The ", hl_eco, " has not been assigned a threat category (",
+         hl_names[[hl_overall]], ").")
+} else {
+  paste0("The ", hl_eco, " is assessed as <b>", hl_names[[hl_overall]],
+         " (", hl_overall, ")</b> based on ", hl_basis, ".")
+}
+```
+
+```{r headline_box, echo=FALSE, message=FALSE, warning=FALSE}
+if (knitr::is_html_output()) {
+
+  chip <- function(code, label) {
+    htmltools::tags$span(
+      style = "display:inline-flex; align-items:center; margin-right:16px;",
+      htmltools::HTML(status_circle(code)), label)
+  }
+
+  crit_row <- function(title, desc, code, chips) {
+    htmltools::div(
+      style = paste("display:flex; align-items:center; flex-wrap:wrap; gap:6px;",
+                    "padding:8px 0; border-top:1px solid #e3e3e3;"),
+      htmltools::div(
+        style = "min-width:260px; display:flex; align-items:center;",
+        htmltools::HTML(status_circle(code)),
+        htmltools::tags$b(title),
+        htmltools::tags$span(style = "color:#666; margin-left:6px; font-size:0.9em;", desc)),
+      chips)
+  }
+
+  big_circle <- sprintf(
+    '<span class="status-circle %s" style="width:48px; height:48px; font-size:16px; margin-right:0;">%s</span>',
+    hl_overall, hl_overall)
+
+  htmltools::div(
+    style = paste0(
+      "margin:16px 0 28px 0; padding:16px 20px; background:#fafafa;",
+      "border:1px solid #ddd; border-left:8px solid ", hl_cols[[hl_overall]], ";",
+      "border-radius:6px;"),
+
+    # Overall category
+    htmltools::div(
+      style = "display:flex; align-items:center; gap:14px; margin-bottom:6px;",
+      htmltools::HTML(big_circle),
+      htmltools::div(
+        htmltools::div(style = paste("font-size:0.8em; color:#666; text-transform:uppercase;",
+                                     "letter-spacing:0.05em;"),
+                       "Assessment outcome"),
+        htmltools::div(style = "font-size:1.4em; font-weight:700; line-height:1.2;",
+                       hl_names[[hl_overall]]))),
+
+    htmltools::p(style = "margin:8px 0 12px 0;", htmltools::HTML(hl_sentence)),
+
+    # Criterion rows with subcriteria
+    crit_row("Criterion A", "Reduction in distribution", hl_a,
+             htmltools::tagList(chip(hl_sub[["A1"]], "A1"),
+                                chip(hl_sub[["A2a"]], "A2a"),
+                                chip(hl_sub[["A2b"]], "A2b"))),
+    crit_row("Criterion B", "Restricted distribution", hl_b,
+             htmltools::tagList(chip(hl_sub[["B1"]], "B1"),
+                                chip(hl_sub[["B2"]], "B2"))),
+
+    htmltools::div(
+      style = "font-size:0.8em; color:#666; margin-top:10px;",
+      htmltools::HTML(paste0(
+        "The overall category is the highest-risk category across the criteria assessed. ",
+        "Only Criteria A and B are assessed in this report; Criteria C, D and E were not assessed. ",
+        "Criterion A subcriteria shown use the Proportional Rate of Change (PRC) method.")))
+  )
+
+} else {
+  # Word / PDF: plain table
+  hl_df <- data.frame(
+    Criterion = c("Overall", "A", "A", "A", "B", "B"),
+    Level     = c("", "A1", "A2a", "A2b", "B1", "B2"),
+    Status    = c(hl_overall, hl_sub[c("A1", "A2a", "A2b", "B1", "B2")]),
+    stringsAsFactors = FALSE
+  )
+  hl_df$Category <- unname(hl_names[hl_df$Status])
+
+  ft <- flextable::flextable(hl_df) |>
+    style_pdf_table(caption_text = gsub("<[^>]+>", "", hl_sentence))
+  for (st in unique(hl_df$Status)) {
+    ft <- flextable::bg(ft, j = "Status", i = which(hl_df$Status == st), bg = hl_cols[[st]])
+  }
+  ft
+}
+```
