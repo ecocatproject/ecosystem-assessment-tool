@@ -144,7 +144,7 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
   is_eco <- !is.na(terra::values(pts)[, 1])
   if (!any(is_eco)) stop("No ecosystem pixels found")
   
-  # Area each point represents (km²): extent area shared across points,
+  # Area each point represents (kmB2): extent area shared across points,
   # weighted by cos(latitude) when the raster is in lon/lat
   ext_km2 <- terra::expanse(terra::as.polygons(terra::ext(x), crs = terra::crs(x)),
                             unit = "km")
@@ -154,6 +154,11 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
   pts    <- pts[is_eco]
   pt_km2 <- pt_km2[is_eco]
   eco_km2 <- sum(pt_km2)
+  
+  # total area output now not based on the sample but exact area
+  eco_exact <- terra::expanse(x, unit = "km")$area
+  pt_km2    <- pt_km2 * eco_exact / eco_km2
+  eco_km2   <- eco_exact
   
   # 3. Fetch sites (unless supplied)
   if (is.null(pa)) pa <- fetch_wdpca(bb, include_oecm = include_oecm)

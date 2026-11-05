@@ -57,7 +57,7 @@
 #   # spatraster
 #   if (inherits(x, "SpatRaster")) {
 #     
-#     # # 0. Match CRS first — every spatial op below needs them aligned
+#     # # 0. Match CRS first ??? every spatial op below needs them aligned
 #     # if (!terra::same.crs(countries, x)) {
 #     #   countries <- terra::project(countries, terra::crs(x))
 #     # }
@@ -65,7 +65,7 @@
 #     # # 1. Reduce country polygons to raster extent
 #     # countries_eau <- terra::mask(countries, terra::ext(x))
 #     
-#     # Project the raster's extent to the countries CRS (cheap — just 4 corners)
+#     # Project the raster's extent to the countries CRS (cheap ??? just 4 corners)
 #     # then crop countries before projecting (avoids domain errors for far countries)
 #     x_extent_in_countries_crs <- terra::project(
 #       terra::as.polygons(terra::ext(x), crs = terra::crs(x)),
@@ -171,22 +171,22 @@ compute_countries <- function(x, countries) {
   # -------------------------------------------------------------------------
   # spatvector
   if (inherits(x, "SpatVector")) {
-
+    
     countries_proj <- terra::project(countries, "EPSG:4326")
     roi_proj       <- terra::project(x,         "EPSG:4326")
-
+    
     roi_int <- tryCatch({
       terra::intersect(countries_proj, roi_proj)
     }, error = function(e) {
       message("Error during intersect: ", e$message)
       NULL
     })
-
+    
     if (is.null(roi_int) || nrow(roi_int) == 0) return(data.frame())
-
+    
     roi_int$area_km2 <- terra::expanse(roi_int, unit = "km")
     total_area <- terra::expanse(roi_proj, unit = "km")
-
+    
     result <- as.data.frame(roi_int) %>%
       dplyr::group_by(admin) %>%
       dplyr::summarise(area_km2 = sum(area_km2), .groups = "drop") %>%
@@ -198,32 +198,32 @@ compute_countries <- function(x, countries) {
       dplyr::arrange(desc(perc_roi)) %>%
       dplyr::rename(
         Country = admin,
-        `Area (km²)` = area_km2,
+        `Area (km??)` = area_km2,
         `% of Ecosystem` = perc_roi
       )
-
+    
     return(result)
   }
-
+  
   # -------------------------------------------------------------------------
   # spatraster
   if (inherits(x, "SpatRaster")) {
-
-    # # 0. Match CRS first — every spatial op below needs them aligned
+    
+    # # 0. Match CRS first ??? every spatial op below needs them aligned
     # if (!terra::same.crs(countries, x)) {
     #   countries <- terra::project(countries, terra::crs(x))
     # }
-
+    
     # # 1. Reduce country polygons to raster extent
     # countries_eau <- terra::mask(countries, terra::ext(x))
     countries <- terra::makeValid(countries)
-    # Project the raster's extent to the countries CRS (cheap — just 4 corners)
+    # Project the raster's extent to the countries CRS (cheap ??? just 4 corners)
     # then crop countries before projecting (avoids domain errors for far countries)
     roi_ext <- terra::project(
       terra::as.polygons(terra::ext(x), crs = terra::crs(x)),
       terra::crs(countries)
     )
-
+    
     countries_touch <- countries[terra::is.related(countries, roi_ext, "intersects"), ]
     if (nrow(countries_touch) == 0) return(data.frame())
     
@@ -243,20 +243,20 @@ compute_countries <- function(x, countries) {
     # 2. Aggregate raster (speed)
     # eau_agg <- terra::aggregate(x, 2, fun = "min", na.rm = TRUE)
     eau_agg <- spatSample(x, 1000000, method = "regular",
-                      as.raster = TRUE, na.rm = TRUE)
+                          as.raster = TRUE, na.rm = TRUE)
     if (is.null(eau_agg) || ncell(eau_agg) == 0) return(data.frame())
-
+    
     # 3. Rasterize country polygons to match aggregated raster
     eau_r <- terra::rasterize(countries_eau, eau_agg, field = "admin")
-
+    
     # 4. Zonal count of non-NA raster pixels
     # z_result <- terra::zonal(eau_agg, eau_r, fun = "notNA", na.rm = TRUE)
-
+    
     # 5. Compute area per country zone
     area_per_country <- terra::expanse(eau_agg, zones = eau_r, unit = "km")
-
+    
     total_area <- sum(area_per_country$area)
-
+    
     result <- area_per_country %>%
       dplyr::left_join(country_totals, by = "zone") %>%
       dplyr::mutate(
@@ -266,14 +266,14 @@ compute_countries <- function(x, countries) {
       dplyr::arrange(dplyr::desc(perc_roi)) %>%   # sort BEFORE formatting
       dplyr::transmute(
         Country              = zone,
-        `Area (km²)`         = format(round(area, 0), big.mark = ","),
+        `Area (km??)`         = format(round(area, 0), big.mark = ","),
         `% of Ecosystem`     = format(round(perc_roi, 1)),
         `% Country coverage` = format(round(pct_cover, 2))
       )
-
+    
     return(result)
   }
-
+  
   stop("Input x must be either a SpatVector or a SpatRaster.")
 }
 
@@ -284,5 +284,4 @@ compute_countries <- function(x, countries) {
 # eau <- rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Documents/out/mh-forest_2025_100m.tif")
 # result_eau <- compute_countries(eau, countries)
 # result_eau
-
 
