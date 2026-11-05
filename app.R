@@ -12,7 +12,7 @@ source("global.R")
 
 # 2. load modules ---------------------------------------------------------
 source("modules/map_upload.R")
-#source("modules/description.R")
+# source("modules/description.R")
 source("modules/description2.R")
 source("modules/criterion_a.R")
 source("modules/criterion_b.R")
@@ -173,6 +173,7 @@ server <- function(input, output, session) {
                        temperature = description_module$temperature,
                        elevation = description_module$elevation,
                        typology = description_module$typology,
+                       protected = description_module$protected,
                        # criteria A data ---------------------------------------
                        area_change_data = criterion_a_module$area_change_data,
                        area_prediction_data = criterion_a_module$area_prediction_data,
