@@ -156,7 +156,7 @@ card(
           tags$div(
             style = "display:flex; justify-content:space-between; align-items:center;",
             tags$span(
-              tags$strong("Ecosystem Country Overlap"),
+              tags$strong("Country Overlap"),
               tooltip(bs_icon("info-circle"), "Proportion of the ecosystem within each country.")
             ),
             tooltip(
@@ -582,7 +582,7 @@ description_module_server <- function(id, upload_module, countries,
       desc_process_pending(TRUE)
     }, ignoreInit = TRUE)
     
-    # No counter needed — one synchronous compute pass.
+    # No counter needed ??? one synchronous compute pass.
     end_desc_task <- function() {
       message("[desc] end_desc_task reached; is_subsetted=", isolate(upload_module$is_subsetted()))
       removeModal()
@@ -592,7 +592,7 @@ description_module_server <- function(id, upload_module, countries,
     }
     
     
-    # Capture drawn polygon — fires on each new draw
+    # Capture drawn polygon ??? fires on each new draw
     observeEvent(input$eu_map_draw_new_feature, {
       feat   <- input$eu_map_draw_new_feature
       coords <- feat$geometry$coordinates[[1]]
@@ -615,27 +615,47 @@ description_module_server <- function(id, upload_module, countries,
     
     
     # ========================================================================
-    # Processing — compute descriptive variables when rasters_original is ready
+    # Processing ??? compute descriptive variables when rasters_original is ready
     # ========================================================================
     # Triggered by rasters_original() becoming populated (set at the END of the
     # classification process observer), so it can never race ahead of the data.
     # The NULL transition (set at the START of that observer) is swallowed by req().
     observeEvent(upload_module$rasters_original(), {
       
-      message("[desc] observer fired on rasters_original; run_description = ",
-              deparse(isTRUE(isolate(upload_module$run_description()))),
-              "; pending = ", isolate(desc_process_pending()),
-              "; rasters_original null? ", is.null(upload_module$rasters_original()))
+      # message("[desc] observer fired on rasters_original; run_description = ",
+      #         deparse(isTRUE(isolate(upload_module$run_description()))),
+      #         "; pending = ", isolate(desc_process_pending()),
+      #         "; rasters_original null? ", is.null(upload_module$rasters_original()))
+      # 
+      # # Only proceed when the data is genuinely ready
+      # req(upload_module$rasters_original())
+      # # Only run descriptive vars if the user asked for them (read without depending on it)
+      # req(isTRUE(isolate(upload_module$run_description())))
+      # # Only recompute for a real process run; revert restores from cache elsewhere
+      # req(isTRUE(isolate(desc_process_pending())))
+      # isolate(desc_process_pending(FALSE))   # consume the flag
+      # 
+      # # begin_desc_task_placeholder <- NULL  # (no counter needed)
       
-      # Only proceed when the data is genuinely ready
+      # this edit below is to fix the issue of descriptive variables persisting in reporting
       req(upload_module$rasters_original())
-      # Only run descriptive vars if the user asked for them (read without depending on it)
-      req(isTRUE(isolate(upload_module$run_description())))
-      # Only recompute for a real process run; revert restores from cache elsewhere
-      req(isTRUE(isolate(desc_process_pending())))
-      isolate(desc_process_pending(FALSE))   # consume the flag
+      req(isTRUE(isolate(desc_process_pending())))   # only real process runs
+      isolate(desc_process_pending(FALSE))           # consume the flag either way
       
-      # begin_desc_task_placeholder <- NULL  # (no counter needed)
+      subsetted <- isTRUE(isolate(upload_module$is_subsetted()))
+      desc_vars <- c("countries", "rainfall", "temperature",
+                     "typology", "elevation", "protected")
+      
+      # Descriptive variables not requested: clear anything from a previous run
+      if (!isTRUE(isolate(upload_module$run_description()))) {
+        for (v in desc_vars) rv[[v]] <- NULL
+        if (!subsetted) {
+          # a new full-extent run replaces the data the cache belonged to
+          for (v in desc_vars) desc_cache[[v]] <- NULL
+          if (file.exists(elev_cache)) unlink(elev_cache)
+        }
+        return()
+      }
       
       tryCatch({
         # reset all reactive values to NULL first
@@ -656,28 +676,28 @@ description_module_server <- function(id, upload_module, countries,
         latest <- isolate(upload_module$rasters_original())
         
         progress$inc(1, detail = "countries")
-                rv$countries <- tryCatch(compute_countries(latest, countries),
+        rv$countries <- tryCatch(compute_countries(latest, countries),
                                  error = function(e) { message("[desc] countries ERR: ", conditionMessage(e)); NULL })
-
+        
         progress$inc(1, detail = "monthly temperature")
-                rv$temperature <- tryCatch(compute_temperature(latest),
+        rv$temperature <- tryCatch(compute_temperature(latest),
                                    error = function(e) { message("[desc] temperature ERR: ", conditionMessage(e)); NULL })
-
+        
         progress$inc(1, detail = "elevation")
-                rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
+        rv$elevation <- tryCatch(compute_elevation(latest, cache_path = elev_cache),
                                  error = function(e) { message("[desc] elevation ERR: ", conditionMessage(e)); NULL })
-
+        
         progress$inc(1, detail = "global ecosystem typology")
-                 rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
+        rv$typology <- tryCatch(compute_typology(latest, efg_lookup),
                                 error = function(e) { message("[desc] typology ERR: ", conditionMessage(e)); NULL })
-
+        
         progress$inc(1, detail = "monthly rainfall")
-                 rv$rainfall <- tryCatch(compute_precipitation(latest),
+        rv$rainfall <- tryCatch(compute_precipitation(latest),
                                 error = function(e) { message("[desc] rainfall ERR: ", conditionMessage(e)); NULL })
-
+        
         progress$inc(1, detail = "protected areas")
-
-                # On a refined subset, reuse the sites already fetched for the full
+        
+        # On a refined subset, reuse the sites already fetched for the full
         # extent (the subset lies inside it), so no new web request is needed
         pa_sites <- if (isTRUE(isolate(upload_module$is_subsetted())) &&
                         !is.null(isolate(desc_cache$protected))) {
@@ -715,7 +735,7 @@ description_module_server <- function(id, upload_module, countries,
     # Restore descriptive variables on revert
     # ========================================================================
     # Upload module sets is_subsetted(FALSE) when "Revert to full extent" is clicked
-    # AND does NOT increment process_trigger — so we restore from cache here instead
+    # AND does NOT increment process_trigger ??? so we restore from cache here instead
     # of recomputing. Mirror of cached_full restore in classification_upload.
     observeEvent(upload_module$is_subsetted(), {
       if (!isTRUE(upload_module$is_subsetted()) &&
@@ -740,7 +760,7 @@ description_module_server <- function(id, upload_module, countries,
     observeEvent(upload_module$rasters(), {
       
       if (is.null(upload_module$rasters())) {
-        # New data incoming — clear draw state and show blank base map
+        # New data incoming ??? clear draw state and show blank base map
         drawn_poly(NULL)
         output$eu_map <- renderLeaflet({
           leaflet() |>
@@ -807,7 +827,7 @@ description_module_server <- function(id, upload_module, countries,
     observeEvent(input$eu_map_draw_all_features, {
       features <- input$eu_map_draw_all_features$features
       
-      # No features left (all deleted) — clear
+      # No features left (all deleted) ??? clear
       if (is.null(features) || length(features) == 0) {
         drawn_poly(NULL)
         return()

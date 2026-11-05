@@ -163,6 +163,7 @@ report_module_server <- function(datasets,
                                  temperature,
                                  elevation,
                                  typology,
+                                 protected,
                                  area_change_data,
                                  area_prediction_data,
                                  a1_result,
@@ -257,6 +258,11 @@ report_module_server <- function(datasets,
           temperature          = (temperature()),
           elevation            = (elevation()),
           typology             = (typology()),
+          protected            = {
+            p <- protected()
+            if (!is.null(p)) { p$pa_all <- NULL; p$pa <- NULL }
+            p
+          },
           area_change_data     = (area_change_data()),
           area_prediction_data = (area_prediction_data()),
           a1_result            = (a1_result()),
@@ -276,6 +282,9 @@ report_module_server <- function(datasets,
         
         # Choose output format  ----------------------------------------------
         fmt <- switch(input$report_format,
+                      # html = "html_document",
+                      #html = rmdformats::robobook(toc_depth = 3),
+                      # html = rmarkdown::html_document(toc = TRUE, toc_float = TRUE, toc_depth = 3),
                       html = NULL,
                       pdf = "pdf_document")
         
@@ -468,7 +477,7 @@ report_module_server <- function(datasets,
         # Helper to create safe filenames
         safe_filename <- function(name) {
           name <- gsub("[:/\\?<>\\*|]", "_", name, perl = TRUE) # Replace invalid characters with underscores
-          name <- gsub("[\\s–—]+", "_", name) # Replace spaces or long dashes with underscore
+          name <- gsub("[\\s??????]+", "_", name) # Replace spaces or long dashes with underscore
           name <- gsub("[^A-Za-z0-9_\\-]", "", name) # Remove any remaining non-alphanumeric, underscore, dash
           name <- tolower(name)# Make lowercase 
           name
