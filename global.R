@@ -113,7 +113,25 @@ rle_url <- tags$a(
 # 6. static map data ------------------------------------------------------
 # currently from Natural Earth
 # download
-# world  <- rnaturalearth::ne_countries(scale = "large", returnclass = "sf")
+# world <- rnaturalearth::ne_countries(scale = "large", returnclass = "sf")
+# countries <- terra::makeValid(terra::vect(world))
+# 
+# # Drop spurious wrap-around parts (> 180° wide), keep Antarctica
+# parts <- terra::disagg(countries)
+# width <- vapply(seq_len(nrow(parts)), function(i) {
+#   e <- as.vector(terra::ext(parts[i])); e[2] - e[1]
+# }, numeric(1))
+# parts <- parts[width < 180 | parts$admin == "Antarctica"]
+# 
+# # Regroup to one row per country (no union, so no GEOS topology check)
+# countries <- terra::merge(
+#   terra::aggregate(parts, by = "admin", dissolve = FALSE)[, "admin"],
+#   as.data.frame(countries),
+#   by = "admin"
+# )
+# world_sf <- st_as_sf(world)
+# st_write(world_sf, dsn="C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/EcoCat/Code/R/rle_assessment_tool/v0.2/data/naturalearth/ne_10m_admin_0_countries",
+#          driver = "ESRI Shapefile", append = FALSE)
 # lakes  <- rnaturalearth::ne_download(scale = 10, type = "lakes",
 #                                      category = "physical",
 #                                      returnclass = "sf", destdir = "data")
@@ -136,5 +154,22 @@ lakes.sf <- st_read("data/naturalearth/ne_10m_lakes")
 rivers.sf <- st_read("data/naturalearth/ne_10m_rivers_lake_centerlines")
 relief <- rast("data/naturalearth/SR_HR_cog.tif")
 
+
+
+# # 
+# bad <- which(!s2::s2_is_valid(countries.sf))
+# bad
+# s2::s2_is_valid_detail(countries.sf[bad, ])   # shows the reason
+# countries.sf[bad, ]                           # which country
+# 
+# 
+# # rebuild invalid geometries with s2, keeping attributes
+# g <- sf::st_geometry(countries.sf)
+# g[bad] <- sf::st_as_sfc(
+#   s2::s2_rebuild(s2::as_s2_geography(g[bad], check = FALSE))
+# )
+# sf::st_geometry(countries.sf) <- g
+# st_write(countries.sf, dsn="C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/EcoCat/Code/R/rle_assessment_tool/v0.2/data/naturalearth/ne_10m_admin_0_countries",
+#          driver = "ESRI Shapefile", append = FALSE)
 
 
