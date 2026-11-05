@@ -62,8 +62,7 @@ has_any_b <- !is.null(b1_latest) || !is.null(b2_latest)
 ```
 
 
-
-### Subcriteria assessment summary
+### Restricted geographic distribution - subcriteria summary
 ```{r criterion_b_summary, echo=FALSE, message=FALSE, warning=FALSE, eval = isTRUE(has_any_b)}
 # Callout box with B1 + B2 status circles, mirroring criterion_a_summary.
 # Status for each is the assessment recorded for the most recent year.
@@ -150,7 +149,7 @@ b1_eoo <- format(round(as.numeric(b1_latest$area_km2), 0),big.mark = ",", trim =
 
 cat(paste0(
   "From the most recent mapping, the EOO for the ",
-  params$ecosystem_name, " ecosystem is **", b1_eoo, " km\u00b2**. ",
+  params$ecosystem_name, " ecosystem is **", b1_eoo, " km^2^**. ",
   "This area classes the ecosystem as **",
   assessment_map[as.character(b1_latest$assessment)], "** under subcriterion B1."
 ))

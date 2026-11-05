@@ -1,19 +1,14 @@
 ---
 title: "IUCN Red List of Ecosystem Assessment: `r params$ecosystem_name`"
 output:
-  # rmdformats::robobook:
-  #   toc_depth: 3
-  rmdformats::readthedown:
-    toc_depth: 3
+  rmdformats::robobook:
+    toc_depth: 4
   # html_document:
   #   toc: true
   #   toc_depth: 3
   #   toc_float:
   #     collapsed: false
   #     smooth_scroll: false
-#  pdf_document:
-#    toc: true
-#    number_sections: false
 always_allow_html: true
 fontsize: 12pt
 geometry: margin=1in
@@ -39,6 +34,7 @@ params:
   temperature: NA
   elevation: NA
   typology: NA
+  protected: NA
   area_change_data: NA
   area_prediction_data: NA
   a1_result: NA
@@ -70,6 +66,7 @@ params:
   margin-right: 6px;
 }
 
+/* Stautus circles */
 .status-circle.CR { background:#d73027; }
 .status-circle.EN { background:#fc8d59; }
 .status-circle.VU { background:#fee08b; color:black; }
@@ -78,33 +75,20 @@ params:
 .status-circle.NE { background:#999999; }
 
 
-<!-- /* Sidebar background */ -->
-<!-- #sidebar { -->
-<!--   background: #2f3a24; -->
-<!-- } -->
-
-/* Title box at the top of the sidebar */
-#sidebar h2 {
-  background: #669900;
-  color: white;
-}
-
-/* Sidebar TOC links */
-#sidebar a,
-#toc a {
-  color: #e8efe0;
-}
+/* TOC link hover */
+#toc a:hover,
 #sidebar a:hover,
-#toc a:hover {
-  background: #4d7300;
-  color: white;
+nav a:hover,
+.sidebar a:hover {
+  color: #669900 !important;
+  text-decoration: none;
 }
 
-/* Currently highlighted TOC entry */
+/* Currently active TOC entry */
+#toc a.active,
 #toc .active > a,
-#toc li.active a {
-  background: #669900;
-  color: white;
+nav a.active {
+  color: #669900 !important;
 }
 
 /* Main content headings and links */
@@ -145,31 +129,10 @@ params:
   border-top: 3px solid #669900;
 }
 
-/* Inline code, which readthedown also colours red */
-#content code {
-  color: #4d7300;
-}
-
-/* Buttons and other small controls (e.g. back-to-top, mobile menu toggle) */
-#content .btn,
-#nav-top a,
-#main button {
-  color: #4d7300;
-  border-color: #669900;
-}
-
-/* DataTables controls, if any tables show paging or search */
-.dataTables_wrapper .paginate_button.current,
-.dataTables_wrapper .paginate_button:hover {
-  background: #669900 !important;
-  color: white !important;
-  border-color: #669900 !important;
-}
 
 #main :not(.leaflet-control) > a {
     color: #669900;
 }
-``
 
 .nav-tabs {
   display: flex;
@@ -195,62 +158,7 @@ params:
   border-top: 3px solid #669900 !important;
 }
 
-/* Remove readthedown's bullets from tab/pill navigation */
-#content ul.nav,
-#content ul.nav > li {
-  list-style: none !important;
-  margin-left: 0 !important;
-}
-#content ul.nav {
-  padding-left: 0 !important;
-}
-#content ul.nav > li::before,
-#content ul.nav > li::marker {
-  content: none !important;
-}
 
-
-/* DT pagination: remove bullets */
-#content ul.pagination,
-#content ul.pagination > li {
-  list-style: none !important;
-  margin-left: 0 !important;
-}
-#content ul.pagination {
-  padding-left: 0 !important;
-}
-#content ul.pagination > li::marker {
-  content: none !important;
-}
-
-/* DT pagination: current page in green instead of blue */
-#content .pagination > .active > a,
-#content .pagination > .active > a:hover,
-#content .pagination > .active > a:focus,
-#content .page-item.active .page-link,
-.dataTables_wrapper .paginate_button.current,
-.dataTables_wrapper .paginate_button.current:hover,
-.dt-paging-button.current {
-  background: #669900 !important;
-  border-color: #669900 !important;
-  color: white !important;
-}
-
-/* Other page buttons */
-#content .pagination > li > a,
-#content .page-link,
-.dataTables_wrapper .paginate_button,
-.dt-paging-button {
-  color: #4d7300 !important;
-}
-#content .pagination > li > a:hover,
-#content .page-link:hover,
-.dataTables_wrapper .paginate_button:hover,
-.dt-paging-button:hover {
-  background: #eef3e6 !important;
-  border-color: #cfdcbc !important;
-  color: #2f3a24 !important;
-}
 
 </style>
 
@@ -280,8 +188,8 @@ style_pdf_table <- function(ft,
                             caption_text  = NULL,
                             header_labels = NULL) {
   ft <- flextable::set_table_properties(ft, layout = "autofit", width = 1)
-  ft <- flextable::align(ft, align = "center", part = "all")
   ft <- flextable::theme_booktabs(ft, bold_header = TRUE)
+  ft <- flextable::align(ft, align = "center", part = "all")   # after the theme
   ft <- flextable::fontsize(ft, size = 9, part = "all")
   ft <- flextable::padding(ft, padding = 4, part = "all")
   if (!is.null(header_labels)) {
@@ -326,7 +234,8 @@ descriptive_flags <- list(
   countries   = !is.null(params$countries),
   rainfall    = !is.null(params$rainfall),
   temperature = !is.null(params$temperature),
-  elevation   = !is.null(params$elevation)
+  elevation   = !is.null(params$elevation),
+  protected   = !is.null(params$protected)
 )
 
 # Human-friendly labels (display order matches report layout)
@@ -335,7 +244,8 @@ descriptive_labels <- c(
   countries   = "Geographic distribution by country",
   rainfall    = "Rainfall",
   temperature = "Temperature",
-  elevation   = "Elevation"
+  elevation   = "Elevation",
+  protected         = "Protected Area coverage"
 )
 
 missing_labels <- unname(descriptive_labels[
@@ -362,12 +272,20 @@ first_abiotic <- if (any_abiotic) {
   names(which(unlist(descriptive_flags[c("rainfall", "temperature", "elevation")])))[1]
 } else NA_character_
 
+# tab_header <- function(name, label) {
+#   if (!isTRUE(descriptive_flags[[name]])) return("")
+#   if (!is.na(first_abiotic) && first_abiotic == name) {
+#     paste0("#### ", label, " {.active}")
+#   } else {
+#     paste0("#### ", label)
+#   }
+# }
 tab_header <- function(name, label) {
   if (!isTRUE(descriptive_flags[[name]])) return("")
   if (!is.na(first_abiotic) && first_abiotic == name) {
-    paste0("#### ", label, " {.active}")
+    paste0("### ", label, " {.active}")
   } else {
-    paste0("#### ", label)
+    paste0("### ", label)
   }
 }
 ```
@@ -399,6 +317,9 @@ ecosystem_label <- if (is.na(params$ecosystem_name) || !nzchar(params$ecosystem_
 }
 ```
 
+```{r child='headline_status.Rmd'}
+```
+
 # **About this report**
 
 This report documents an ecosystem assessment of the `r ecosystem_label`, following the IUCN Red List of Ecosystems (RLE) Guidelines, `r if(length(params$years) == 0) {        "with no raster years uploaded"      } else if(length(params$years) == 1) {        paste("using data from", params$years)      } else {        paste("using data between", min(params$years), "and", max(params$years))      }`. The report was created using the [EcoCAT](https://www.kew.org/science/our-science/projects/EcoCAT) RLE Assessment Tool. 
@@ -414,7 +335,7 @@ This report documents an ecosystem assessment of the `r ecosystem_label`, follow
 
 `r not_requested_sentence`
 
-`r if (!is.null(rasters) && length(rasters) > 0) "### Mapped distribution" else ""`
+`r if (!is.null(rasters) && length(rasters) > 0) "## Mapped distribution" else ""`
 
 ```{r mapped_distribution, echo=FALSE, message=FALSE, warning=FALSE, fig.align="center", out.width="100%", eval = !is.null(rasters) && length(rasters) > 0, fig.alt="A map of the ecosystem showing the most recent distribution"}
 # Always-shown recent + loss map.  Uses the same figure helpers as the app tab
@@ -450,15 +371,19 @@ r_loss   <- if (is.null(rasters_change)) {
 #}
 ```
 
-`r if (descriptive_flags$typology) "### Classification" else ""`
+`r if (descriptive_flags$typology) "## Classification" else ""`
 ```{r child='typology.Rmd'}
 ```
 
-`r if (descriptive_flags$countries) "### Distribution by country" else ""`
+`r if (descriptive_flags$countries) "## Distribution by country" else ""`
 ```{r child='distribution.Rmd'}
 ```
 
-`r if (any_abiotic) "### Abiotic features {.tabset}" else ""`
+`r if (descriptive_flags$protected) "## Protected Area coverage" else ""`
+```{r child='protected_areas.Rmd'}
+```
+
+`r if (any_abiotic) "## Abiotic features {.tabset}" else ""`
 
 `r tab_header("rainfall", "Rainfall")`
 ```{r child='rainfall.Rmd'}
@@ -484,13 +409,10 @@ result_b <- params$criterion_b_status
 ```
 
 ## `r status_circle(result_a)` Criterion A {.active}
-**Reduction in geographic distribution**
-
 ```{r child='criterion_a.Rmd'}
 ```
 
 ## `r status_circle(result_b)` Criterion B
-**Restricted geographic distribution**
 ```{r child='b1_eoo.Rmd'}
 ```
 

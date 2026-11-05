@@ -29,42 +29,61 @@ coo_df <- params$countries
 title_text <- "Ecosystem occurrence at a country level"
 
 # display the table
-if (knitr::is_html_output()) {
-  htmltools::tagList(
-    # centered Title
-    htmltools::div(
-      style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
-    DT::datatable(coo_df, rownames = F,
-                  escape  = FALSE,
-                  options = list(
-                    paging = FALSE,
-                    searching = FALSE,
-                    info = FALSE,
-                    dom = 't',
-                    autoWidth = TRUE,
-                    scrollX = FALSE)) %>%
-      DT::formatStyle(columns = c(1:ncol(coo_df)), fontSize = '100%')
-  )
-} else {
+# if (knitr::is_html_output()) {
+#   htmltools::tagList(
+#     # centered Title
+#     htmltools::div(
+#       style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
+#     DT::datatable(coo_df, rownames = F,
+#                   escape  = FALSE,
+#                   options = list(
+#                     paging = FALSE,
+#                     searching = FALSE,
+#                     info = FALSE,
+#                     dom = 't',
+#                     autoWidth = TRUE,
+#                     scrollX = FALSE)) %>%
+#       DT::formatStyle(columns = c(1:ncol(coo_df)), fontSize = '100%')
+#   )
+# } else {
   # flextable
  # PDF/Word: styled flextable
-  set_flextable_defaults(theme_fun = theme_vanilla, background.color = "transparent")
+ # set_flextable_defaults(theme_fun = theme_vanilla, background.color = "transparent")
   
   coo_tab <- flextable(coo_df) |>
-    style_pdf_table(caption_text = title_text)
+    style_pdf_table(caption_text = title_text) |>
+     flextable::compose(j = 2, part = "header",
+                     value = flextable::as_paragraph("Area (km", flextable::as_sup("2"), ")"))
   
-  coo_tab <- flextable(coo_df) |>
-  set_caption(
-      caption = flextable::as_paragraph(flextable::as_b(title_text)),
-      align_with_table = FALSE) |>   # let caption span page width, not just table
-  # set_header_labels(
-  #       `% of Ecosystem`       = "Ecosystem occurrence\n(%)",
-  #      `% of Country coverage`       = "Country\ncoverage\n(%)",
-  # ) |>
-  fontsize(size = 9, part = "all") |>
-  align(align = "left", part = "all") |>  # Center header text
-  valign(valign = "center", part = "all")# |> # Vertically center
+  # coo_tab <- flextable(coo_df) |>
+  # set_caption(
+  #     caption = flextable::as_paragraph(flextable::as_b(title_text)),
+  #     align_with_table = FALSE) |>   # let caption span page width, not just table
+  # # set_header_labels(
+  # #       `% of Ecosystem`       = "Ecosystem occurrence\n(%)",
+  # #      `% of Country coverage`       = "Country\ncoverage\n(%)",
+  # # ) |>
+  # fontsize(size = 9, part = "all") |>
+  # align(align = "left", part = "all") |>  # Center header text
+  # valign(valign = "center", part = "all")# |> # Vertically center
   
   coo_tab
-}
+  
+  
+#   cat_df <- data.frame(
+#   `IUCN category`  = as.character(pa_cats$Category),
+#   Description      = unname(pa_cat_names[as.character(pa_cats$Category)]),
+#   area             = fmt_km2(pa_cats$area_km2),
+#   `% of ecosystem` = fmt_pct(pa_cats$pct_eco),
+#   check.names = FALSE, stringsAsFactors = FALSE
+# )
+# 
+# flextable::flextable(cat_df) |>
+#   style_pdf_table(caption_text = "Ecosystem within protected areas, by IUCN management category") |>
+#   flextable::compose(j = "area", part = "header",
+#                      value = flextable::as_paragraph("Area (km", flextable::as_sup("2"), ")"))
+#   
+#   
+  
+# }
 ```

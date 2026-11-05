@@ -27,7 +27,7 @@ b2_nexceed <- b2_data$n_exceed[which.max(as.numeric(b2_data$year))]
 #   " ecosystem, ", b2_n, " 10 km\u00b2 grid cells intersect the most recent (",
 #   max(params$years), ") ecosystem map, which is highlighted in the map below. ",
 #   "Small patches of the mapped ecosystem (<1% of total mapped ecosystem area) ",
-#   "are then excluded from the total number of intersecting 10 km\u00b2 grid cells ",
+#   "are then excluded from the total number of intersecting 10 km^2^ grid cells ",
 #   "to provide the AOO measurement. From the most recent mapping, the AOO for the ",
 #   params$ecosystem_name, " ecosystem is **", b2_nexceed, " grid cells**. ",
 #   "This number of grid cells classes the ecosystem as **",
@@ -36,7 +36,7 @@ b2_nexceed <- b2_data$n_exceed[which.max(as.numeric(b2_data$year))]
 
 
 cat(paste0(
-  "A regular grid with 10 km × 10 km cells (100 km²) was overlaid on the most recent (**",
+  "A regular grid with 10 km^2^ cells (100 km^2^) was overlaid on the most recent (**",
   max(params$years), "**) map of the **", params$ecosystem_name,
   "** ecosystem. Of the **", b2_n, "** grid cells intersecting the mapped ecosystem, **", b2_nexceed, "** remained after applying the RLE Guidelines v2.0 correction to exclude cells collectively representing less than 1% of the mapped area. The resulting Area of Occupancy (AOO) of **", b2_nexceed, "** grid cells classifies the ecosystem as **",
   assessment_map[b2_code], "** under subcriterion B2."

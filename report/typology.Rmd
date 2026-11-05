@@ -28,64 +28,31 @@ if (is.null(params$typology)) {
 
 ```{r typology_table, echo=FALSE, message=FALSE, warning=FALSE, eval = !is.null(params$typology)}
 typology_df <- params$typology
-title_text <- "Percentage of Global Ecosystem Typology across the ecosystem"
-
-if (knitr::is_html_output()) {
-htmltools::tagList(
-  # centered Title
-  htmltools::div(
-    style = "text-align:center; font-weight:bold; font-size:18px; margin-bottom:10px;", title_text),
-  DT::datatable(typology_df, rownames=F,
-                escape = FALSE,
-                options = list(
-                  pageLength = 5,
-                  searching = FALSE,
-                  info = FALSE,
-                  #dom = 't',
-                  autoWidth = TRUE,
-                  scrollX = FALSE)) %>%
-    DT::formatStyle(columns = c(1:ncol(typology_df)), fontSize = '100%')
-)
-
-}else{
-    # flextable
-  set_flextable_defaults(font.size = 10, theme_fun = theme_vanilla, padding = 5, background.color = "transparent")
-  
-  # get_tab <- flextable(typology_df) %>%
-  #   set_caption(caption = as_paragraph(as_b(title_text))) %>%
-  #   autofit() %>%
-  #   flextable::theme_booktabs(bold_header = TRUE) %>%
-  #   # colformat_num(j="Year", big.mark = "") %>%
-  #   set_table_properties(layout="autofit")
-  
-  # get_tab <-   flextable(c) |>
-  #   style_pdf_table(
-  #     caption_text  = title_text,
-  #     header_labels = list(
-  #       `Ecosystem Functional Group` = "Ecosystem\nFunctional Group",
-  #       `Major occurrence (%)`       = "Major\noccurrence (%)"
-  #     )
-  #   )
-  # 
-  # get_tab
+title_text <- "Global Ecosystem Typology coverage across the ecosystem"
   
 # Create flextable with multi-line headers
-get_tab <- flextable(typology_df) |>
-  set_caption(
-      caption = flextable::as_paragraph(flextable::as_b(title_text)),
-      align_with_table = FALSE) |>   # let caption span page width, not just table
-  set_header_labels(
-        `Ecosystem Functional Group` = "Ecosystem\nFunctional\nGroup",
-        `Major occurrence (%)`       = "Major\noccurrence\n(%)",
-        `EFG_CODE` = "EFG\ncode",
-        `Minor occurrence (%)`       = "Minor\noccurrence (%)"
-  ) |>
-  fontsize(size = 9, part = "all") |>
-  align(align = "left", part = "all") |>  # Center header text
-  valign(valign = "center", part = "all")# |> # Vertically center
-  # autofit()  # Adjust column widths
+  get_tab <- flextable(typology_df) |>
+    style_pdf_table(caption_text = title_text) |>
+    set_header_labels(EFG_CODE = "EFG code")
+     # flextable::compose(j = 2, part = "header",
+                     # value = flextable::as_paragraph("Area (km", flextable::as_sup("2"), ")"))
+
+# get_tab <- flextable(typology_df) |>
+#   set_caption(
+#       caption = flextable::as_paragraph(flextable::as_b(title_text)),
+#       align_with_table = FALSE) |>   # let caption span page width, not just table
+#   set_header_labels(
+#         `Ecosystem Functional Group` = "Ecosystem\nFunctional\nGroup",
+#         `Major occurrence (%)`       = "Major\noccurrence\n(%)",
+#         `EFG_CODE` = "EFG\ncode",
+#         `Minor occurrence (%)`       = "Minor\noccurrence (%)"
+#   ) |>
+#   fontsize(size = 9, part = "all") |>
+#   align(align = "left", part = "all") |>  # Center header text
+#   valign(valign = "center", part = "all")# |> # Vertically center
+#   # autofit()  # Adjust column widths
 
 get_tab
   
-}
+# }
 ```

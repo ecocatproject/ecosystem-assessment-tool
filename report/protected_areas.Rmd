@@ -1,0 +1,89 @@
+<!--
+Protected area coverage (child of report_main.Rmd)
+
+Expects params$protected: the list returned by compute_protected()
+(helpers/protected_areas.R), ideally without the large `pa_all` element.
+Uses `style_pdf_table()` and `ecosystem_label` from the parent.
+The section heading itself is added in report_main.Rmd.
+-->
+
+```{r pa_setup, include=FALSE}
+pa_res  <- params$protected
+has_pa  <- !is.null(pa_res) && is.list(pa_res) && !is.null(pa_res$summary)
+
+if (has_pa) {
+  pa_sum   <- pa_res$summary
+  pa_cats  <- pa_res$by_category
+  pa_sites <- pa_res$by_site
+  has_cats  <- !is.null(pa_cats)  && nrow(pa_cats)  > 0
+  has_sites <- !is.null(pa_sites) && nrow(pa_sites) > 0
+} else {
+  has_cats <- has_sites <- FALSE
+}
+
+fmt_km2 <- function(x) format(round(x, 0), big.mark = ",", trim = TRUE)
+fmt_pct <- function(x) sprintf("%.1f%%", x)
+
+# Plain-language names for the IUCN management categories
+pa_cat_names <- c(
+  "Ia"             = "Strict nature reserve",
+  "Ib"             = "Wilderness area",
+  "II"             = "National park",
+  "III"            = "Natural monument or feature",
+  "IV"             = "Habitat/species management area",
+  "V"              = "Protected landscape/seascape",
+  "VI"             = "Protected area with sustainable use",
+  "Not Reported"   = "Category not reported",
+  "Not Assigned"   = "Category not assigned",
+  "Not Applicable" = "Category not applicable",
+  "OECM"           = "Other effective area-based conservation measure"
+)
+```
+
+```{r pa_text, echo=FALSE, results='asis', eval = has_pa}
+if (pa_sum$prot_km2 > 0) {
+  cat(paste0(
+    "Of the **", fmt_km2(pa_sum$eco_km2), " km^2^** mapped extent of the ecosystem, an estimated **",
+    fmt_km2(pa_sum$prot_km2), " km^2^ (",
+    fmt_pct(pa_sum$pct_protected), ")** lies within protected areas recorded in the ",
+    "[World Database on Protected and Conserved Areas (WDPCA)](https://www.protectedplanet.net/). ",
+    "**", fmt_pct(pa_sum$pct_strict), "** falls within strictly protected areas ",
+    "(IUCN categories Ia, Ib and II)."
+  ))
+} else {
+  cat(paste0(
+    "No protected areas recorded in the World Database on Protected and Conserved ",
+    "Areas (WDPCA) overlap the mapped extent of the ", ecosystem_label, "."
+  ))
+}
+```
+
+```{r pa_by_category, echo=FALSE, message=FALSE, warning=FALSE, eval = has_cats}
+cat_df <- data.frame(
+  `IUCN category`  = as.character(pa_cats$Category),
+  Description      = unname(pa_cat_names[as.character(pa_cats$Category)]),
+  area             = fmt_km2(pa_cats$area_km2),
+  `% of ecosystem` = fmt_pct(pa_cats$pct_eco),
+  check.names = FALSE, stringsAsFactors = FALSE
+)
+
+flextable::flextable(cat_df) |>
+  style_pdf_table(caption_text = "Ecosystem within protected areas, by IUCN management category") |>
+  flextable::compose(j = "area", part = "header",
+                     value = flextable::as_paragraph("Area (km", flextable::as_sup("2"), ")"))
+```
+
+```{r pa_by_site, echo=FALSE, message=FALSE, warning=FALSE, eval = has_sites}
+site_df <- pa_sites
+site_df <- site_df[, names(site_df) != "Area (km2)", drop = FALSE]   # drop the area column
+names(site_df)[names(site_df) == "Site"] <- "Protected Area"
+names(site_df)[names(site_df) == "IUCN"] <- "IUCN category"
+
+flextable::flextable(site_df) |>
+  style_pdf_table(caption_text = "Protected areas overlapping the ecosystem") |>
+  flextable::add_footer_lines(
+    "Protected areas from the WDPCA can overlap - percentages may not sum to the protected area total.") |>
+  flextable::italic(part = "footer") |>
+  flextable::fontsize(size = 8, part = "footer") |>
+  flextable::align(align = "left", part = "footer")
+```
