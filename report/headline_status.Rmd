@@ -1,13 +1,27 @@
 <!--
 Headline assessment box (child of report_main.Rmd)
 
-Place near the top of report_main.Rmd, after the set-ecosystem-name chunk:
-
-
 Uses status_circle() and ecosystem_label from the parent, and reads params
-directly, so it doesn't depend on the Criterion A/B children having run.
-Kept to plain ASCII (HTML entities for dashes) to avoid locale problems.
+directly
 -->
+
+
+<!--
+Criterion B (part 2 of 2): B2 — Area of Occupancy
+
+Renders, in order:
+  1. ### Subcriterion B2 — Area of Occupancy (AOO)
+     intro paragraph
+     b2_text                — dynamic narrative paragraph with the headline numbers
+     b2_text_missing        — fallback if no b2_data
+  2. b2_detail               — single-row card (replaces the old DT table)
+  3. b2_map                  — leaflet map (unchanged from before)
+
+Relies on assessment_map and latest_b_row defined by criterion_b_setup in
+b1_eoo.Rmd, which runs immediately before this child.
+-->
+
+
 
 ```{r headline_setup, include=FALSE}
 hl_order <- c("CO", "CR", "EN", "VU", "NT", "LC", "DD", "NE")   # highest risk first
