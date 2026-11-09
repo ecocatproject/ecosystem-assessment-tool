@@ -279,9 +279,6 @@ makeEOO.SpatRaster <- function(input.data, year) {
 # Lambert azimuthal equal-area projection.
 compute_aoo_fast <- function(eau) {
 
-  # mm <- terra::minmax(eau)
-  # if (!any(is.na(mm)) && mm["min", 1] <= 0)
-  #   eau <- terra::classify(eau, matrix(c(-Inf, 0, NA), ncol = 3, byrow = TRUE))
   # ensure 1 and NA raster
   eau <- terra::ifel(eau > 0, 1, NA)
   
@@ -299,14 +296,13 @@ compute_aoo_fast <- function(eau) {
   }
   
   # Centre: midpoint of the geographic (WGS84) bounding box
+  # same as slow version 
   ext_ll <- if (terra::is.lonlat(eau)) terra::ext(eau) else
     terra::ext(terra::project(
       terra::as.polygons(terra::ext(eau), crs = terra::crs(eau)), "EPSG:4326"))
   laea <- sprintf(
-    # "+proj=laea +lat_0=%.4f +lon_0=%.4f +datum=WGS84 +units=m +no_defs",
-    "+proj=laea +lat_0=%f +lon_0=%.4f +datum=WGS84 +units=m +no_defs",
-    mean(c(ext_ll$ymin, ext_ll$ymax)),
-    mean(c(ext_ll$xmin, ext_ll$xmax)))
+    "+proj=laea +lat_0=%.4f +lon_0=%.4f +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs",
+    mean(c(ext_ll$ymin, ext_ll$ymax)), mean(c(ext_ll$xmin, ext_ll$xmax)))
   
   # # Data extent in LAEA, snapped outwards to the grid (plus one cell of padding)
   # pe      <- as.vector(terra::ext(terra::project(eau, crs)))
@@ -317,7 +313,14 @@ compute_aoo_fast <- function(eau) {
   if (nrow(pts) == 0) return(NULL)
   pts_laea <- terra::project(pts, laea)
 
-  grid   <- terra::rast(terra::ext(pts_laea), res = 10000, crs = laea)
+  # grid   <- terra::rast(terra::ext(pts_laea), res = 10000, crs = laea)
+  # 10 km grid snapped to whole multiples of 10 km from the projection centre,
+  # padded by one cell so no edge points fall outside it
+  pe   <- terra::ext(pts_laea)
+  grid <- terra::rast(
+    xmin = (floor(pe$xmin / 1e4) - 1) * 1e4, xmax = (ceiling(pe$xmax / 1e4) + 1) * 1e4,
+    ymin = (floor(pe$ymin / 1e4) - 1) * 1e4, ymax = (ceiling(pe$ymax / 1e4) + 1) * 1e4,
+    resolution = 1e4, crs = laea)
   counts <- terra::rasterize(pts_laea, grid, fun = "sum")
 
   # 1% rule: drop the smallest-occupancy cells that together hold <= 1% of area
@@ -327,9 +330,10 @@ compute_aoo_fast <- function(eau) {
   thresh_n  <- if (any(cum_props > 0.01))
     areas[which(cum_props > 0.01)[1]] / cell_area_km2 else 0
 
+  # aggregate = FLASE to ensure counts are on distinct count values not grid cells
   polys_all <- terra::as.polygons(counts, aggregate = FALSE) |>
     sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "all")
-  polys_sel <- terra::as.polygons(terra::ifel(counts >= thresh_n, counts, NA)) |>
+  polys_sel <- terra::as.polygons(terra::ifel(counts >= thresh_n, counts, NA), aggregate = FALSE) |>
     sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "assessment")
 
   list(
@@ -392,3 +396,8 @@ compute_aoo_slow <- function(eau) {
 
   list(dat_all = dat_all, dat_sel = dat_sel, table_df = table_df)
 }
+
+# compute_aoo_fast(
+# rast("C:/Users/rcr11kg/OneDrive - The Royal Botanic Gardens, Kew/Tarciso Leao's files - EcoCAT team folder/Itigi Sumbu Thicket/Classifications/Sumbu/Classifications/classification_temporal_filtered_sumbu_2024_2025.tif")
+# )
+
