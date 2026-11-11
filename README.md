@@ -125,10 +125,9 @@ will be optimised for direct use in the EcoCAT Assessment Tool.
 
 ## Running the tool locally
 
-The EcoCAT Assessment Tool can also be run on your own computer. You
-will need a recent version of [R](https://cran.r-project.org/) (???
-4.3), and [RStudio](https://posit.co/download/rstudio-desktop/) is
-recommended.
+The EcoCAT Assessment Tool can also be run on your own computer.
+[R](https://cran.r-project.org/) version 4.3 or later and
+[RStudio](https://posit.co/download/rstudio-desktop/) are recommended.
 
 ### 1. Install the required packages
 
