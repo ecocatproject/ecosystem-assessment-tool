@@ -1,6 +1,18 @@
 # EcoCAT Assessment Tool
 
 
+<p align="center">
+<img src="www/logo-text-magicked.png" alt="EcoCAT logo" width="400">
+</p>
+
+# EcoCAT Assessment Tool
+
+**Use the tool online:** <https://assess.ecocatproject.org>
+
+No installation is needed to use the online version. To run the tool on
+your own computer, see [Running the tool
+locally](#running-the-tool-locally).
+
 ## Introduction
 
 The loss of biodiversity and degradation of natural habitats are making
@@ -10,11 +22,11 @@ clean air and water, climate regulation, nutrient cycling, crop
 pollination, and recreation.
 
 An ecosystem encompasses a community of interacting species and their
-physical environment. Ecosystems can be classified using theB [**IUCN
+physical environment. Ecosystems can be classified using the [**IUCN
 Global Ecosystem Typology
 (GET)**](https://global-ecosystems.org/ "url link to the global ecosystem typology webpage"),
 which provides a standard framework for describing ecosystem types
-worldwide, and assessed using theB [**IUCN Red List of Ecosystems
+worldwide, and assessed using the [**IUCN Red List of Ecosystems
 (RLE)**](https://iucnrle.org/rle-categ-and-criteria "url link to the IUCN Red List of Ecosystems criteria"),
 which ranks ecosystems according to their risk of collapse. Together,
 the GET and RLE provide a globally consistent framework for mapping,
@@ -30,7 +42,7 @@ assess the risk of ecosystem collapse using scientifically robust and
 internationally recognised criteria described in the [**RLE
 guidelines**](https://portals.iucn.org/library/sites/library/files/documents/2024-021-En.pdf).
 
-The IUCN RLE has been adopted as a headline indicator in theB [Global
+The IUCN RLE has been adopted as a headline indicator in the [Global
 Biodiversity Framework
 (GBF)](https://www.cbd.int/gbf "url link to the global biodiversity framework website")B
 of the UN Convention on Biological Diversity, highlighting its
@@ -110,3 +122,49 @@ support the production of ecosystem maps and time series required for
 the assessment and reassessment of the RLE spatial distribution
 criteria. These maps will include measures of mapping uncertainty and
 will be optimised for direct use in the EcoCAT Assessment Tool.
+
+## Running the tool locally
+
+The EcoCAT Assessment Tool can also be run on your own computer. You
+will need a recent version of [R](https://cran.r-project.org/) (???
+4.3), and [RStudio](https://posit.co/download/rstudio-desktop/) is
+recommended.
+
+### 1. Install the required packages
+
+Run this once in R to install any packages you don’t already have:
+
+``` r
+pkgs <- c("terra", "base64enc", "bsicons", "bslib", "data.table", "dplyr", 
+"DT", "elevatr", "exactextractr", "flextable", "future", "ggplot2", 
+"ggspatial", "httr2", "leafem", "leaflet", "leaflet.extras", 
+"leaflet.extras2", "lubridate", "mgcv", "plotly", "progress", 
+"promises", "purrr", "quarto", "RColorBrewer", "rnaturalearth", 
+"rnaturalearthdata", "rstac", "sf", "shiny", "shinycssloaders", 
+"shinythemes", "shinyWidgets", "stars", "stringr", "tidyr", "tinytex", 
+"xml2", "zip", "stats", "utils", "grDevices", "grid", "htmltools", 
+"rmarkdown", "renv", "knitr", "rmdformats", "htmlwidgets") 
+
+install.packages(setdiff(pkgs, rownames(installed.packages())))
+```
+
+### 2. Launch the app directly from GitHub
+
+``` r
+shiny::runGitHub(repo = "ecocat", username = "rdcritchlow")
+shiny::runGitHub(repo = "ecocat-assessment", username = "ecocatproject")
+```
+
+This downloads the latest version of the tool to a temporary folder and
+opens it in your web browser. Nothing is permanently installed.
+
+### Alternative: keep a local copy
+
+To work offline or keep a fixed version, download the repository using
+**Code ??? Download ZIP** on GitHub (or
+`git clone https://github.com/rdcritchlow/ecocat.git`). Then open the
+folder in R and run:
+
+``` r
+shiny::runApp()
+```
