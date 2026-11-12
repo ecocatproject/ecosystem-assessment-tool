@@ -2,7 +2,8 @@
 
 <p align="center">
 
-<img src="www/logo-text-magicked.png" alt="EcoCAT logo" width="400">
+<img src="www/logo-text-magicked.png" alt="EcoCAT logo" width="400"/>
+
 </p>
 
 # EcoCAT Assessment Tool
@@ -12,6 +13,9 @@
 No installation is needed to use the online version. To run the tool on
 your own computer, see [Running the tool
 locally](#running-the-tool-locally).
+
+For a simple 10-step workflow of the assessment process, see [Assessment
+tool process](#assessment-tool-process).
 
 ## Introduction
 
@@ -168,3 +172,14 @@ the app by giving the path to the unzipped folder:
 ``` r
 shiny::runApp("path/to/ecocat-assessment-tool")
 ```
+
+## Assessment tool process
+
+The process to implement an ecosystem assessment using the [**EcoCAT
+Assessment Tool**](assess.ecocatproject.org) is shown below
+
+<p align="center">
+
+<img src="www/assessment-tool-flow_v4.png" alt="assessment tool 10 ecosystem assessment process" width="400"/>
+
+</p>

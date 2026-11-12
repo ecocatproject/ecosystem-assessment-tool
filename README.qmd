@@ -10,7 +10,9 @@ execute:
 ```
 
 <p align="center">
-  <img src="www/logo-text-magicked.png" alt="EcoCAT logo" width="400">
+
+<img src="www/logo-text-magicked.png" alt="EcoCAT logo" width="400"/>
+
 </p>
 
 # EcoCAT Assessment Tool
@@ -19,6 +21,7 @@ execute:
 
 No installation is needed to use the online version. To run the tool on your own computer, see [Running the tool locally](#running-the-tool-locally).
 
+For a simple 10-step workflow of the assessment process, see [Assessment tool process](#assessment-tool-process).
 
 ## Introduction
 
@@ -70,7 +73,7 @@ Future releases of the EcoCAT Assessment Tool will include support for the calcu
 
 The EcoCAT team is currently developing an ecosystem Mapping Tool to support the production of ecosystem maps and time series required for the assessment and reassessment of the RLE spatial distribution criteria. These maps will include measures of mapping uncertainty and will be optimised for direct use in the EcoCAT Assessment Tool.
 
-## Running the tool locally
+## Running the tool locally {#running-the-tool-locally}
 
 The EcoCAT Assessment Tool can also be run on your own computer. [R](https://cran.r-project.org/) version 4.3 or later and [RStudio](https://posit.co/download/rstudio-desktop/) are recommended.
 
@@ -78,7 +81,7 @@ The EcoCAT Assessment Tool can also be run on your own computer. [R](https://cra
 
 Run this once in R to install any packages you don't already have:
 
-```r
+``` r
 pkgs <- c("terra", "base64enc", "bsicons", "bslib", "data.table", "dplyr", 
 "DT", "elevatr", "exactextractr", "flextable", "future", "ggplot2", 
 "ggspatial", "httr2", "leafem", "leaflet", "leaflet.extras", 
@@ -94,7 +97,7 @@ install.packages(setdiff(pkgs, rownames(installed.packages())))
 
 ### 2. Launch the app directly from GitHub
 
-```r
+``` r
 shiny::runGitHub(repo = "ecocat", username = "rdcritchlow")
 shiny::runGitHub(repo = "ecocat-assessment", username = "ecocatproject")
 ```
@@ -105,6 +108,16 @@ This downloads the latest version of the tool to a temporary folder and opens it
 
 To work offline or keep a fixed version, click the green **Code** button on GitHub and choose **Download ZIP**, then unzip the file. In R, run the app by giving the path to the unzipped folder:
 
-```r
+``` r
 shiny::runApp("path/to/ecocat-assessment-tool")
 ```
+
+## Assessment tool process {#assessment-tool-process}
+
+The process to implement an ecosystem assessment using the [**EcoCAT Assessment Tool**](assess.ecocatproject.org) is shown below
+
+<p align="center">
+
+<img src="www/assessment-tool-flow_v4.png" alt="assessment tool 10 ecosystem assessment process" width="400"/>
+
+</p>
