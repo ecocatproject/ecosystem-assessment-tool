@@ -131,6 +131,7 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
   if (is.null(x)) stop("Raster not loaded")
   if (!inherits(x, "SpatRaster")) stop("x must be a SpatRaster")
   if (terra::nlyr(x) > 1) x <- x[[terra::nlyr(x)]]
+  if (!terra::is.lonlat(x)) x <- terra::project(x, "EPSG:4326", method = "near")
   
   # 1. Extent in lon/lat for the web query
   e  <- terra::project(terra::ext(x), from = terra::crs(x), to = "EPSG:4326")
