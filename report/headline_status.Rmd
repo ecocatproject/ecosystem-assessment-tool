@@ -5,31 +5,13 @@ Uses status_circle() and ecosystem_label from the parent, and reads params
 directly
 -->
 
-
-<!--
-Criterion B (part 2 of 2): B2 — Area of Occupancy
-
-Renders, in order:
-  1. ### Subcriterion B2 — Area of Occupancy (AOO)
-     intro paragraph
-     b2_text                — dynamic narrative paragraph with the headline numbers
-     b2_text_missing        — fallback if no b2_data
-  2. b2_detail               — single-row card (replaces the old DT table)
-  3. b2_map                  — leaflet map (unchanged from before)
-
-Relies on assessment_map and latest_b_row defined by criterion_b_setup in
-b1_eoo.Rmd, which runs immediately before this child.
--->
-
-
-
 ```{r headline_setup, include=FALSE}
 hl_order <- c("CO", "CR", "EN", "VU", "NT", "LC", "DD", "NE")   # highest risk first
 hl_names <- c(CO = "Collapsed", CR = "Critically Endangered", EN = "Endangered",
               VU = "Vulnerable", NT = "Near Threatened", LC = "Least Concern",
               DD = "Data Deficient", NE = "Not Evaluated")
-hl_cols  <- c(CO = "#000000", CR = "#d73027", EN = "#fc8d59", VU = "#fee08b",
-              NT = "#91bfdb", LC = "#1a9850", DD = "#bbbbbb", NE = "#999999")
+hl_cols <- c(CO = "#000000", CR = "#FF0000", EN = "#FFA500", VU = "#FFFF00",
+             NT = "#ADFF2F", LC = "#008000", DD = "#bbbbbb", NE = "#999999")
 
 # Single valid code, anything else -> "NE"
 hl_code <- function(x) {
@@ -99,7 +81,7 @@ hl_sentence <- if (hl_overall %in% c("NE", "DD")) {
 ```
 
 ```{r headline_box, echo=FALSE, message=FALSE, warning=FALSE}
-if (knitr::is_html_output()) {
+# if (knitr::is_html_output()) {
 
   chip <- function(code, label) {
     htmltools::tags$span(
@@ -126,7 +108,8 @@ if (knitr::is_html_output()) {
   htmltools::div(
     style = paste0(
       "margin:16px 0 28px 0; padding:16px 20px; background:#fafafa;",
-      "border:1px solid #ddd; border-left:8px solid ", hl_cols[[hl_overall]], ";",
+      # "border:1px solid #ddd; border-left:8px solid ", hl_cols[[hl_overall]], ";",
+       "border:1px solid #ddd;",
       "border-radius:6px;"),
 
     # Overall category
@@ -159,21 +142,21 @@ if (knitr::is_html_output()) {
         "Criterion A subcriteria shown use the Proportional Rate of Change (PRC) method.")))
   )
 
-} else {
-  # Word / PDF: plain table
-  hl_df <- data.frame(
-    Criterion = c("Overall", "A", "A", "A", "B", "B"),
-    Level     = c("", "A1", "A2a", "A2b", "B1", "B2"),
-    Status    = c(hl_overall, hl_sub[c("A1", "A2a", "A2b", "B1", "B2")]),
-    stringsAsFactors = FALSE
-  )
-  hl_df$Category <- unname(hl_names[hl_df$Status])
-
-  ft <- flextable::flextable(hl_df) |>
-    style_pdf_table(caption_text = gsub("<[^>]+>", "", hl_sentence))
-  for (st in unique(hl_df$Status)) {
-    ft <- flextable::bg(ft, j = "Status", i = which(hl_df$Status == st), bg = hl_cols[[st]])
-  }
-  ft
-}
+# } else {
+#   # Word / PDF: plain table
+#   hl_df <- data.frame(
+#     Criterion = c("Overall", "A", "A", "A", "B", "B"),
+#     Level     = c("", "A1", "A2a", "A2b", "B1", "B2"),
+#     Status    = c(hl_overall, hl_sub[c("A1", "A2a", "A2b", "B1", "B2")]),
+#     stringsAsFactors = FALSE
+#   )
+#   hl_df$Category <- unname(hl_names[hl_df$Status])
+# 
+#   ft <- flextable::flextable(hl_df) |>
+#     style_pdf_table(caption_text = gsub("<[^>]+>", "", hl_sentence))
+#   for (st in unique(hl_df$Status)) {
+#     ft <- flextable::bg(ft, j = "Status", i = which(hl_df$Status == st), bg = hl_cols[[st]])
+#   }
+#   ft
+# }
 ```
