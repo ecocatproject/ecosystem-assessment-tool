@@ -6,9 +6,10 @@
 
 # This module renders html documents on: 
 # 1) intro/guidance
-# 2) methods
-# 3) example data (itigi thicket report summary)
-# 4) RLE guidelines
+# 2) user workflow
+# 3) methods
+# 4) example data (itigi thicket report summary) - update to Nov 26 results
+# 5) RLE guidelines
 
 # To create the html docs in the 1st instance, the www/documentation folder has
 # quarto files (.QMD) that can be run to compile the the html docs
@@ -33,7 +34,18 @@ about_module_ui <- function(id) {
                 )
               ),
               # ----------------------------------------------------------------
-              # about / guidance
+              # workflow 
+              nav_panel(
+                "User Workflow",
+                tags$iframe(
+                  src = "documentation/ecocat-workflow.html",
+                  width = "100%",
+                  height = "100%",
+                  style = "border:none;"
+                )
+              ),
+              # ----------------------------------------------------------------
+              # methods
               nav_panel(
                 "Methods",
                 tags$iframe(
@@ -103,5 +115,3 @@ about_module_server <- function(input, output, session) {
 }
 
 shinyApp(about_module_ui, about_module_server)
-
-# i've edited the qmd files that create the html files to remove author and date information.  However teh new files are not being rendered  in the app - why?
