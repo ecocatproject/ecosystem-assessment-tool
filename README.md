@@ -1,7 +1,7 @@
-# EcoCAT Assessment Tool
 
 
 <p align="center">
+
 <img src="www/logo-text-magicked.png" alt="EcoCAT logo" width="400">
 </p>
 
@@ -159,11 +159,10 @@ opens it in your web browser. Nothing is permanently installed.
 
 ### Alternative: keep a local copy
 
-To work offline or keep a fixed version, download the repository using
-**Code ??? Download ZIP** on GitHub (or
-`git clone https://github.com/rdcritchlow/ecocat.git`). Then open the
-folder in R and run:
+To work offline or keep a fixed version, click the green **Code** button
+on GitHub and choose **Download ZIP**, then unzip the file. In R, run
+the app by giving the path to the unzipped folder:
 
 ``` r
-shiny::runApp()
+shiny::runApp("path/to/ecocat-assessment-tool")
 ```
