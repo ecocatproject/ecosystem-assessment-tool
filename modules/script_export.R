@@ -339,11 +339,18 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
       raster_names   <- basename(pi$rasters$name)
       raster_sources <- if (example || isTRUE(input$include_data)) pi$rasters$datapath else NULL
 
-      data_dir <- if (is.null(input$data_dir)) "" else input$data_dir
-      data_dir <- trimws(gsub("\\\\", "/", data_dir))
-      data_dir <- sub("/$", "", data_dir)
-      if (!nzchar(data_dir)) data_dir <- "PATH/TO/your/raster/folder"
+      # data_dir <- if (is.null(input$data_dir)) "" else input$data_dir
+      # data_dir <- trimws(gsub("\\\\", "/", data_dir))
+      # data_dir <- sub("/$", "", data_dir)
+      # if (!nzchar(data_dir)) data_dir <- "PATH/TO/your/raster/folder"
 
+      data_dir <- if (is.null(input$data_dir)) "" else input$data_dir
+      data_dir <- trimws(data_dir)
+      data_dir <- gsub('^["\']+|["\']+$', "", data_dir)   # quotes from "Copy as path"
+      data_dir <- gsub("\\\\", "/", data_dir)              # Windows backslashes -> /
+      data_dir <- sub("/+$", "", data_dir)                 # trailing slash
+      if (!nzchar(data_dir)) data_dir <- "PATH/TO/your/raster/folder"
+      
 
       a1 <- safely(criterion_a_module$a1_result())
       b1 <- safely(criterion_b_module$mcp_table())
@@ -367,12 +374,12 @@ script_export_server <- function(id, upload_module, criterion_a_module, criterio
     })
 
     # ---- Download ------------------------------------------------------------
-    # e.g. EcoCAT_Itigi_Sumbu_thicket_20261005.zip, unzipping to a folder of the
+    # e.g. Itigi_Sumbu_thicket_ecocat_rscript_10-Nov-26.zip, unzipping to a folder of the
     # same name (so exports for different ecosystems don't overwrite each other)
     export_name <- reactive({
       eco <- safe_file_name(safely(ecosystem_name()))
-      paste0("EcoCAT_", if (is.null(eco)) "assessment" else eco,
-             "_", format(Sys.Date(), "%Y%m%d"))
+      paste0(if (is.null(eco)) "assessment" else eco,
+              "_ecocat_rscript_", format(Sys.Date(), "%d-%b-%y"))
     })
 
     output$download_script <- downloadHandler(

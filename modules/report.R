@@ -192,7 +192,7 @@ report_module_server <- function(datasets,
         } else {
           ""
         }
-        paste0("RLE_Assessment_", name_part, format(Sys.Date(), "%d-%b-%y"), ".", ext)
+        paste0(name_part, "RLE_Assessment_report_", format(Sys.Date(), "%d-%b-%y"), ".", ext)
       },
       content = function(file) {
         
@@ -472,16 +472,24 @@ report_module_server <- function(datasets,
         file_paths <- c()
         
         # Current date string
-        date_str <- format(Sys.Date(), "%d%m%Y")
+        date_str <- format(Sys.Date(), "%d-%b-%y")
         
         # Helper to create safe filenames
         safe_filename <- function(name) {
           name <- gsub("[:/\\?<>\\*|]", "_", name, perl = TRUE) # Replace invalid characters with underscores
-          name <- gsub("[\\s??????]+", "_", name) # Replace spaces or long dashes with underscore
+          name <- gsub("[[:space:]]+", "_", name) # Replace spaces or long dashes with underscore
           name <- gsub("[^A-Za-z0-9_\\-]", "", name) # Remove any remaining non-alphanumeric, underscore, dash
           name <- tolower(name)# Make lowercase 
           name
         }
+        # safe_filename <- function(name) {
+        #   name <- gsub("[:/\\\\?<>*|]", "_", name)               # invalid path characters
+        #   name <- gsub("[[:space:]\u2013\u2014-]+", "_", name)   # spaces, en/em dashes, hyphens
+        #   name <- gsub("[^A-Za-z0-9_]", "", name)                # anything else
+        #   name <- gsub("_+", "_", name)                          # collapse repeats
+        #   name <- gsub("^_|_$", "", name)                        # trim ends
+        #   tolower(name)
+        # }
         
         # Save each selected dataset as CSV
         for (nm in selected) {
