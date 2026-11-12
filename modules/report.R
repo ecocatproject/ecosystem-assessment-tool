@@ -521,8 +521,12 @@ report_module_server <- function(datasets,
           }
         }
         
+        readme_path <- file.path(tmpdir, "datasets_README.txt")
+        file.copy(file.path("report", "datasets_README.txt"), readme_path, overwrite = TRUE)
+        
+        
         # Zip all CSVs together
-        zip::zip(zipfile = file, files = file_paths, mode = "cherry-pick")
+        zip::zip(zipfile = file, files = c(readme_path, file_paths), mode = "cherry-pick")
         
       }
     )
