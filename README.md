@@ -44,7 +44,7 @@ guidelines**](https://portals.iucn.org/library/sites/library/files/documents/202
 
 The IUCN RLE has been adopted as a headline indicator in the [Global
 Biodiversity Framework
-(GBF)](https://www.cbd.int/gbf "url link to the global biodiversity framework website")B
+(GBF)](https://www.cbd.int/gbf "url link to the global biodiversity framework website")
 of the UN Convention on Biological Diversity, highlighting its
 importance for tracking ecosystem conservation status and supporting
 decision-making around the world.
@@ -56,7 +56,9 @@ Conservation Assessment
 Tools)**](https://www.kew.org/science/our-science/projects/EcoCAT)
 project, a broader initiative to develop open, modular and user-friendly
 tools that support ecosystem mapping and assessment in line with the
-IUCN Red List of Ecosystems framework.
+IUCN Red List of Ecosystems framework. A landing page for the current
+tools in development can be found at
+[**ecocatproject.org**](https://ecocatproject.org).
 
 ## How does this tool support ecosystem assessments?
 
