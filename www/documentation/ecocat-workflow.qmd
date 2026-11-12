@@ -1,0 +1,17 @@
+---
+title: "EcoCAT Assessment Tool"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: flatly
+    embed-resources: true
+execute:
+  echo: false
+---
+
+## User workflow
+
+A 10-step process indicating the user workflow and interaction of the EcoCAT assessment tool is show below:
+
+![](assessment-tool-flow_v4.png){width="60%"}
