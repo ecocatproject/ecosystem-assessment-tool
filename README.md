@@ -57,12 +57,12 @@ decision-making around the world.
 
 This Ecosystem Assessment tool is part of the [**EcoCAT (Ecosystem
 Conservation Assessment
-Tools)**](https://www.kew.org/science/our-science/projects/EcoCAT)
+Tools)**](https://www.kew.org/science/our-science/projects/EcoCAT "url link to the RBG Kew public website project page")
 project, a broader initiative to develop open, modular and user-friendly
 tools that support ecosystem mapping and assessment in line with the
 IUCN Red List of Ecosystems framework. A landing page for the current
 tools in development can be found at
-[**ecocatproject.org**](https://ecocatproject.org).
+[**ecocatproject.org**](https://ecocatproject.org "url link to the ecocat project landing page for both the mappign and assessment tools").
 
 ## How does this tool support ecosystem assessments?
 
@@ -176,7 +176,7 @@ shiny::runApp("path/to/ecocat-assessment-tool")
 ## Assessment tool process
 
 The process to implement an ecosystem assessment using the [**EcoCAT
-Assessment Tool**](assess.ecocatproject.org) is shown below
+Assessment Tool**](https://assess.ecocatproject.org) is shown below
 
 <p align="center">
 
