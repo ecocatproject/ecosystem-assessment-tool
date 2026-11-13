@@ -1,0 +1,36 @@
+---
+title: "EcoCAT Red List of Ecosystems Assessment Tool"
+subtitle: "Glossary"
+date: last-modified
+author: "Rob Critchlow"
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-expand: 3
+    theme: flatly
+    # toc_collapsed: true
+    self-contained: true
+    self-contained-math: true
+    embed-resources: true
+    # bibliography: guidance-references.bib
+    # csl: conservation-biology.csl
+    link-citations: true
+    link-external-icon: true
+    # page-layout: fulle
+execute:
+  echo: false
+# editor: visual
+---
+  
+  
+  
+  
+## Glossary
+  
+EcoCAT
+Ecosystem
+Global Ecosystem Typology
+IUCN 
+IUCN Red List of Ecosystems
+
