@@ -138,27 +138,40 @@ compute_protected <- function(x, include_oecm = FALSE, pa = NULL,
   bb <- c(xmin = e$xmin, xmax = e$xmax, ymin = e$ymin, ymax = e$ymax)
   bb <- setNames(as.numeric(bb), c("xmin", "xmax", "ymin", "ymax"))
   
-  # 2. Regular sample of points across the whole extent (NA cells kept, so
-  #    each point represents an equal share of the extent's grid)
-  pts <- terra::spatSample(x, n_points, method = "regular",
-                           as.points = TRUE, na.rm = FALSE)
-  is_eco <- !is.na(terra::values(pts)[, 1])
-  if (!any(is_eco)) stop("No ecosystem pixels found")
+  # # 2. Regular sample of points across the whole extent (NA cells kept, so
+  # #    each point represents an equal share of the extent's grid)
+  # pts <- terra::spatSample(x, n_points, method = "regular",
+  #                          as.points = TRUE, na.rm = FALSE)
+  # is_eco <- !is.na(terra::values(pts)[, 1])
+  # if (!any(is_eco)) stop("No ecosystem pixels found")
+  # 
+  # # Area each point represents (km2): extent area shared across points,
+  # # weighted by cos(latitude) when the raster is in lon/lat
+  # ext_km2 <- terra::expanse(terra::as.polygons(terra::ext(x), crs = terra::crs(x)),
+  #                           unit = "km")
+  # w <- if (terra::is.lonlat(x)) cos(terra::crds(pts)[, 2] * pi / 180) else rep(1, nrow(pts))
+  # pt_km2 <- ext_km2 * w / sum(w)
+  # 
+  # pts    <- pts[is_eco]
+  # pt_km2 <- pt_km2[is_eco]
+  # eco_km2 <- sum(pt_km2)
+  # 
+  # # total area output now not based on the sample but exact area
+  # eco_exact <- terra::expanse(x, unit = "km")$area
+  # pt_km2    <- pt_km2 * eco_exact / eco_km2
+  # eco_km2   <- eco_exact
   
-  # Area each point represents (kmB2): extent area shared across points,
-  # weighted by cos(latitude) when the raster is in lon/lat
-  ext_km2 <- terra::expanse(terra::as.polygons(terra::ext(x), crs = terra::crs(x)),
-                            unit = "km")
-  w <- if (terra::is.lonlat(x)) cos(terra::crds(pts)[, 2] * pi / 180) else rep(1, nrow(pts))
-  pt_km2 <- ext_km2 * w / sum(w)
+  # 2. Regular sample as a coarse grid; geodesic area of each sample cell
+  #    becomes the area each point represents
+  s   <- terra::spatSample(x, n_points, method = "regular", as.raster = TRUE)
+  a   <- terra::cellSize(s, mask = TRUE, unit = "km")   # NA where not ecosystem
+  pts <- terra::as.points(a)                            # ecosystem cells only (NAs dropped)
+  if (nrow(pts) == 0) stop("No ecosystem pixels found")
+  pt_km2 <- terra::values(pts)[, 1]
   
-  pts    <- pts[is_eco]
-  pt_km2 <- pt_km2[is_eco]
-  eco_km2 <- sum(pt_km2)
-  
-  # total area output now not based on the sample but exact area
+  # scale so the total matches the exact ecosystem area
   eco_exact <- terra::expanse(x, unit = "km")$area
-  pt_km2    <- pt_km2 * eco_exact / eco_km2
+  pt_km2    <- pt_km2 * eco_exact / sum(pt_km2)
   eco_km2   <- eco_exact
   
   # 3. Fetch sites (unless supplied)

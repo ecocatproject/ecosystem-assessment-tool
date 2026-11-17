@@ -282,18 +282,23 @@ compute_aoo_fast <- function(eau) {
   # ensure 1 and NA raster
   eau <- terra::ifel(eau > 0, 1, NA)
   
-   res_xy <- terra::res(eau)
+  # should this part be removed?
+  #  res_xy <- terra::res(eau)
+  # # cell_area_km2 <- if (terra::is.lonlat(eau)) {
+  # #   ctr <- mean(c(terra::ext(eau)$ymin, terra::ext(eau)$ymax))
+  # #   prod(res_xy) * 111.32^2 * cos(ctr * pi / 180)
+  # # } else {
+  # #   prod(res_xy) / 1e6
+  # # }
   # cell_area_km2 <- if (terra::is.lonlat(eau)) {
-  #   ctr <- mean(c(terra::ext(eau)$ymin, terra::ext(eau)$ymax))
-  #   prod(res_xy) * 111.32^2 * cos(ctr * pi / 180)
+  #   prod(res(terra::mask(terra::cellSize(eau, unit = "km"), eau)))/1e6
   # } else {
-  #   prod(res_xy) / 1e6
+  #   prod(terra::res(eau)) / 1e6      # presence (1/NA) x pixel area
   # }
-  cell_area_km2 <- if (terra::is.lonlat(eau)) {
-    prod(res(terra::mask(terra::cellSize(eau, unit = "km"), eau)))/1e6
-  } else {
-    prod(terra::res(eau)) / 1e6      # presence (1/NA) x pixel area
-  }
+  
+  # Pixels are counted as equal area; the 1% rule uses counts.
+  # (A constant pixel area would cancel out of the cumulative proportions.)
+  cell_area_km2 <- 1
   
   # Centre: midpoint of the geographic (WGS84) bounding box
   # same as slow version 
@@ -336,6 +341,37 @@ compute_aoo_fast <- function(eau) {
   polys_sel <- terra::as.polygons(terra::ifel(counts >= thresh_n, counts, NA), aggregate = FALSE) |>
     sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "assessment")
 
+  
+  #####
+  #####
+  ##for a true area version i could replace the above with:
+  # each point carries its pixel's true area (km2)
+  # a   <- terra::mask(terra::cellSize(eau, unit = "km"), eau)
+  # pts <- terra::as.points(a, na.rm = TRUE)
+  # if (nrow(pts) == 0) return(NULL)
+  # pts_laea <- terra::project(pts, laea)
+  # 
+  # # (grid code unchanged)
+  # 
+  # area_r <- terra::rasterize(pts_laea, grid, field = names(a), fun = "sum")
+  # 
+  # # 1% rule on area
+  # vals      <- sort(terra::values(area_r, na.rm = TRUE))
+  # cum_props <- cumsum(vals) / sum(vals)
+  # thresh    <- if (any(cum_props > 0.01)) vals[which(cum_props > 0.01)[1]] else 0
+  # 
+  # polys_all <- terra::as.polygons(area_r, aggregate = FALSE) |>
+  #   sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "all")
+  # polys_sel <- terra::as.polygons(terra::ifel(area_r >= thresh, area_r, NA),
+  #                                 aggregate = FALSE) |>
+  #   sf::st_as_sf() |> sf::st_transform(4326) |> dplyr::mutate(type = "assessment")
+  #####
+  #####
+  
+  
+  
+  
+  
   list(
     dat_all  = polys_all,
     dat_sel  = polys_sel,
@@ -352,16 +388,36 @@ compute_aoo_fast <- function(eau) {
 # Exact version: area-weighted extraction with exactextractr.
 compute_aoo_slow <- function(eau) {
 
-  ext_4326 <- terra::ext(terra::project(eau, "EPSG:4326"))
-  grid.prj <- sprintf(
-    "+proj=laea +lat_0=%f +lon_0=%f +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs",
-    (ext_4326$ymin + ext_4326$ymax) / 2, (ext_4326$xmin + ext_4326$xmax) / 2)
+  # ext_4326 <- terra::ext(terra::project(eau, "EPSG:4326"))
+  # grid.prj <- sprintf(
+  #   "+proj=laea +lat_0=%f +lon_0=%f +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs",
+  #   (ext_4326$ymin + ext_4326$ymax) / 2, (ext_4326$xmin + ext_4326$xmax) / 2)
+  # 
+  # eau.wcea <- terra::project(eau, grid.prj)
+  # 
+  # grid <- terra::rast(terra::ext(eau.wcea), res = 10000, crs = terra::crs(eau.wcea))
+  # grid <- terra::extend(grid, c(2, 2))
+  # grid[] <- 0
 
-  eau.wcea <- terra::project(eau, grid.prj)
-
-  grid <- terra::rast(terra::ext(eau.wcea), res = 10000, crs = terra::crs(eau.wcea))
-  grid <- terra::extend(grid, c(2, 2))
-  grid[] <- 0
+    eau <- terra::ifel(eau > 0, 1, NA)
+    
+    # Same centre and grid origin as compute_aoo_fast()
+    ext_ll <- if (terra::is.lonlat(eau)) terra::ext(eau) else
+      terra::ext(terra::project(
+        terra::as.polygons(terra::ext(eau), crs = terra::crs(eau)), "EPSG:4326"))
+    laea <- sprintf(
+      "+proj=laea +lat_0=%.4f +lon_0=%.4f +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs",
+      mean(c(ext_ll$ymin, ext_ll$ymax)), mean(c(ext_ll$xmin, ext_ll$xmax)))
+    
+    eau.wcea <- terra::project(eau, laea, method = "near")
+    
+    pe   <- terra::ext(eau.wcea)
+    grid <- terra::rast(
+      xmin = (floor(pe$xmin / 1e4) - 1) * 1e4, xmax = (ceiling(pe$xmax / 1e4) + 1) * 1e4,
+      ymin = (floor(pe$ymin / 1e4) - 1) * 1e4, ymax = (ceiling(pe$ymax / 1e4) + 1) * 1e4,
+      resolution = 1e4, crs = laea)
+    grid[] <- 0
+    
 
   grid_sf <- sf::st_as_sf(terra::as.polygons(grid, aggregate = FALSE))
   grid_sf$cell_id <- seq_len(nrow(grid_sf))
