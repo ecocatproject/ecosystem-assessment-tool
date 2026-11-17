@@ -2,8 +2,12 @@
 title: "EcoCAT Assessment Tool"
 subtitle: "Methods and data description"
 #date: last-modified
-#author: "Rob Critchlow"
 format: 
+  docx: 
+    bibliography: methods-references.bib
+    csl: conservation-biology.csl
+    link-citations: true
+    embed-resources: true
   html:
     toc: true
     toc-depth: 4
@@ -18,10 +22,8 @@ format:
     link-citations: true
     link-external-icon: true
     link-external-newwindow: true
-    # page-layout: fulle
 execute:
   echo: false
-# editor: visual
 ---
 
 ## Methods
@@ -38,7 +40,9 @@ Historical monthly temperature data is derived from [WorldClim verison 2.1](http
 
 #### Elevation
 
-Elevation data is extracted for the ecosystem area using the `get_elev_raster` function from the `elevatr` package, retrieving tiles from the [Amazon Web Services (AWS) Terrain Tiles](registry.opendata.aws/terrain-tiles){target="_blank" rel="noopener noreferrer"} service at zoom level 6. The AWS terrain tiles incorporate 3DEP, SRTM, and GMTED2010 content courtesy of the U.S. Geological Survey, and ETOPO1 content courtesy of the U.S. National Oceanic and Atmospheric Administration. The resolution of the returned raster is determined by both the zoom level and latitude; full details of the zoom-to-resolution relationship are provided in the [Mapzen/Tilezen documentation](github.com/tilezen/joerd/blob/master/docs/data-sources.md){target="_blank" rel="noopener noreferrer"}. The spatial extent of the input ecosystem raster is first converted to an `sf` polygon to define the region of interest for the elevation query. The returned elevation raster is then resampled to match the resolution and alignment of the ecosystem raster using bilinear averaging, and masked to retain only elevation values falling within the mapped ecosystem extent.
+<!-- Elevation data is extracted for the ecosystem area using the `get_elev_raster` function from the `elevatr` package, retrieving tiles from the [Amazon Web Services (AWS) Terrain Tiles](registry.opendata.aws/terrain-tiles){target="_blank" rel="noopener noreferrer"} service at zoom level 6. The AWS terrain tiles incorporate 3DEP, SRTM, and GMTED2010 content courtesy of the U.S. Geological Survey, and ETOPO1 content courtesy of the U.S. National Oceanic and Atmospheric Administration. The resolution of the returned raster is determined by both the zoom level and latitude; full details of the zoom-to-resolution relationship are provided in the [Mapzen/Tilezen documentation](github.com/tilezen/joerd/blob/master/docs/data-sources.md){target="_blank" rel="noopener noreferrer"}. The spatial extent of the input ecosystem raster is first converted to an `sf` polygon to define the region of interest for the elevation query. The returned elevation raster is then resampled to match the resolution and alignment of the ecosystem raster using bilinear averaging, and masked to retain only elevation values falling within the mapped ecosystem extent. -->
+
+Elevation data is extracted for the ecosystem area from the [Copernicus GLO-30 Digital Elevation Model](registry.opendata.aws/copernicus-dem){target="_blank" rel="noopener noreferrer"} [@EuropeanSpaceAgency2024], accessed as Cloud Optimized GeoTIFF tiles from the Amazon Web Services (AWS) Open Data Registry. GLO-30 is derived from the TanDEM-X radar mission and provides global coverage at 1 arc-second (approximately 30 m) grid spacing, with longitudinal spacing increasing at latitudes above 50°. The spatial extent of the input ecosystem raster is first used to identify the 1° × 1° DEM tiles that intersect the region of interest; only these tiles are downloaded, and they are combined into a single virtual mosaic using the `vrt` function from the `terra` package. The mosaic is cropped to the ecosystem extent, resampled to match the resolution and alignment of the ecosystem raster using bilinear interpolation, and masked to retain only elevation values falling within the mapped ecosystem extent.
 
 #### Global Ecosystem Typology
 
@@ -49,6 +53,12 @@ The number of raster cells assigned to each EFG was counted separately for major
 #### Country overlap
 
 The overlap of the ecosystem with national boundaries was assessed using country polygons from the [Natural Earth](naturalearthdata.com){target="_blank" rel="noopener noreferrer"} dataset (medium scale, 1:50m) accessed via the `rnaturalearth` package. To reduce computational load, up to 100,000 points are sampled from the the mapped ecosystem at regular intervals using the `spatSample` function in the `terra` package and converted back to a raster grid. Country polygons are rasterized to match this grid. Zonal statistics of the sampled ecosystem raster are calculated using the `zonal` function from the `terra` package and the area of ecosystem cells falling within each country is calculated using the `expanse`. Results are then summarised as area and percentage of total ecosystem coverage, and ranked in descending order of area.
+
+#### Protected Area overlap
+
+Protected area overlap is summarised by querying the [World Database on Protected and Conserved Areas (WDPCA)](https://www.protectedplanet.net/){target="_blank" rel="noopener noreferrer"} for the extent of the map at the time of analysis [@UNEP-WCMC2026]. Protected area polygons intersecting the bounding box of the ecosystem raster are retrieved directly from the [UNEP-WCMC](https://data-gis.unep-wcmc.org/server/rest/services/ProtectedPlanet/WDPCA/FeatureServer/1){target="_blank" rel="noopener noreferrer"} via ArcGIS REST queries made with the `httr2` package. Sites with a status of "Proposed" and sites classed as 'other effective area-based conservation measures' (OECMs) are excluded.
+
+Overlap between the ecosystem and protected areas is estimated from a regular sample of approximately 200,000 cells across the extent of the ecosystem raster, in its native coordinate reference system. Each sampled cell that falls on the mapped ecosystem is converted to a point at its centre and assigned the geodesic area of that cell, calculated with the `cellSize` function in the `terra` package; point areas are then rescaled so that they sum to the exact area of the mapped ecosystem. Points are transformed to geographic coordinates (EPSG:4326) and tested for intersection with the protected area polygons. Where sites overlap in the WDPCA, each point is counted only once towards the total protected area and is assigned to the strictest category of the overlapping sites.
 
 ### IUCN Red List of Ecosystem Assessment
 
@@ -78,10 +88,10 @@ Extent of Occurrence (EOO) is calculated from input raster data using a custom f
 
 ##### Subcriterion B2
 
-Area of occupancy (AOO) counts the number of 10km^2^ grid cells occupied by the ecosystem - this is standardised across all ecosystems regardless of the spatial resolution of the mapped ecosystem.
+Area of occupancy (AOO) counts the number of 10 × 10 km (100 km^2^) grid cells occupied by the ecosystem; this is standardised across all ecosystems regardless of the spatial resolution of the mapped ecosystem.
 
-Area of Occupancy (AOO) is calculated using a 10 km × 10 km grid overlaid on the ecosystem map. The grid is created to match the spatial extent of the input raster, with a two-cell buffer added to ensure full coverage at the edges. Grid cells were converted to polygons and the area of ecosystem coverage within each cell is extracted using the `exact_extract` function from the `exactextractr` package, which accounts for partial cell coverage. This is repeated for each year layer in the input raster stack.
+AOO is calculated for the most recent year on a 10 × 10 km grid in a Lambert azimuthal equal-area (LAEA) projection centred on the midpoint of the ecosystem's geographic (WGS84) bounding box, so that every grid cell represents a true 100 km^2^ regardless of the ecosystem's location. The grid is aligned to the projection axes, with cell edges at whole multiples of 10 km from the projection centre, and is padded by one cell beyond the extent of the ecosystem so that no occupied area falls outside it. Cell shape distorts slightly with distance from the projection centre, so for very extensive ecosystems results may differ marginally from a grid in another projection. Ecosystem cells are converted to points and projected to LAEA, and the number of ecosystem cells within each grid cell is counted, with input cells treated as equal area.
 
-To exclude cells with negligible ecosystem presence, a 1% rule is applied: cells were ranked by their coverage area in ascending order and the cumulative proportion of total area is calculated. Only cells exceeding the bottom 1% cumulative area threshold were retained. AOO is then summarised per year with both the total number of occupied cells (coverage area \> 0) and the number of cells passing the 1% threshold.
+To exclude cells with negligible ecosystem presence, a 1% rule is applied: grid cells are ranked by their ecosystem coverage in ascending order, the cumulative proportion of the total is calculated, and only cells exceeding the bottom 1% cumulative threshold are retained. AOO is reported as both the total number of occupied grid cells and the number of cells passing the 1% threshold.
 
 ## References
