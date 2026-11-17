@@ -81,7 +81,6 @@ custom_theme <- bs_theme(
 # 4. logos ----------------------------------------------------------------
 rle_logo <- dataURI(file = "www/logo_RLE.png", mime = "image/png")
 get_logo <- dataURI(file = "www/logo_GET.png", mime = "image/png")
-# cat_logo <- dataURI(file = "www/ecocat-icon-b3.png", mime = "image/png")
 
 
 # 5. links ----------------------------------------------------------------
@@ -139,6 +138,13 @@ rle_url <- tags$a(
 #                                       category = "physical",
 #                                       returnclass = "sf", destdir = "data")
 # relief <- terra::rast("data/SR_HR.tif")
+
+# relief
+# Download from "https://naciscdn.org/naturalearth/10m/raster/SR_HR.zip"
+# unzip
+# r <- terra::rast("[file location]/SR_HR.tif")
+# terra::writeRaster( r, "[fiel location]SR_HR_cog.tif", filetype = "COG", datatype = "INT1U", gdal = c("COMPRESS=DEFLATE", "PREDICTOR=2", "OVERVIEWS=AUTO"), overwrite = TRUE )
+
  
 # NE data then checked and and saved to relevant location manually (save not shown)
 # world <- sf::st_make_valid(world)
