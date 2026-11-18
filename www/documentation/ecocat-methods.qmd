@@ -70,7 +70,7 @@ where $A_t$ is the area at time $t$ and $\Delta t$ is the number of years betwee
 
 $$\text{PRC} = \left(\left(\frac{A_t}{A_{t-1}}\right)^{1/\Delta t} - 1\right) \times 100$$
 
-Past and future trajectories were then projected over a 50-year horizon using both methods in parallel. Under the ARC method, area at year $i$ is projected as $A_0 + \text{ARC} \times \Delta t$, and under the PRC method as $A_0 \times (1 + \text{PRC}/100)\Delta t$, where $A_0$ is the initial area and $\Delta t$ is the number of years since baseline year.
+Past and future trajectories were then projected over a 50-year horizon using both methods in parallel. Under the ARC method, area at year $i$ is projected as $A_0 + \text{ARC} \times \Delta t$, and under the PRC method as $A_0 \times (1 + \text{PRC}/100)^{\Delta t}$, where $A_0$ is the initial area and $\Delta t$ is the number of years since baseline year.
 
 #### Criterion B
 
