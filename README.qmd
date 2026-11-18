@@ -98,13 +98,12 @@ install.packages(setdiff(pkgs, rownames(installed.packages())))
 ### 2. Launch the app directly from GitHub
 
 ``` r
-shiny::runGitHub(repo = "ecocat", username = "rdcritchlow")
-shiny::runGitHub(repo = "ecocat-assessment", username = "ecocatproject")
+shiny::runGitHub(repo = "ecocat-assessment-tool", username = "ecocatproject")
 ```
 
 This downloads the latest version of the tool to a temporary folder and opens it in your web browser. Nothing is permanently installed.
 
-### Alternative: keep a local copy
+### Alternatively keep a local copy
 
 To work offline or keep a fixed version, click the green **Code** button on GitHub and choose **Download ZIP**, then unzip the file. In R, run the app by giving the path to the unzipped folder:
 
