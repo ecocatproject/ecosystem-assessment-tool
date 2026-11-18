@@ -156,7 +156,7 @@ install.packages(setdiff(pkgs, rownames(installed.packages())))
 ### 2. Launch the app directly from GitHub
 
 ``` r
-shiny::runGitHub(repo = "ecocat-assessment-tool", username = "ecocatproject")
+shiny::runGitHub(repo = "ecosystem-assessment-tool", username = "ecocatproject")
 ```
 
 This downloads the latest version of the tool to a temporary folder and
