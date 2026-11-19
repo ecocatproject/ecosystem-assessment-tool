@@ -3127,7 +3127,7 @@ window.Quarto = {
   <ul>
   <li><a href="#descriptive-data" id="toc-descriptive-data" class="nav-link" data-scroll-target="#descriptive-data">Descriptive data</a>
   <ul class="collapse">
-  <li><a href="#rainfall-and-temperatue" id="toc-rainfall-and-temperatue" class="nav-link" data-scroll-target="#rainfall-and-temperatue">Rainfall and Temperatue</a></li>
+  <li><a href="#rainfall-and-temperature" id="toc-rainfall-and-temperature" class="nav-link" data-scroll-target="#rainfall-and-temperature">Rainfall and Temperature</a></li>
   <li><a href="#elevation" id="toc-elevation" class="nav-link" data-scroll-target="#elevation">Elevation</a></li>
   <li><a href="#global-ecosystem-typology" id="toc-global-ecosystem-typology" class="nav-link" data-scroll-target="#global-ecosystem-typology">Global Ecosystem Typology</a></li>
   <li><a href="#country-overlap" id="toc-country-overlap" class="nav-link" data-scroll-target="#country-overlap">Country overlap</a></li>
@@ -3169,9 +3169,9 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
 <section id="descriptive-data" class="level3">
 <h3 class="anchored" data-anchor-id="descriptive-data">Descriptive data</h3>
-<section id="rainfall-and-temperatue" class="level4">
-<h4 class="anchored" data-anchor-id="rainfall-and-temperatue">Rainfall and Temperatue</h4>
-<p>Historical rainfall and monthly temperature data is derived from <a href="https://www.worldclim.org/data/worldclim21.html" target="_blank" rel="noopener noreferrer" title="url link to the worldclim datasets">WorldClim version 2.1</a> <span class="citation" data-cites="fick2017">(<a href="#ref-fick2017" role="doc-biblioref">Fick &amp; Hijmans 2017</a>)</span> at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the the mapped ecosystem at regular intervals using the <code>spatSample</code> function in the <code>terra</code> package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation and temperature are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature and rainfall profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.</p>
+<section id="rainfall-and-temperature" class="level4">
+<h4 class="anchored" data-anchor-id="rainfall-and-temperature">Rainfall and Temperature</h4>
+<p>Historical rainfall and monthly temperature data is derived from <a href="https://www.worldclim.org/data/worldclim21.html" target="_blank" rel="noopener noreferrer" title="url link to the worldclim datasets">WorldClim version 2.1</a> <span class="citation" data-cites="fick2017">(<a href="#ref-fick2017" role="doc-biblioref">Fick &amp; Hijmans 2017</a>)</span> at a 2.5-minute resolution. To aid processing time, up to 1,000,000 points are sampled from the mapped ecosystem at regular intervals using the <code>spatSample</code> function in the <code>terra</code> package, with monthly precipitation values then extracted at those locations from the WorldClim layers. Mean, minimum, and maximum precipitation and temperature are then calculated across all sampled points for each month. To facilitate temporal visualisation, monthly temperature and rainfall profiles are smoothed using locally weighted regression (LOESS) with a span of 0.5, applied separately to the mean, minimum, and maximum series. Any smoothed precipitation values falling below zero were set to zero.</p>
 </section>
 <section id="elevation" class="level4">
 <h4 class="anchored" data-anchor-id="elevation">Elevation</h4>
@@ -3180,7 +3180,7 @@ window.Quarto = {
 </section>
 <section id="global-ecosystem-typology" class="level4">
 <h4 class="anchored" data-anchor-id="global-ecosystem-typology">Global Ecosystem Typology</h4>
-<p>The overlap with the Global Ecosystem Typology (GET) was assessed using the IUCN Global Ecosystem Typology GeoTIFF layers, which classify land and marine areas into Ecosystem Functional Groups (EFGs) at global extent <span class="citation" data-cites="keith2022a">Keith et al. (<a href="#ref-keith2022a" role="doc-biblioref">2022</a>)</span>. The ecosystem raster is reprojected to match the CRS of the GET layers where necessary (using modal resampling to preserve categorical values), and the GET layers are loaded for the spatial extent of the ecosystem. The ecosystem raster is then resampled to match the GET layer resolution and used as a mask to restrict the analysis to the mapped ecosystem area.</p>
+<p>The overlap with the Global Ecosystem Typology (GET) was assessed using the IUCN Global Ecosystem Typology GeoTIFF layers, which classify land and marine areas into Ecosystem Functional Groups (EFGs) at a global extent <span class="citation" data-cites="keith2022a">(<a href="#ref-keith2022a" role="doc-biblioref">Keith et al. 2022</a>)</span>. The ecosystem raster is reprojected to match the CRS of the GET layers where necessary (using modal resampling to preserve categorical values), and the GET layers are loaded for the spatial extent of the ecosystem. The ecosystem raster is then resampled to match the GET layer resolution and used as a mask to restrict the analysis to the mapped ecosystem area.</p>
 <p>The number of raster cells assigned to each EFG was counted separately for major (value = 1) and minor (value = 2) occurrences, following the GET classification convention. The proportion of each EFG relative to the total cell count across all layers is calculated, and EFGs contributing less than 1% of the total (for both major and minor occurrence) are excluded to ensure the most meaningful EFGs overlapping the ecosystem. The remaining EFGs are ranked by the proportion of major occurrence.</p>
 </section>
 <section id="country-overlap" class="level4">
