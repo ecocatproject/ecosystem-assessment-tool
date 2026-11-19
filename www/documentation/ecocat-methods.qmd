@@ -23,6 +23,7 @@ format:
     link-citations: true
     link-external-icon: true
     link-external-newwindow: true
+format-links: false
 execute:
   echo: false
 ---
